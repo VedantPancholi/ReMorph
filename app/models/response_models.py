@@ -15,6 +15,16 @@ HealingAction = Literal[
 ]
 
 RepairStrategy = Literal["deterministic", "llm", "merged", "cache"]
+RepairStatus = Literal["healed", "unrepairable"]
+FailureReason = Literal[
+    "docs_unavailable",
+    "ambiguous_route_match",
+    "schema_incomplete",
+    "invalid_llm_output",
+    "unsupported_auth_scheme",
+    "no_repair_candidate",
+    "unknown",
+]
 
 
 class RepairDiagnostics(BaseModel):
@@ -24,6 +34,10 @@ class RepairDiagnostics(BaseModel):
     selected_endpoint_path: str
     docs_source: str
     repair_strategy: RepairStrategy
+    docs_confidence: float | None = Field(default=None, ge=0.0, le=1.0)
+    spec_hash: str | None = None
+    spec_version: str | None = None
+    scenario_type: str | None = None
     llm_attempted: bool = False
     llm_succeeded: bool = False
     fallback_used: bool = False
@@ -31,6 +45,10 @@ class RepairDiagnostics(BaseModel):
     request_id: str | None = None
     source_component: str | None = None
     retry_count: int = Field(default=0, ge=0)
+    retry_succeeded: bool | None = None
+    total_recovery_steps: int | None = Field(default=None, ge=0)
+    final_reward: float | None = None
+    failure_reason: FailureReason | None = None
 
 
 class HealedRequest(BaseModel):
@@ -45,6 +63,8 @@ class HealedRequest(BaseModel):
     fixed_headers: dict[str, str] | None = None
     schema_summary: dict[str, Any] | None = None
     healing_action: HealingAction = "no_change"
+    status: RepairStatus = "healed"
+    failure_reason: FailureReason | None = None
     confidence: float | None = Field(default=None, ge=0.0, le=1.0)
     diagnostics: RepairDiagnostics | None = None
 
@@ -88,3 +108,13 @@ class ProxyWorkflowResult(BaseModel):
     final_healed_request: HealedRequest
     attempts: int = Field(ge=1)
     history: list[RetryAttemptRecord] = Field(default_factory=list)
+
+
+class ProxyFailureEnvelope(BaseModel):
+    """Stable external contract returned when repair succeeds or fails."""
+
+    contract_version: str
+    status: RepairStatus
+    healed_request: HealedRequest | None = None
+    failure_reason: FailureReason | None = None
+    message: str | None = None

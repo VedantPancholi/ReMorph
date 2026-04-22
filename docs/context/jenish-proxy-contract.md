@@ -123,3 +123,26 @@ Right now ReMorph provides:
 - cache reuse for repeated drift patterns
 
 This is the current integration boundary Jenish can build against.
+
+## Explicit Failure Format
+
+If ReMorph cannot safely repair the request, it returns:
+
+```json
+{
+  "contract_version": "remorph.proxy.v1",
+  "status": "unrepairable",
+  "healed_request": null,
+  "failure_reason": "docs_unavailable",
+  "message": "ReMorph could not safely generate a repair."
+}
+```
+
+Current failure reasons:
+
+- `docs_unavailable`
+- `ambiguous_route_match`
+- `schema_incomplete`
+- `unsupported_auth_scheme`
+- `no_repair_candidate`
+- `unknown`

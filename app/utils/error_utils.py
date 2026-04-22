@@ -19,3 +19,19 @@ class LLMHealingError(ReMorphError):
 
 class InvalidHealedResponseError(ReMorphError):
     """Reserved for downstream validation failures after model output."""
+
+
+class AmbiguousRouteMatchError(SchemaExtractionError):
+    """Raised when multiple routes are too close to pick confidently."""
+
+
+class SchemaIncompleteError(ReMorphError):
+    """Raised when the extracted schema is too incomplete to repair safely."""
+
+
+class UnsupportedAuthSchemeError(ReMorphError):
+    """Raised when the endpoint requires an auth mode ReMorph cannot repair."""
+
+
+class NoRepairCandidateError(ReMorphError):
+    """Raised when no repair candidate can be generated for the failure."""
