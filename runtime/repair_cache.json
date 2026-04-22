@@ -36,6 +36,119 @@
       ]
     }
   },
+  "605f5d6811173d6e37206e4940c4a5bdb32e608a79c4811cb6441bd1c178a424": {
+    "confidence": 0.9,
+    "diagnostics": {
+      "docs_confidence": 1.0,
+      "docs_source": "local:app/testsupport/sample_openapi.json",
+      "failure_reason": null,
+      "fallback_used": false,
+      "final_reward": null,
+      "llm_attempted": true,
+      "llm_succeeded": true,
+      "original_error_code": 400,
+      "processing_ms": 4692,
+      "repair_strategy": "merged",
+      "request_id": "req-scenario-a",
+      "retry_count": 0,
+      "retry_succeeded": null,
+      "scenario_type": "payload_drift",
+      "selected_endpoint_path": "/users",
+      "source_component": "proxy",
+      "spec_hash": "977aefb9a05b6b7f69f08bbf16f5c49b6749228410f59e81179a464df3f3210e",
+      "spec_version": "3.0.3",
+      "total_recovery_steps": 1
+    },
+    "failure_reason": null,
+    "fixed_headers": {
+      "Authorization": "Bearer demo-token",
+      "Content-Type": "application/json"
+    },
+    "fixed_method": "POST",
+    "fixed_payload": {
+      "user": {
+        "f_name": "John",
+        "l_name": "Doe"
+      }
+    },
+    "fixed_url": "https://mock.example.com/users",
+    "healing_action": "no_change",
+    "reasoning": "The request body did not match the API schema. The schema expects a 'user' object with 'f_name' and 'l_name' fields, but the payload contained 'first_name' and 'last_name'. The payload was rewritten to match the schema. A 'Content-Type: application/json' header was added.",
+    "schema_summary": {
+      "confidence": 1.0,
+      "healing_action": "payload_rewrite",
+      "properties": {
+        "user": {
+          "properties": {
+            "f_name": {
+              "type": "string"
+            },
+            "l_name": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "f_name",
+            "l_name"
+          ],
+          "type": "object"
+        }
+      },
+      "status": "healed"
+    },
+    "status": "healed"
+  },
+  "640cb592d00019fbcd59665258a1a1c5b4c1ba720f1c2cc531df78e07d088687": {
+    "confidence": 0.9,
+    "diagnostics": {
+      "docs_confidence": 0.7250000000000001,
+      "docs_source": "local:app/testsupport/sample_openapi.json",
+      "failure_reason": null,
+      "fallback_used": false,
+      "final_reward": null,
+      "llm_attempted": true,
+      "llm_succeeded": true,
+      "original_error_code": 401,
+      "processing_ms": 2222,
+      "repair_strategy": "merged",
+      "request_id": "req-scenario-c",
+      "retry_count": 1,
+      "retry_succeeded": null,
+      "scenario_type": "auth_drift",
+      "selected_endpoint_path": "/api/v2/finance/ledger",
+      "source_component": "proxy",
+      "spec_hash": "977aefb9a05b6b7f69f08bbf16f5c49b6749228410f59e81179a464df3f3210e",
+      "spec_version": "3.0.3",
+      "total_recovery_steps": 1
+    },
+    "failure_reason": null,
+    "fixed_headers": {
+      "x-api-key": "demo-token"
+    },
+    "fixed_method": "GET",
+    "fixed_payload": null,
+    "fixed_url": "https://mock.example.com/api/v2/finance/ledger",
+    "healing_action": "auth_rewrite",
+    "reasoning": "The target endpoint requires an API key in the header 'x-api-key', but the request used a Bearer token. Replacing the Authorization header with the required x-api-key header resolves the 401.",
+    "schema_summary": {
+      "applied_changes": [
+        "auth"
+      ],
+      "method": "GET",
+      "path": "/api/v2/finance/ledger",
+      "required_fields": [],
+      "security_requirements": [
+        {
+          "header_name": "x-api-key",
+          "location": "header",
+          "name": "ApiKeyAuth",
+          "scheme": null,
+          "type": "apiKey"
+        }
+      ]
+    },
+    "status": "healed"
+  },
   "8727d56328bcc44eebdee5b7fbbdaf4f9eeb4dccb128426d7ea33213b3e6303a": {
     "confidence": 0.9,
     "diagnostics": {
@@ -70,6 +183,52 @@
         }
       ]
     }
+  },
+  "be0a782cdfdbbcacf0697ebf2f8b0df0389a4a619f90e0c4035663840a69cbbb": {
+    "confidence": 0.9,
+    "diagnostics": {
+      "docs_confidence": 0.6467857142857143,
+      "docs_source": "local:app/testsupport/sample_openapi.json",
+      "failure_reason": null,
+      "fallback_used": false,
+      "final_reward": null,
+      "llm_attempted": true,
+      "llm_succeeded": true,
+      "original_error_code": 404,
+      "processing_ms": 2392,
+      "repair_strategy": "merged",
+      "request_id": "req-scenario-b",
+      "retry_count": 1,
+      "retry_succeeded": null,
+      "scenario_type": "route_drift",
+      "selected_endpoint_path": "/api/v2/finance/ledger",
+      "source_component": "proxy",
+      "spec_hash": "977aefb9a05b6b7f69f08bbf16f5c49b6749228410f59e81179a464df3f3210e",
+      "spec_version": "3.0.3",
+      "total_recovery_steps": 1
+    },
+    "failure_reason": null,
+    "fixed_headers": {
+      "x-api-key": "demo-token"
+    },
+    "fixed_method": "GET",
+    "fixed_payload": null,
+    "fixed_url": "https://mock.example.com/api/v2/finance/ledger",
+    "healing_action": "combined_rewrite",
+    "reasoning": "The original request targeted /api/v1/transactions which does not match the documented endpoint /api/v2/finance/ledger. Additionally, the request used an Authorization header with a bearer token, whereas the API requires an x-api-key header. The method is correct (GET) and no payload is needed for this GET request. Therefore, the URL and headers are rewritten to match the schema.",
+    "schema_summary": {
+      "method": "GET",
+      "path": "/api/v2/finance/ledger",
+      "security_requirements": [
+        {
+          "header_name": "x-api-key",
+          "location": "header",
+          "name": "ApiKeyAuth",
+          "type": "apiKey"
+        }
+      ]
+    },
+    "status": "healed"
   },
   "ece956c3abb88055662817387a879317b897e601a7eb4c2061ff8a42eb48f98d": {
     "confidence": 0.95,
