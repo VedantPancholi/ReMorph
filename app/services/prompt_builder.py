@@ -16,6 +16,7 @@ def build_system_prompt() -> str:
         "2. Only use fields present in the provided schema.\n"
         "3. Repair payload, route, or auth only when required.\n"
         "4. Return strict JSON matching the expected healed request model.\n"
+        "5. Do not return markdown, code fences, commentary, or explanation outside the JSON object.\n"
     )
 
 
@@ -39,5 +40,7 @@ def build_healing_prompt(trapped_error: TrappedError, schema: EndpointSchema) ->
             "- schema_summary",
             "- healing_action",
             "- confidence",
+            "",
+            "Return JSON only. Do not wrap it in markdown fences.",
         ]
     )

@@ -14,3 +14,7 @@
 - upgraded `run_local_test.py` into a small CLI for smoke tests and full healing runs
 - corrected the ignore rule so both `.codex` files and `.codex/` directories stay local
 - added deterministic repair logic so full healing can handle the core demo scenarios without depending on live LLM access
+- added a dedicated run and validation guide covering setup, commands, and expected outputs for all demo scenarios
+- hardened the LLM client so malformed model output becomes a safe fallback instead of a crash
+- enabled Groq JSON mode for healing calls and removed the hardcoded API key from tracked config
+- added model-aware structured output selection and reduced LiteLLM console noise during runs

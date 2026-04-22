@@ -20,6 +20,11 @@ Environment variables are namespaced with the `REMORPH_` prefix to avoid
 collisions with machine-level settings. Start from `.env.example` when wiring a
 local `.env`.
 
+Important:
+
+- keep `REMORPH_GROQ_API_KEY` only in `.env`
+- do not hardcode provider keys in tracked Python files
+
 ## What Is Ready Now
 
 - typed input and output models for trapped errors and healed requests
@@ -106,3 +111,8 @@ scenarios locally:
 
 Every future code change should be accompanied by a doc update. The working
 agreement for that process lives in [docs/context/change-management.md](/home/matter/Documents/ReMorph/docs/context/change-management.md).
+
+## Detailed Runbook
+
+For setup, run commands, expected scenario outputs, and validation guidance, use
+[docs/context/run-and-test-guide.md](/home/matter/Documents/ReMorph/docs/context/run-and-test-guide.md).

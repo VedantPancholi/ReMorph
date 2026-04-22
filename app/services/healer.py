@@ -47,8 +47,11 @@ def heal_request(
         healed_request = call_healing_model(system_prompt, user_prompt)
         logger.info("Healing response validated through the model provider")
         return _merge_repairs(deterministic_repair, healed_request)
-    except LLMHealingError:
-        logger.info("Falling back to deterministic repair because model healing is unavailable")
+    except LLMHealingError as exc:
+        logger.warning(
+            "Falling back to deterministic repair because model healing failed: %s",
+            exc,
+        )
         return deterministic_repair
 
 

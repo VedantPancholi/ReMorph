@@ -119,3 +119,76 @@ The three demo scenarios now produce a structured healed request locally:
 - route drift repairs the path and can also repair auth if the new endpoint
   demands it
 - auth drift converts bearer tokens into the documented API key header
+
+## 2026-04-22 - Operator Runbook
+
+### Goal
+
+Give the team a single markdown file that explains how to run the project and
+how to judge whether the healed output is correct.
+
+### What Changed
+
+- added `docs/context/run-and-test-guide.md`
+- linked the new runbook from `README.md`
+- recorded the new operational documentation in the change ledger
+
+### Files Touched
+
+- `docs/context/run-and-test-guide.md`
+- `README.md`
+- `docs/changes/change-log.md`
+- `docs/journal/implementation-journal.md`
+
+## 2026-04-22 - LLM Output Hardening
+
+### Goal
+
+Prevent model-side formatting mistakes from crashing `--mode heal` when the
+provider returns prose, fenced output, or malformed JSON.
+
+### What Changed
+
+- hardened `llm_client.py` to extract a JSON object from wrapped model output
+- converted JSON decode and validation failures into `LLMHealingError`
+- updated `healer.py` to log the failure reason and fall back safely
+- strengthened prompt instructions to forbid markdown or extra commentary
+- added tests for wrapped JSON output and invalid model output
+
+### Files Touched
+
+- `app/services/llm_client.py`
+- `app/services/healer.py`
+- `app/services/prompt_builder.py`
+- `tests/test_llm_client.py`
+- `docs/context/run-and-test-guide.md`
+- `docs/changes/change-log.md`
+- `docs/journal/implementation-journal.md`
+
+## 2026-04-22 - Provider JSON Mode
+
+### Goal
+
+Reduce malformed Groq responses by asking for JSON mode directly and remove a
+credential handling mistake from tracked source.
+
+### What Changed
+
+- updated `llm_client.py` to pass `response_format={"type": "json_object"}`
+- removed the hardcoded Groq API key from `config.py`
+- updated docs to reinforce that secrets belong only in `.env`
+
+### Files Touched
+
+- `app/config.py`
+- `app/services/llm_client.py`
+- `README.md`
+- `docs/context/run-and-test-guide.md`
+- `docs/changes/change-log.md`
+- `docs/journal/implementation-journal.md`
+
+### Follow-Up Hardening
+
+- Groq models with Structured Outputs support now use `json_schema`
+- other Groq models now use `json_object`
+- LiteLLM debug/help noise is suppressed during normal runs
