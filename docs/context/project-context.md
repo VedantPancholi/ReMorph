@@ -37,6 +37,31 @@ should focus on:
 - building a safe repair prompt
 - returning a structured healed request
 
+## Frozen Contract
+
+Sprint 2 should now be treated as a stable repair module with:
+
+- input contract: `TrappedError`
+- output contract: `HealedRequest`
+- primary callable: `process_trapped_error()`
+
+The rest of the system should integrate around this boundary instead of
+changing it casually.
+
+## What Makes Sprint 2 Believable
+
+The repair engine is strongest when it is transparent about why a repair was
+chosen. The frozen baseline now includes:
+
+- docs/spec metadata
+- docs confidence and completeness signals
+- route match confidence
+- ranked candidate endpoints
+- route match reasons
+- explicit ambiguous and low-confidence handling
+
+That makes the repair path explainable enough for both judges and teammates.
+
 ## Current Implementation Status
 
 The repository already contains a working baseline for Sprint 2:
@@ -51,10 +76,21 @@ The repository already contains a working baseline for Sprint 2:
 - proxy-facing adapters now exist for Jenish's integration boundary
 - persistent telemetry and repair cache are now implemented for repeated drifts and later reward analysis
 - proxy adapters now return explicit unrepairable failure reasons when repair cannot proceed safely
+- route matching now exposes confidence, ranked candidate endpoints, and match reasons for judge explainability
 
 The remaining gap is not the architecture. The remaining gap is product
 hardening: stronger heuristics at production scale, real provider validation,
 and full Sprint 4 environment/training integration.
+
+## What Is Intentionally Deferred
+
+The following work should happen after Sprint 2 freeze, not before it:
+
+- full OpenEnv environment implementation
+- reward function and training loop
+- before/after evaluation harness
+- live proxy deployment or FastAPI exposure if the team wants HTTP transport
+- broader production-scale heuristics for large and messy specs
 
 ## Architecture Boundary
 

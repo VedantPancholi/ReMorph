@@ -24,3 +24,7 @@
 - added Jenish and Sachin handoff docs plus tests for cache, route matching, and retry flow
 - fixed retry-orchestrator test isolation so local Groq keys do not make the suite nondeterministic
 - hardened Sprint 2 further with docs metadata, schema confidence/completeness, explicit proxy failure reasons, and richer training telemetry fields
+- completed the Sprint 2 freeze pass with ranked route candidates, match reasons, ambiguous handling, and explicit contract documentation
+- fixed the freeze-pass scorer so weak routes clamp to zero confidence and ranked-match tests stay stable across valid candidate orderings
+- polished the repo Markdown set so the README, run guide, and handoff docs match the frozen Sprint 2 contract and current execution flow
+- added a portable Docker setup with a non-root runtime image, trimmed build context, and documented container run commands

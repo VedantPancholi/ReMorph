@@ -5,7 +5,12 @@ from __future__ import annotations
 from difflib import SequenceMatcher
 from typing import Any
 
-from app.models.schema_models import EndpointSchema, QueryParameter, SecurityRequirement
+from app.models.schema_models import (
+    EndpointSchema,
+    QueryParameter,
+    RouteMatchCandidate,
+    SecurityRequirement,
+)
 from app.services.url_utils import normalize_path
 from app.utils.error_utils import AmbiguousRouteMatchError, SchemaExtractionError
 
@@ -17,7 +22,7 @@ def extract_schema_for_route(
 ) -> EndpointSchema:
     """Extract the most relevant endpoint contract for a failed route."""
 
-    resolved_path, operation, route_match_score = _match_operation(
+    resolved_path, operation, route_match_score, route_match_reason, ranked_candidates = _match_operation(
         spec,
         normalize_path(target_path),
         method,
@@ -58,6 +63,9 @@ def extract_schema_for_route(
         completeness_score=completeness_score,
         docs_confidence=docs_confidence,
         route_match_score=route_match_score,
+        route_match_confidence=min(route_match_score, 1.0),
+        route_match_reason=route_match_reason,
+        ranked_candidate_endpoints=ranked_candidates,
     )
 
 
@@ -134,7 +142,7 @@ def _match_operation(
     spec: dict[str, Any],
     target_path: str,
     method: str,
-) -> tuple[str, dict[str, Any], float]:
+) -> tuple[str, dict[str, Any], float, str, list[RouteMatchCandidate]]:
     paths = spec.get("paths", {})
     if not isinstance(paths, dict) or not paths:
         raise SchemaExtractionError("OpenAPI spec does not contain paths")
@@ -142,17 +150,31 @@ def _match_operation(
     method_name = method.lower()
     exact_path = paths.get(target_path)
     if isinstance(exact_path, dict) and method_name in exact_path:
-        return target_path, exact_path[method_name], 1.0
+        return (
+            target_path,
+            exact_path[method_name],
+            1.0,
+            "Exact path and method match found in spec.",
+            [
+                RouteMatchCandidate(
+                    path=target_path,
+                    score=1.0,
+                    reason="Exact path and method match found in spec.",
+                )
+            ],
+        )
 
     best_score = 0.0
     best_match: tuple[str, dict[str, Any]] | None = None
     second_best_score = 0.0
     target_segments = normalize_path(target_path).strip("/").split("/")
+    candidate_scores: list[tuple[str, dict[str, Any], float, str]] = []
 
     for candidate_path, candidate_operations in paths.items():
         if not isinstance(candidate_operations, dict) or method_name not in candidate_operations:
             continue
-        score = _score_candidate_path(target_segments, target_path, candidate_path)
+        score, reason = _score_candidate_path(target_segments, target_path, candidate_path)
+        candidate_scores.append((candidate_path, candidate_operations[method_name], score, reason))
         if score > best_score:
             second_best_score = best_score
             best_score = score
@@ -165,6 +187,15 @@ def _match_operation(
             f"No route match found for {method.upper()} {target_path}"
         )
 
+    ranked_candidates = [
+        RouteMatchCandidate(path=path, score=round(max(score, 0.0), 4), reason=reason)
+        for path, _operation, score, reason in sorted(
+            candidate_scores,
+            key=lambda item: item[2],
+            reverse=True,
+        )[:3]
+    ]
+
     if best_score < 0.45:
         raise SchemaExtractionError(
             f"No confident route match found for {method.upper()} {target_path}"
@@ -174,29 +205,38 @@ def _match_operation(
             f"Ambiguous route match for {method.upper()} {target_path}"
         )
 
-    return best_match[0], best_match[1], best_score
+    best_reason = next(
+        reason for path, _operation, score, reason in candidate_scores if path == best_match[0] and score == best_score
+    )
+    return best_match[0], best_match[1], best_score, best_reason, ranked_candidates
 
 
 def _score_candidate_path(
     target_segments: list[str],
     target_path: str,
     candidate_path: str,
-) -> float:
+) -> tuple[float, str]:
     candidate_segments = normalize_path(candidate_path).strip("/").split("/")
     similarity = SequenceMatcher(None, target_path, candidate_path).ratio()
     segment_overlap = len(set(target_segments) & set(candidate_segments))
 
     param_score = 0.0
+    reason_bits: list[str] = []
     for target_segment, candidate_segment in zip(target_segments, candidate_segments):
         if target_segment == candidate_segment:
             param_score += 0.3
+            reason_bits.append(f"exact segment '{target_segment}'")
         elif _is_path_parameter(candidate_segment):
             param_score += 0.22
+            reason_bits.append(f"path parameter '{candidate_segment}'")
         elif _normalize_token(target_segment) == _normalize_token(candidate_segment):
             param_score += 0.2
+            reason_bits.append(f"semantic token match '{target_segment}'")
 
     length_penalty = abs(len(target_segments) - len(candidate_segments)) * 0.1
-    return similarity + (0.15 * segment_overlap) + param_score - length_penalty
+    score = max(similarity + (0.15 * segment_overlap) + param_score - length_penalty, 0.0)
+    reason = "; ".join(reason_bits) if reason_bits else "fallback string similarity"
+    return score, reason
 
 
 def _is_path_parameter(segment: str) -> bool:
