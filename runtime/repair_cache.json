@@ -1,0 +1,126 @@
+{
+  "5a62f7939d4c571021bd293b7d3b345caa9de45dbd99a34a1ec6dd3a2526ef5f": {
+    "confidence": 0.9,
+    "diagnostics": {
+      "docs_source": "local:app/testsupport/sample_openapi.json",
+      "fallback_used": false,
+      "llm_attempted": true,
+      "llm_succeeded": true,
+      "original_error_code": 404,
+      "processing_ms": 2515,
+      "repair_strategy": "merged",
+      "request_id": "req-scenario-b",
+      "retry_count": 1,
+      "selected_endpoint_path": "/api/v2/finance/ledger",
+      "source_component": "proxy"
+    },
+    "fixed_headers": {
+      "x-api-key": "demo-token"
+    },
+    "fixed_method": "GET",
+    "fixed_payload": null,
+    "fixed_url": "https://mock.example.com/api/v2/finance/ledger",
+    "healing_action": "route_rewrite",
+    "reasoning": "The original request targeted /api/v1/transactions which does not exist in the normalized endpoint schema. The schema defines the correct path as /api/v2/finance/ledger and requires an x-api-key header. The method is already GET, so only the URL and headers need adjustment.",
+    "schema_summary": {
+      "method": "GET",
+      "path": "/api/v2/finance/ledger",
+      "security_requirements": [
+        {
+          "header_name": "x-api-key",
+          "location": "header",
+          "name": "ApiKeyAuth",
+          "scheme": null,
+          "type": "apiKey"
+        }
+      ]
+    }
+  },
+  "8727d56328bcc44eebdee5b7fbbdaf4f9eeb4dccb128426d7ea33213b3e6303a": {
+    "confidence": 0.9,
+    "diagnostics": {
+      "docs_source": "local:app/testsupport/sample_openapi.json",
+      "fallback_used": false,
+      "llm_attempted": true,
+      "llm_succeeded": true,
+      "original_error_code": 401,
+      "processing_ms": 3294,
+      "repair_strategy": "merged",
+      "request_id": "req-scenario-c",
+      "retry_count": 1,
+      "selected_endpoint_path": "/api/v2/finance/ledger",
+      "source_component": "proxy"
+    },
+    "fixed_headers": {
+      "x-api-key": "demo-token"
+    },
+    "fixed_method": "GET",
+    "fixed_payload": null,
+    "fixed_url": "https://mock.example.com/api/v2/finance/ledger",
+    "healing_action": "auth_rewrite",
+    "reasoning": "Auth header mismatch; endpoint requires x-api-key; replaced Authorization with x-api-key.",
+    "schema_summary": {
+      "security_requirements": [
+        {
+          "header_name": "x-api-key",
+          "location": "header",
+          "name": "ApiKeyAuth",
+          "scheme": null,
+          "type": "apiKey"
+        }
+      ]
+    }
+  },
+  "ece956c3abb88055662817387a879317b897e601a7eb4c2061ff8a42eb48f98d": {
+    "confidence": 0.95,
+    "diagnostics": {
+      "docs_source": "local:app/testsupport/sample_openapi.json",
+      "fallback_used": false,
+      "llm_attempted": true,
+      "llm_succeeded": true,
+      "original_error_code": 400,
+      "processing_ms": 3142,
+      "repair_strategy": "merged",
+      "request_id": "req-scenario-a",
+      "retry_count": 0,
+      "selected_endpoint_path": "/users",
+      "source_component": "proxy"
+    },
+    "fixed_headers": {
+      "Authorization": "Bearer demo-token"
+    },
+    "fixed_method": "POST",
+    "fixed_payload": {
+      "user": {
+        "f_name": "John",
+        "l_name": "Doe"
+      }
+    },
+    "fixed_url": "https://mock.example.com/users",
+    "healing_action": "payload_rewrite",
+    "reasoning": "The original payload used keys first_name and last_name, but the endpoint schema expects a nested user object with f_name and l_name. The URL and method are correct, so only the payload needs rewriting.",
+    "schema_summary": {
+      "properties": {
+        "required": [
+          "user"
+        ],
+        "user": {
+          "properties": {
+            "f_name": {
+              "type": "string"
+            },
+            "l_name": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "f_name",
+            "l_name"
+          ],
+          "type": "object"
+        }
+      },
+      "type": "object"
+    }
+  }
+}
