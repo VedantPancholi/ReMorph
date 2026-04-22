@@ -3,6 +3,13 @@
 This guide explains how to run ReMorph locally, how to execute the three demo
 scenarios, and how to decide whether the output is correct.
 
+Important:
+
+- Prefer `.venv/bin/python` and `.venv/bin/pytest` so you use the project
+  dependencies, not system Python.
+- If you activate the environment first with `source .venv/bin/activate`, then
+  `python ...` and `pytest ...` are also fine.
+
 ## 1. Setup
 
 Create a virtual environment:
@@ -15,6 +22,12 @@ Install dependencies:
 
 ```bash
 .venv/bin/pip install -r requirements.txt
+```
+
+Optional activation:
+
+```bash
+source .venv/bin/activate
 ```
 
 Create your local environment file:
@@ -74,6 +87,15 @@ Run it like this:
 .venv/bin/python run_local_test.py --mode heal --scenario c
 ```
 
+### Direct Application Entry
+
+The real integration entry point for proxy/Sprint 4 work is:
+
+- `app.main.process_trapped_error()`
+
+It accepts a trapped error dictionary and returns a JSON-safe healed response.
+`run_local_test.py` is only a convenience wrapper around that core entry point.
+
 ## 3. What Correct Output Looks Like
 
 The output is correct when the repaired request matches the changed API
@@ -96,6 +118,7 @@ Correct output should include:
 
 - `healing_action` = `payload_rewrite`
 - `fixed_url` still points to `/users`
+- `diagnostics.selected_endpoint_path` = `/users`
 - `fixed_payload` becomes:
 
 ```json
@@ -130,6 +153,7 @@ Correct output should include:
 
 - `fixed_url` = `https://mock.example.com/api/v2/finance/ledger`
 - `healing_action` = `combined_rewrite`
+- `diagnostics.selected_endpoint_path` = `/api/v2/finance/ledger`
 - `fixed_headers` contains:
 
 ```json
@@ -160,6 +184,7 @@ Correct output should include:
 
 - `healing_action` = `auth_rewrite`
 - `fixed_url` remains `/api/v2/finance/ledger`
+- `diagnostics.selected_endpoint_path` = `/api/v2/finance/ledger`
 - `fixed_headers` becomes:
 
 ```json
@@ -185,12 +210,26 @@ Whenever you run `--mode heal`, validate these five things:
 
 If these five are true, the output is behaving correctly for Sprint 2.
 
+Also validate the new diagnostics block:
+
+1. `diagnostics.docs_source` shows which spec source was used.
+2. `diagnostics.selected_endpoint_path` matches the chosen endpoint.
+3. `diagnostics.repair_strategy` tells you whether the result came from deterministic, merged, or LLM-assisted behavior.
+4. `diagnostics.fallback_used` tells you whether model refinement failed and deterministic repair was used instead.
+5. `diagnostics.request_id` and `diagnostics.retry_count` preserve proxy-side context for Sprint 4.
+
 ## 5. Automated Tests
 
 Run the test suite:
 
 ```bash
 .venv/bin/pytest -q
+```
+
+If you activated the venv already, this also works:
+
+```bash
+pytest -q
 ```
 
 Current coverage checks:
@@ -245,6 +284,7 @@ For a live demo:
 ## 8. Files Involved In Validation
 
 - `run_local_test.py`: local runner
+- `app/main.py`: integration-ready entry point
 - `app/testsupport/sample_errors.py`: trapped error inputs
 - `app/testsupport/sample_openapi.json`: changed API contract
 - `tests/test_healer.py`: correctness checks for fallback repair

@@ -128,9 +128,9 @@ scenarios locally:
 ## Change Tracking Rule
 
 Every future code change should be accompanied by a doc update. The working
-agreement for that process lives in [docs/context/change-management.md](/home/matter/Documents/ReMorph/docs/context/change-management.md).
+agreement for that process lives in [docs/context/change-management.md]().
 
 ## Detailed Runbook
 
 For setup, run commands, expected scenario outputs, and validation guidance, use
-[docs/context/run-and-test-guide.md](/home/matter/Documents/ReMorph/docs/context/run-and-test-guide.md).
+[docs/context/run-and-test-guide.md]().

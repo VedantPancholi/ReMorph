@@ -19,3 +19,4 @@
 - enabled Groq JSON mode for healing calls and removed the hardcoded API key from tracked config
 - added model-aware structured output selection and reduced LiteLLM console noise during runs
 - upgraded Sprint 2 with integration diagnostics and documented team ownership plus detailed folder responsibilities
+- refreshed the run guide to reflect venv-based commands, diagnostics in healed output, and the direct integration entry point
