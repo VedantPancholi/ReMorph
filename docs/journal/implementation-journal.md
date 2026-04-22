@@ -228,3 +228,23 @@ the proxy, retry loop, and reward/evaluation pipeline will need later.
 Sprint 2 is still the reasoning layer, but it now returns enough operational
 metadata to connect cleanly with Sprint 4 proxy retries, reward logging, and
 before/after evaluation.
+
+## 2026-04-22 - Run Guide Refresh
+
+### Goal
+
+Make the run instructions match the latest Sprint 2 behavior and reduce
+confusion around virtualenv usage and diagnostics in the healed output.
+
+### What Changed
+
+- updated the run guide to prefer `.venv/bin/python` and `.venv/bin/pytest`
+- documented `app.main.process_trapped_error()` as the real integration entry
+  point
+- added guidance for validating the new diagnostics block in healed responses
+
+### Files Touched
+
+- `docs/context/run-and-test-guide.md`
+- `docs/changes/change-log.md`
+- `docs/journal/implementation-journal.md`
