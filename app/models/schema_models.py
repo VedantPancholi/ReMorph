@@ -24,6 +24,14 @@ class QueryParameter(BaseModel):
     schema_type: str | None = None
 
 
+class RouteMatchCandidate(BaseModel):
+    """Ranked route candidate returned by schema extraction."""
+
+    path: str
+    score: float = Field(ge=0.0)
+    reason: str
+
+
 class SpecMetadata(BaseModel):
     """Metadata describing the documentation source and parse quality."""
 
@@ -57,3 +65,6 @@ class EndpointSchema(BaseModel):
     completeness_score: float = Field(default=0.0, ge=0.0, le=1.0)
     docs_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
     route_match_score: float = Field(default=0.0, ge=0.0)
+    route_match_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
+    route_match_reason: str = ""
+    ranked_candidate_endpoints: list[RouteMatchCandidate] = Field(default_factory=list)

@@ -347,3 +347,38 @@ moving fully into Sprint 4 system integration.
 Sprint 2 now has a clearer contract, more honest confidence signals, and
 explicit failure modes, which makes it much safer to embed into the Sprint 4
 proxy, reward, and evaluation loop.
+
+## 2026-04-22 - Sprint 2 Freeze Pass
+
+### Goal
+
+Finish only the minimum explainability and contract work needed to freeze
+Sprint 2 before full Sprint 4 implementation.
+
+### What Changed
+
+- added ranked route candidates and route-match reasons
+- exposed explicit route-match confidence alongside existing scores
+- added tests for ambiguous match, low-confidence rejection, and ranked-match recovery
+- documented `process_trapped_error()` as the frozen Sprint 2 contract
+- clamped weak candidate scores to `0.0` so ranked route explanations never emit invalid negative confidence values
+- relaxed the ranked-match recovery assertion so the test proves recovery without depending on one brittle winner between two valid ledger candidates
+- polished the main Markdown docs so setup, run steps, handoff contracts, and Sprint 2 freeze boundaries are clearer for the team
+- added a Docker image definition and container run guide so the repo can be shared without requiring local Python setup
+
+### Files Touched
+
+- `app/models/schema_models.py`
+- `app/services/schema_extractor.py`
+- `tests/test_schema_extractor.py`
+- `tests/test_schema_matching.py`
+- `README.md`
+- `docs/context/project-context.md`
+- `docs/context/run-and-test-guide.md`
+- `docs/context/jenish-proxy-contract.md`
+- `docs/changes/change-log.md`
+- `docs/journal/implementation-journal.md`
+- `docs/context/change-management.md`
+- `docs/context/sachin-training-handoff.md`
+- `Dockerfile`
+- `.dockerignore`

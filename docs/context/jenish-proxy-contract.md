@@ -3,6 +3,16 @@
 This file describes what ReMorph currently requires from Jenish's proxy and the
 response format ReMorph already provides back.
 
+## Contract Summary
+
+Jenish should treat ReMorph as a repair module with one stable job:
+
+1. accept a trapped upstream failure
+2. return a structured repair or an explicit unrepairable state
+
+The frozen repair boundary is `process_trapped_error()`. The proxy-facing
+wrappers exist to make orchestration and failure handling easier.
+
 ## What ReMorph Requires From Jenish
 
 Jenish's proxy should send a trapped failure payload shaped like `TrappedError`.
@@ -35,14 +45,31 @@ Recommended integration fields:
 }
 ```
 
+Integration guidance:
+
+- always send the failing `target_url` and `method`
+- preserve the exact broken headers and payload when possible
+- attach `request_id` so telemetry and retries can be stitched together
+- increment `retry_count` when the proxy re-enters ReMorph after another failed attempt
+
 ## Direct Python Adapter
 
 Jenish can call:
 
+- `app.main.process_trapped_error()`
+- `app.main.process_trapped_error_safe()`
 - `app.services.proxy_adapter.handle_proxy_failure()`
 - `app.services.proxy_adapter.handle_proxy_failure_with_retry()`
 
-## Current Response Format
+`process_trapped_error()` is the frozen Sprint 2 repair contract.
+
+## Preferred Usage
+
+- use `process_trapped_error()` if the proxy only needs a repair object
+- use `handle_proxy_failure()` if the proxy wants a JSON-safe contract envelope
+- use `handle_proxy_failure_with_retry()` if the proxy wants ReMorph to manage one repair-and-retry workflow through a callback
+
+## Response Envelope
 
 `handle_proxy_failure()` returns:
 
@@ -80,6 +107,14 @@ Jenish can call:
 }
 ```
 
+Fields to rely on:
+
+- `contract_version`: current proxy envelope version
+- `status`: `healed` or `unrepairable`
+- `healed_request`: structured repair when available
+- `failure_reason`: explicit reason when repair is not safe
+- `message`: human-readable summary for logs or dashboards
+
 ## Retry Loop Adapter
 
 If Jenish wants ReMorph to repair and then retry through a callback, use
@@ -112,6 +147,12 @@ The executor should return:
   "error_message": null
 }
 ```
+
+Useful callback notes:
+
+- `attempt_number` is the retry attempt for the repaired request
+- `request_id` should flow through unchanged for traceability
+- the callback should return the real upstream result, not a transformed proxy response
 
 ## Current Guarantee
 
@@ -146,3 +187,12 @@ Current failure reasons:
 - `unsupported_auth_scheme`
 - `no_repair_candidate`
 - `unknown`
+
+## What Jenish Does Not Need To Solve Inside Sprint 2
+
+These concerns belong outside the frozen repair engine:
+
+- transport retries outside the provided callback flow
+- proxy authentication to external services
+- environment mutation logic
+- reward calculation

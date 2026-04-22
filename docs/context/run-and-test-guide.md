@@ -1,27 +1,23 @@
 # Run And Test Guide
 
-This guide explains how to run ReMorph locally, how to execute the three demo
-scenarios, and how to decide whether the output is correct.
+This guide is the main runbook for ReMorph. It covers setup, local demo flows,
+test execution, correctness checks, and the expected behavior of the Sprint 2
+repair engine.
 
 Important:
 
-- Prefer `.venv/bin/python` and `.venv/bin/pytest` so you use the project
-  dependencies, not system Python.
-- If you activate the environment first with `source .venv/bin/activate`, then
-  `python ...` and `pytest ...` are also fine.
+- prefer `.venv/bin/python` and `.venv/bin/pytest` so you use the project dependencies
+- if you activate the environment with `source .venv/bin/activate`, plain `python` and `pytest` are fine too
+- deterministic repair works without a provider key, so local validation does not depend on Groq
 
 ## 1. Setup
 
-Create a virtual environment:
+Create the environment and install dependencies:
 
 ```bash
 python3 -m venv .venv
-```
-
-Install dependencies:
-
-```bash
 .venv/bin/pip install -r requirements.txt
+cp .env.example .env
 ```
 
 Optional activation:
@@ -30,38 +26,110 @@ Optional activation:
 source .venv/bin/activate
 ```
 
-Create your local environment file:
-
-```bash
-cp .env.example .env
-```
-
-If you want model-assisted healing, add your Groq key to `.env`:
+If you want model-assisted refinement, add this to `.env`:
 
 ```env
 REMORPH_GROQ_API_KEY=your_key_here
 ```
 
-Important:
+Security note:
 
-- ReMorph can run the demo scenarios even without the key because deterministic
-  repair is already implemented.
-- If the key is present, the model becomes an optional refinement layer.
-- Keep the key in `.env` only. Do not paste it into `app/config.py` or any
-  tracked file.
+- keep the key in `.env` only
+- never paste secrets into tracked Python files or Markdown docs
 
-## 2. What Each Run Mode Means
+## 1A. Docker Setup
+
+If you want anyone to run ReMorph without creating a local Python environment,
+use Docker.
+
+Build the image:
+
+```bash
+docker build -t remorph .
+```
+
+Default container run:
+
+```bash
+docker run --rm remorph
+```
+
+That default command maps to:
+
+```bash
+python run_local_test.py --mode smoke --scenario a
+```
+
+Run a full healing scenario:
+
+```bash
+docker run --rm remorph --mode heal --scenario a
+docker run --rm remorph --mode heal --scenario b
+docker run --rm remorph --mode heal --scenario c
+```
+
+Pass local environment variables into the container:
+
+```bash
+docker run --rm --env-file .env remorph --mode heal --scenario a
+```
+
+Persist runtime artifacts like cache and telemetry on the host:
+
+```bash
+docker run --rm --env-file .env -v "$(pwd)/runtime:/app/runtime" remorph --mode heal --scenario a
+```
+
+Run tests inside Docker:
+
+```bash
+docker run --rm --entrypoint pytest remorph -q
+```
+
+## 2. Fastest Way To Run Everything
+
+Use this sequence from the repo root:
+
+```bash
+.venv/bin/pytest -q
+.venv/bin/python run_local_test.py --mode smoke --scenario a
+.venv/bin/python run_local_test.py --mode smoke --scenario b
+.venv/bin/python run_local_test.py --mode smoke --scenario c
+.venv/bin/python run_local_test.py --mode heal --scenario a
+.venv/bin/python run_local_test.py --mode heal --scenario b
+.venv/bin/python run_local_test.py --mode heal --scenario c
+```
+
+This gives you:
+
+- automated validation
+- schema-extraction validation
+- full repair validation for payload, route, and auth drift
+
+Docker equivalent:
+
+```bash
+docker run --rm --entrypoint pytest remorph -q
+docker run --rm remorph --mode smoke --scenario a
+docker run --rm remorph --mode smoke --scenario b
+docker run --rm remorph --mode smoke --scenario c
+docker run --rm --env-file .env remorph --mode heal --scenario a
+docker run --rm --env-file .env remorph --mode heal --scenario b
+docker run --rm --env-file .env remorph --mode heal --scenario c
+```
+
+## 3. What Each Run Mode Means
 
 ### Smoke Mode
 
-Smoke mode does not call the healing model. It only checks that:
+Smoke mode does not call the healing model. It verifies that ReMorph can:
 
-- the trapped error is valid
-- the local OpenAPI spec can be loaded
-- the correct route is found
-- the schema and auth requirements are extracted correctly
+- validate the trapped error
+- load the spec
+- find the correct route
+- extract schema and auth requirements
 
-Run it like this:
+Commands:
 
 ```bash
 .venv/bin/python run_local_test.py --mode smoke --scenario a
@@ -71,15 +139,16 @@ Run it like this:
 
 ### Heal Mode
 
-Heal mode runs the full pipeline:
+Heal mode runs the real Sprint 2 repair flow:
 
 1. validate trapped error
-2. load spec
-3. extract endpoint schema
-4. build repair context
-5. produce healed request
+2. load docs/spec metadata
+3. extract the best endpoint contract
+4. prepare deterministic repair
+5. optionally ask the model for refinement
+6. return a `HealedRequest` with diagnostics
 
-Run it like this:
+Commands:
 
 ```bash
 .venv/bin/python run_local_test.py --mode heal --scenario a
@@ -87,32 +156,24 @@ Run it like this:
 .venv/bin/python run_local_test.py --mode heal --scenario c
 ```
 
-### Direct Application Entry
+## 4. Integration Entry Points
 
-The real integration entry point for proxy/Sprint 4 work is:
+The stable callable boundary for Sprint 2 is:
 
 - `app.main.process_trapped_error()`
+
+Safe orchestration wrappers:
+
+- `app.main.process_trapped_error_safe()`
 - `app.services.proxy_adapter.handle_proxy_failure()`
 - `app.services.proxy_adapter.handle_proxy_failure_with_retry()`
 
-It accepts a trapped error dictionary and returns a JSON-safe healed response.
-`run_local_test.py` is only a convenience wrapper around that core entry point.
+`run_local_test.py` is only a local harness around these core interfaces.
 
-### Retry Loop Adapter
+## 5. Scenario Expectations
 
-If you want to simulate Jenish's proxy flow locally, use the retry orchestrator
-through `handle_proxy_failure_with_retry()` or `heal_and_retry()`. These APIs
-let you inject a fake executor callback and observe:
-
-- repaired request
-- retry count
-- final success/failure
-- workflow telemetry
-
-## 3. What Correct Output Looks Like
-
-The output is correct when the repaired request matches the changed API
-contract, not the old broken request.
+The output is correct when the repaired request matches the changed contract,
+not when it preserves the original broken request.
 
 ### Scenario A: Payload Drift
 
@@ -122,16 +183,11 @@ Command:
 .venv/bin/python run_local_test.py --mode heal --scenario a
 ```
 
-Input problem:
+Expected behavior:
 
-- old payload uses `first_name` and `last_name`
-- new schema expects nested `user.f_name` and `user.l_name`
-
-Correct output should include:
-
-- `healing_action` = `payload_rewrite`
-- `fixed_url` still points to `/users`
-- `diagnostics.selected_endpoint_path` = `/users`
+- `healing_action` is `payload_rewrite`
+- `fixed_url` remains `/users`
+- `diagnostics.selected_endpoint_path` is `/users`
 - `fixed_payload` becomes:
 
 ```json
@@ -143,11 +199,6 @@ Correct output should include:
 }
 ```
 
-Why this is correct:
-
-- the payload now matches the schema in `sample_openapi.json`
-- the old flat shape is no longer used
-
 ### Scenario B: Route Drift
 
 Command:
@@ -156,17 +207,11 @@ Command:
 .venv/bin/python run_local_test.py --mode heal --scenario b
 ```
 
-Input problem:
+Expected behavior:
 
-- old route is `/api/v1/transactions`
-- new route is `/api/v2/finance/ledger`
-- the new endpoint also requires `x-api-key`
-
-Correct output should include:
-
-- `fixed_url` = `https://mock.example.com/api/v2/finance/ledger`
-- `healing_action` = `combined_rewrite`
-- `diagnostics.selected_endpoint_path` = `/api/v2/finance/ledger`
+- `healing_action` is `combined_rewrite`
+- `fixed_url` becomes `https://mock.example.com/api/v2/finance/ledger`
+- `diagnostics.selected_endpoint_path` is `/api/v2/finance/ledger`
 - `fixed_headers` contains:
 
 ```json
@@ -174,11 +219,6 @@ Correct output should include:
   "x-api-key": "demo-token"
 }
 ```
-
-Why this is correct:
-
-- the request is moved to the new endpoint
-- the auth scheme now matches the new route requirements
 
 ### Scenario C: Auth Drift
 
@@ -188,16 +228,11 @@ Command:
 .venv/bin/python run_local_test.py --mode heal --scenario c
 ```
 
-Input problem:
+Expected behavior:
 
-- old header uses `Authorization: Bearer demo-token`
-- new endpoint expects `x-api-key: demo-token`
-
-Correct output should include:
-
-- `healing_action` = `auth_rewrite`
-- `fixed_url` remains `/api/v2/finance/ledger`
-- `diagnostics.selected_endpoint_path` = `/api/v2/finance/ledger`
+- `healing_action` is `auth_rewrite`
+- `fixed_url` stays on `/api/v2/finance/ledger`
+- `diagnostics.selected_endpoint_path` is `/api/v2/finance/ledger`
 - `fixed_headers` becomes:
 
 ```json
@@ -206,66 +241,72 @@ Correct output should include:
 }
 ```
 
-Why this is correct:
+## 6. Correctness Checklist
 
-- the token is preserved
-- only the auth format changes
-
-## 4. Fast Correctness Checklist
-
-Whenever you run `--mode heal`, validate these five things:
+Whenever you run `--mode heal`, validate these output fields:
 
 1. `fixed_url` matches the updated route from the spec.
-2. `fixed_payload` uses only fields that exist in the schema.
-3. `fixed_headers` match the documented auth scheme.
-4. `healing_action` matches what changed.
-5. `schema_summary` reflects the endpoint that was actually selected.
+2. `fixed_payload` uses only fields present in the extracted schema.
+3. `fixed_headers` match the documented auth requirement.
+4. `healing_action` reflects what actually changed.
+5. `schema_summary` or extracted schema context points to the selected endpoint.
 
-If these five are true, the output is behaving correctly for Sprint 2.
-
-Also validate the new diagnostics block:
+Also validate diagnostics:
 
 1. `diagnostics.docs_source` shows which spec source was used.
 2. `diagnostics.selected_endpoint_path` matches the chosen endpoint.
-3. `diagnostics.repair_strategy` tells you whether the result came from deterministic, merged, or LLM-assisted behavior.
-4. `diagnostics.fallback_used` tells you whether model refinement failed and deterministic repair was used instead.
-5. `diagnostics.request_id` and `diagnostics.retry_count` preserve proxy-side context for Sprint 4.
-6. `diagnostics.docs_confidence`, `diagnostics.spec_hash`, and `diagnostics.spec_version` help explain how reliable the chosen repair context was.
+3. `diagnostics.repair_strategy` tells you whether the result was deterministic, merged, or LLM-assisted.
+4. `diagnostics.fallback_used` tells you whether the model path failed and deterministic repair was used instead.
+5. `diagnostics.docs_confidence`, `diagnostics.spec_hash`, and `diagnostics.spec_version` explain the reliability of the contract that was chosen.
+6. `diagnostics.request_id` and `diagnostics.retry_count` preserve proxy-side context for Sprint 4.
 
-## 5. Automated Tests
+Also validate route-explainability signals:
 
-Run the test suite:
+1. `route_match_score` and `route_match_confidence` are present.
+2. `ranked_candidate_endpoints` shows the top route options.
+3. `route_match_reason` explains why the winning route was selected.
+
+## 7. Automated Tests
+
+Run the full suite:
 
 ```bash
 .venv/bin/pytest -q
 ```
 
-If you activated the venv already, this also works:
+Targeted suites:
 
 ```bash
-pytest -q
+.venv/bin/pytest tests/test_schema_extractor.py tests/test_schema_matching.py -q
+.venv/bin/pytest tests/test_healer.py -q
+.venv/bin/pytest tests/test_retry_orchestrator.py -q
 ```
 
-Current coverage checks:
+Docker equivalents:
 
-- local OpenAPI loading
-- route extraction
+```bash
+docker run --rm --entrypoint pytest remorph tests/test_schema_extractor.py tests/test_schema_matching.py -q
+docker run --rm --entrypoint pytest remorph tests/test_healer.py -q
+docker run --rm --entrypoint pytest remorph tests/test_retry_orchestrator.py -q
+```
+
+Current coverage includes:
+
+- local OpenAPI loading and spec metadata
+- nested payload extraction
 - parameterized route matching
-- nested payload schema extraction
-- prompt construction
-- healing response parsing
-- deterministic fallback repair for payload drift
-- deterministic fallback repair for route drift
-- deterministic fallback repair for auth drift
+- ambiguous match handling
+- low-confidence route rejection
+- ranked route recovery when exact matching fails
+- deterministic payload, route, and auth repair
+- model-output parsing and fallback behavior
 - proxy adapter contract
-- repair cache read/write
-- retry orchestration success path
-- explicit unrepairable proxy failure response
-- local spec metadata output
+- retry orchestration
+- repair cache behavior
 
-If tests pass, the current repo baseline is internally consistent.
+If these tests pass, the current Sprint 2 baseline is internally consistent.
 
-## 6. How To Test With The Groq Key
+## 8. Model-Assisted Validation
 
 After adding `REMORPH_GROQ_API_KEY` to `.env`, run:
 
@@ -275,41 +316,64 @@ After adding `REMORPH_GROQ_API_KEY` to `.env`, run:
 
 What changes when the key is present:
 
-- the deterministic repair still prepares a safe baseline
-- the LLM may return a refined healed response
-- if the model fails, ReMorph still falls back to the deterministic repair
-- if the LLM returns malformed text instead of valid JSON, ReMorph now treats
-  that as a model failure and still falls back safely
+- deterministic repair still prepares a safe baseline
+- the model may refine the repaired output
+- if the model fails or returns invalid structure, ReMorph falls back safely
 
-For the strongest Groq-side structured output support, prefer a model that
-supports Structured Outputs such as `openai/gpt-oss-20b` or
-`openai/gpt-oss-120b`. Other models fall back to JSON object mode.
+Model-assisted correctness still has to obey the same contract:
 
-How to judge model-assisted correctness:
+- no invented fields outside the schema
+- no preservation of the old broken route or auth shape
+- no downgrade from the deterministic baseline
 
-- it must not invent fields outside the schema
-- it must not keep the old broken route or auth shape
-- it should remain at least as correct as the deterministic output
+## 9. Runtime Artifacts To Inspect
 
-## 7. Demo Flow Recommendation
+After running heal flows, inspect:
 
-For a live demo:
+- `runtime/repair_cache.json`
+- `runtime/telemetry/healing_events.jsonl`
+- `runtime/telemetry/healing_summary.json`
+- `runtime/telemetry/workflow_events.jsonl`
+- `runtime/telemetry/workflow_summary.json`
 
-1. Run `scenario a` in smoke mode to show schema discovery.
-2. Run `scenario a` in heal mode to show repaired payload.
-3. Run `scenario b` in heal mode to show route shift handling.
-4. Run `scenario c` in heal mode to show auth drift handling.
-5. Run `pytest -q` to show the project has repeatable checks, not just manual output.
+These files are especially useful for team handoff, reward design, and demo screenshots.
 
-## 8. Files Involved In Validation
+## 10. Demo Flow
 
-- `run_local_test.py`: local runner
-- `app/main.py`: integration-ready entry point
-- `app/services/proxy_adapter.py`: Jenish-facing contract
-- `app/services/retry_orchestrator.py`: repair-and-retry orchestration
-- `app/services/telemetry.py`: persistent event sink
-- `app/services/repair_cache.py`: repeated-drift cache
-- `app/testsupport/sample_errors.py`: trapped error inputs
-- `app/testsupport/sample_openapi.json`: changed API contract
-- `tests/test_healer.py`: correctness checks for fallback repair
-- `tests/test_schema_extractor.py`: route and schema extraction checks
+For a live walkthrough:
+
+1. run `scenario a` in smoke mode to show schema discovery
+2. run `scenario a` in heal mode to show payload correction
+3. run `scenario b` in heal mode to show route plus auth correction
+4. run `scenario c` in heal mode to show auth-only correction
+5. run `pytest -q` to show the behavior is repeatable
+
+## 11. Troubleshooting
+
+If `python run_local_test.py ...` fails but `.venv/bin/python run_local_test.py ...` works:
+
+- you are using system Python instead of the project environment
+
+If `docker run ... --env-file .env ...` does not see your key:
+
+- confirm `.env` exists in the repo root
+- confirm the variable name is `REMORPH_GROQ_API_KEY`
+
+If runtime files are missing after a Docker run:
+
+- mount the runtime directory with `-v "$(pwd)/runtime:/app/runtime"`
+- remember that container-local files disappear when `--rm` is used without a bind mount
+
+If tests become nondeterministic:
+
+- confirm that test files isolate local secrets such as `REMORPH_GROQ_API_KEY`
+
+If a heal run falls back to deterministic repair:
+
+- that is acceptable behavior
+- check `diagnostics.fallback_used`, `diagnostics.llm_attempted`, and `diagnostics.llm_succeeded`
+
+If route matching fails:
+
+- inspect `route_match_confidence`, `route_match_reason`, and `ranked_candidate_endpoints`
+- compare against `app/testsupport/sample_openapi.json`
