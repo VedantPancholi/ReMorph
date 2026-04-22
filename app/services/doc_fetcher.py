@@ -46,8 +46,22 @@ def fetch_openapi_spec(
 ) -> dict[str, Any]:
     """Load a local spec for tests or probe remote documentation candidates."""
 
+    spec, _source = fetch_openapi_spec_with_source(
+        target_url,
+        local_spec_path=local_spec_path,
+    )
+    return spec
+
+
+def fetch_openapi_spec_with_source(
+    target_url: str,
+    *,
+    local_spec_path: str | None = None,
+) -> tuple[dict[str, Any], str]:
+    """Load the spec and return the source location used for the fetch."""
+
     if local_spec_path:
-        return load_local_spec(local_spec_path)
+        return load_local_spec(local_spec_path), f"local:{local_spec_path}"
 
     settings = get_settings()
     base_url = extract_base_url(target_url)
@@ -57,7 +71,7 @@ def fetch_openapi_spec(
     for candidate in candidates:
         try:
             logger.info("Trying documentation candidate %s", candidate)
-            return fetch_from_candidate(candidate)
+            return fetch_from_candidate(candidate), candidate
         except DocumentationFetchError as exc:
             last_error = exc
             logger.warning("Documentation probe failed for %s", candidate)

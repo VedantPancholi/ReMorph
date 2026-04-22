@@ -29,6 +29,9 @@ class TrappedError(BaseModel):
     query_params: dict[str, Any] | None = None
     path_params: dict[str, Any] | None = None
     auth_context: AuthContext | None = None
+    request_id: str | None = None
+    source_component: str | None = None
+    retry_count: int = 0
 
     @field_validator("method")
     @classmethod

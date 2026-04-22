@@ -30,6 +30,9 @@ def test_heal_request_uses_pipeline_and_returns_model(monkeypatch) -> None:
     )
 
     assert result.fixed_payload == {"user": {"f_name": "John", "l_name": "Doe"}}
+    assert result.diagnostics is not None
+    assert result.diagnostics.repair_strategy == "merged"
+    assert result.diagnostics.docs_source == "local:app/testsupport/sample_openapi.json"
 
 
 def test_heal_request_falls_back_to_deterministic_payload_repair(monkeypatch) -> None:
@@ -49,6 +52,9 @@ def test_heal_request_falls_back_to_deterministic_payload_repair(monkeypatch) ->
 
     assert result.healing_action == "payload_rewrite"
     assert result.fixed_payload == {"user": {"f_name": "John", "l_name": "Doe"}}
+    assert result.diagnostics is not None
+    assert result.diagnostics.fallback_used is True
+    assert result.diagnostics.request_id == "req-scenario-a"
 
 
 def test_heal_request_falls_back_to_deterministic_route_repair(monkeypatch) -> None:
@@ -69,6 +75,8 @@ def test_heal_request_falls_back_to_deterministic_route_repair(monkeypatch) -> N
     assert result.healing_action == "combined_rewrite"
     assert result.fixed_url == "https://mock.example.com/api/v2/finance/ledger"
     assert result.fixed_headers == {"x-api-key": "demo-token"}
+    assert result.diagnostics is not None
+    assert result.diagnostics.selected_endpoint_path == "/api/v2/finance/ledger"
 
 
 def test_heal_request_falls_back_to_deterministic_auth_repair(monkeypatch) -> None:
@@ -88,3 +96,5 @@ def test_heal_request_falls_back_to_deterministic_auth_repair(monkeypatch) -> No
 
     assert result.healing_action == "auth_rewrite"
     assert result.fixed_headers == {"x-api-key": "demo-token"}
+    assert result.diagnostics is not None
+    assert result.diagnostics.retry_count == 1

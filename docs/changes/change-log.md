@@ -18,3 +18,4 @@
 - hardened the LLM client so malformed model output becomes a safe fallback instead of a crash
 - enabled Groq JSON mode for healing calls and removed the hardcoded API key from tracked config
 - added model-aware structured output selection and reduced LiteLLM console noise during runs
+- upgraded Sprint 2 with integration diagnostics and documented team ownership plus detailed folder responsibilities

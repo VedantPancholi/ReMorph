@@ -12,6 +12,9 @@ SCENARIO_A_KEY_MUTATION = {
     },
     "error_code": 400,
     "error_message": "Invalid request body",
+    "request_id": "req-scenario-a",
+    "source_component": "proxy",
+    "retry_count": 0,
 }
 
 SCENARIO_B_ROUTE_DRIFT = {
@@ -22,6 +25,9 @@ SCENARIO_B_ROUTE_DRIFT = {
     },
     "error_code": 404,
     "error_message": "Route not found",
+    "request_id": "req-scenario-b",
+    "source_component": "proxy",
+    "retry_count": 1,
 }
 
 SCENARIO_C_AUTH_DRIFT = {
@@ -36,4 +42,7 @@ SCENARIO_C_AUTH_DRIFT = {
         "scheme": "bearer",
         "header_name": "Authorization",
     },
+    "request_id": "req-scenario-c",
+    "source_component": "proxy",
+    "retry_count": 1,
 }
