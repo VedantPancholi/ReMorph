@@ -14,7 +14,7 @@ HealingAction = Literal[
     "no_change",
 ]
 
-RepairStrategy = Literal["deterministic", "llm", "merged"]
+RepairStrategy = Literal["deterministic", "llm", "merged", "cache"]
 
 
 class RepairDiagnostics(BaseModel):
@@ -62,3 +62,29 @@ class HealedRequest(BaseModel):
         if value not in HEALING_ACTIONS:
             raise ValueError(f"Unsupported healing action: {value}")
         return value
+
+
+class UpstreamExecutionResult(BaseModel):
+    """Normalized result returned by a proxy or request executor."""
+
+    success: bool
+    status_code: int
+    response_body: dict[str, Any] | None = None
+    error_message: str | None = None
+
+
+class RetryAttemptRecord(BaseModel):
+    """One repair and retry attempt inside the orchestrated loop."""
+
+    attempt_number: int
+    healed_request: HealedRequest
+    execution_result: UpstreamExecutionResult
+
+
+class ProxyWorkflowResult(BaseModel):
+    """Full response returned to an external orchestrator such as Jenish's proxy."""
+
+    status: Literal["success", "failed"]
+    final_healed_request: HealedRequest
+    attempts: int = Field(ge=1)
+    history: list[RetryAttemptRecord] = Field(default_factory=list)

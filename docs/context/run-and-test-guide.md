@@ -92,9 +92,22 @@ Run it like this:
 The real integration entry point for proxy/Sprint 4 work is:
 
 - `app.main.process_trapped_error()`
+- `app.services.proxy_adapter.handle_proxy_failure()`
+- `app.services.proxy_adapter.handle_proxy_failure_with_retry()`
 
 It accepts a trapped error dictionary and returns a JSON-safe healed response.
 `run_local_test.py` is only a convenience wrapper around that core entry point.
+
+### Retry Loop Adapter
+
+If you want to simulate Jenish's proxy flow locally, use the retry orchestrator
+through `handle_proxy_failure_with_retry()` or `heal_and_retry()`. These APIs
+let you inject a fake executor callback and observe:
+
+- repaired request
+- retry count
+- final success/failure
+- workflow telemetry
 
 ## 3. What Correct Output Looks Like
 
@@ -236,12 +249,16 @@ Current coverage checks:
 
 - local OpenAPI loading
 - route extraction
+- parameterized route matching
 - nested payload schema extraction
 - prompt construction
 - healing response parsing
 - deterministic fallback repair for payload drift
 - deterministic fallback repair for route drift
 - deterministic fallback repair for auth drift
+- proxy adapter contract
+- repair cache read/write
+- retry orchestration success path
 
 If tests pass, the current repo baseline is internally consistent.
 
@@ -285,6 +302,10 @@ For a live demo:
 
 - `run_local_test.py`: local runner
 - `app/main.py`: integration-ready entry point
+- `app/services/proxy_adapter.py`: Jenish-facing contract
+- `app/services/retry_orchestrator.py`: repair-and-retry orchestration
+- `app/services/telemetry.py`: persistent event sink
+- `app/services/repair_cache.py`: repeated-drift cache
 - `app/testsupport/sample_errors.py`: trapped error inputs
 - `app/testsupport/sample_openapi.json`: changed API contract
 - `tests/test_healer.py`: correctness checks for fallback repair

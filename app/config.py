@@ -36,8 +36,12 @@ class Settings(BaseSettings):
     ENABLE_AUTH_HEALING: bool = True
     ENABLE_ROUTE_HEALING: bool = True
     ENABLE_PAYLOAD_HEALING: bool = True
+    ENABLE_REPAIR_CACHE: bool = True
+    ENABLE_TELEMETRY: bool = True
 
     LOCAL_SPEC_PATH: str = "app/testsupport/sample_openapi.json"
+    REPAIR_CACHE_PATH: str = "runtime/repair_cache.json"
+    TELEMETRY_DIR: str = "runtime/telemetry"
     LOG_LEVEL: str = "INFO"
 
 

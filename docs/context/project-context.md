@@ -47,9 +47,12 @@ The repository already contains a working baseline for Sprint 2:
 - the full healing orchestration path is wired end to end
 - deterministic repair strategies now cover the core three demo scenarios without requiring a live model key
 - healing responses now include diagnostics needed by proxy integration and Sprint 4 metrics
+- proxy-facing adapters now exist for Jenish's integration boundary
+- persistent telemetry and repair cache are now implemented for repeated drifts and later reward analysis
 
 The remaining gap is not the architecture. The remaining gap is product
-hardening: stronger heuristics, real provider validation, and proxy integration.
+hardening: stronger heuristics at production scale, real provider validation,
+and full Sprint 4 environment/training integration.
 
 ## Architecture Boundary
 

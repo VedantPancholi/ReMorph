@@ -20,3 +20,6 @@
 - added model-aware structured output selection and reduced LiteLLM console noise during runs
 - upgraded Sprint 2 with integration diagnostics and documented team ownership plus detailed folder responsibilities
 - refreshed the run guide to reflect venv-based commands, diagnostics in healed output, and the direct integration entry point
+- implemented the remaining Sprint 2 integration layer: proxy adapter, retry orchestrator, telemetry sink, repair cache, and stronger route matching
+- added Jenish and Sachin handoff docs plus tests for cache, route matching, and retry flow
+- fixed retry-orchestrator test isolation so local Groq keys do not make the suite nondeterministic

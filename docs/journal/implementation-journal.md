@@ -248,3 +248,57 @@ confusion around virtualenv usage and diagnostics in the healed output.
 - `docs/context/run-and-test-guide.md`
 - `docs/changes/change-log.md`
 - `docs/journal/implementation-journal.md`
+
+## 2026-04-22 - Remaining Sprint 2 Integration Work
+
+### Goal
+
+Close the practical Sprint 2 gaps so the reasoning layer is usable by Jenish's
+proxy and useful to Sachin's Sprint 4 reward/evaluation pipeline.
+
+### What Changed
+
+- added a proxy-facing adapter and repair-and-retry orchestrator
+- added a persistent telemetry sink with healing and workflow summaries
+- added a repair cache for repeated drift patterns
+- strengthened route matching for parameterized routes
+- added handoff docs for Jenish and Sachin
+- expanded tests for cache, retry orchestration, and parameterized route matching
+
+### Files Touched
+
+- `app/config.py`
+- `app/models/response_models.py`
+- `app/services/repair_cache.py`
+- `app/services/telemetry.py`
+- `app/services/proxy_adapter.py`
+- `app/services/retry_orchestrator.py`
+- `app/services/healer.py`
+- `app/services/schema_extractor.py`
+- `tests/test_healer.py`
+- `tests/test_retry_orchestrator.py`
+- `tests/test_repair_cache.py`
+- `tests/test_schema_matching.py`
+- `README.md`
+- `docs/context/project-context.md`
+- `docs/context/run-and-test-guide.md`
+- `docs/context/jenish-proxy-contract.md`
+- `docs/context/sachin-training-handoff.md`
+- `docs/changes/change-log.md`
+- `docs/journal/implementation-journal.md`
+
+### Outcome
+
+Sprint 2 now has:
+
+- a stable contract Jenish can integrate against
+- persistent observability Sachin can use for rewards and evaluation
+- reusable repair memory for repeated drift patterns
+- a retry loop abstraction that bridges directly into Sprint 4
+
+### Follow-Up Fix
+
+Local `.env` model keys made retry-orchestrator tests nondeterministic because
+they unexpectedly exercised the live LLM path. The retry tests now explicitly
+clear `REMORPH_GROQ_API_KEY` so they always validate the deterministic
+integration contract.

@@ -1,3 +1,6 @@
+import pytest
+
+from app.config import get_settings
 from app.models.response_models import HealedRequest
 from app.services import healer
 from app.testsupport.sample_errors import (
@@ -5,6 +8,17 @@ from app.testsupport.sample_errors import (
     SCENARIO_B_ROUTE_DRIFT,
     SCENARIO_C_AUTH_DRIFT,
 )
+
+
+@pytest.fixture(autouse=True)
+def isolate_runtime(monkeypatch, tmp_path):
+    monkeypatch.setenv("REMORPH_ENABLE_REPAIR_CACHE", "false")
+    monkeypatch.setenv("REMORPH_ENABLE_TELEMETRY", "false")
+    monkeypatch.setenv("REMORPH_REPAIR_CACHE_PATH", str(tmp_path / "repair_cache.json"))
+    monkeypatch.setenv("REMORPH_TELEMETRY_DIR", str(tmp_path / "telemetry"))
+    get_settings.cache_clear()
+    yield
+    get_settings.cache_clear()
 
 
 def test_heal_request_uses_pipeline_and_returns_model(monkeypatch) -> None:

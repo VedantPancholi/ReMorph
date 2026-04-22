@@ -31,3 +31,6 @@ Thumbs.db
 .codex
 .codex/
 from_gpt_context.txt
+
+# Local runtime artifacts
+runtime/
