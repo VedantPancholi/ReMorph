@@ -1,0 +1,20 @@
+{
+  "average_processing_ms": 1118.88,
+  "error_code_counts": {
+    "400": 3,
+    "401": 1,
+    "404": 4
+  },
+  "fallback_count": 0,
+  "healing_action_counts": {
+    "auth_rewrite": 1,
+    "payload_rewrite": 3,
+    "route_rewrite": 4
+  },
+  "repair_strategy_counts": {
+    "cache": 5,
+    "merged": 3
+  },
+  "total_healings": 8,
+  "total_processing_ms": 8951
+}
