@@ -192,3 +192,39 @@ credential handling mistake from tracked source.
 - Groq models with Structured Outputs support now use `json_schema`
 - other Groq models now use `json_object`
 - LiteLLM debug/help noise is suppressed during normal runs
+
+## 2026-04-22 - Sprint 2 Integration Upgrade
+
+### Goal
+
+Make Sprint 2 more useful for Sprint 4 by exposing the runtime metadata that
+the proxy, retry loop, and reward/evaluation pipeline will need later.
+
+### What Changed
+
+- expanded `TrappedError` with request and retry metadata
+- expanded `HealedRequest` with a diagnostics block for docs source, matched
+  endpoint, strategy used, fallback state, and processing time
+- updated the healer to capture documentation source and attach diagnostics to
+  every healing result
+- refreshed sample scenarios and tests to validate the new integration fields
+- documented team ownership and added a file-by-file folder explanation in the README
+
+### Files Touched
+
+- `app/models/request_models.py`
+- `app/models/response_models.py`
+- `app/services/doc_fetcher.py`
+- `app/services/healer.py`
+- `app/testsupport/sample_errors.py`
+- `tests/test_healer.py`
+- `README.md`
+- `docs/context/project-context.md`
+- `docs/changes/change-log.md`
+- `docs/journal/implementation-journal.md`
+
+### Outcome
+
+Sprint 2 is still the reasoning layer, but it now returns enough operational
+metadata to connect cleanly with Sprint 4 proxy retries, reward logging, and
+before/after evaluation.

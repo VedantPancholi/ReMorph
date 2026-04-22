@@ -101,11 +101,29 @@ scenarios locally:
 
 ## Repository Layout
 
-- `app/`: application code
-- `tests/`: automated tests
-- `docs/context/`: product context, architecture, and working agreements
+- `app/`: core ReMorph application package
+- `app/config.py`: runtime settings and environment-driven configuration
+- `app/constants.py`: shared constants such as supported methods and healing actions
+- `app/main.py`: top-level entry point used by local runs or future proxy integration
+- `app/models/`: typed request, response, diagnostics, and schema models
+- `app/services/doc_fetcher.py`: OpenAPI loading from local files or remote docs endpoints
+- `app/services/schema_extractor.py`: route matching, `$ref` resolution, and normalized endpoint schema extraction
+- `app/services/deterministic_repair.py`: deterministic fallback repairs for payload, route, and auth drift
+- `app/services/prompt_builder.py`: builds the strict LLM repair prompt
+- `app/services/llm_client.py`: model invocation and structured output parsing
+- `app/services/healer.py`: orchestration layer that combines docs lookup, schema extraction, deterministic repair, LLM refinement, and diagnostics
+- `app/testsupport/`: local mock scenarios and the sample OpenAPI contract
+- `app/utils/`: logging, JSON helpers, and project exceptions
+- `tests/`: automated validation for fetching, extraction, parsing, and healing behavior
+- `docs/context/`: product context, sprint ownership, architecture notes, and runbooks
 - `docs/changes/`: concise running change log
 - `docs/journal/`: implementation notes with what changed and why
+
+## Team Ownership
+
+- `Jenish`: Sprint 1 and integration pipes/proxy ownership
+- `Vedant`: Sprint 2 reasoning layer and Sprint 4 end-to-end integration ownership
+- `Sachin`: Sprint 3 complementary sprint{dashboard} ownership alongside environment/training delivery
 
 ## Change Tracking Rule
 

@@ -14,6 +14,18 @@ The current direction is distilled from `from_gpt_context.txt`, which describes:
 - route drift, where old endpoints move or disappear
 - auth drift, where security requirements change
 
+## Team Ownership
+
+- `Jenish`: pipe layer and proxy integration
+- `Vedant`: Sprint 2 reasoning engine and Sprint 4 integration
+- `Sachin`: supporting sprint delivery across environment and training work
+
+## Sprint Connection
+
+- Sprint 2 is the repair brain
+- Sprint 4 is the end-to-end system that plugs this repair brain into the proxy,
+  OpenEnv, retry loop, reward logic, and training evaluation
+
 ## Sprint 2 Scope
 
 Sprint 2 is the reasoning engine, not the proxy or transport layer. This repo
@@ -34,6 +46,7 @@ The repository already contains a working baseline for Sprint 2:
 - route drift and auth metadata extraction are covered in tests
 - the full healing orchestration path is wired end to end
 - deterministic repair strategies now cover the core three demo scenarios without requiring a live model key
+- healing responses now include diagnostics needed by proxy integration and Sprint 4 metrics
 
 The remaining gap is not the architecture. The remaining gap is product
 hardening: stronger heuristics, real provider validation, and proxy integration.
