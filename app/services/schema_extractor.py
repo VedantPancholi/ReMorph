@@ -125,10 +125,7 @@ def _match_operation(
     for candidate_path, candidate_operations in paths.items():
         if not isinstance(candidate_operations, dict) or method_name not in candidate_operations:
             continue
-        candidate_segments = normalize_path(candidate_path).strip("/").split("/")
-        segment_overlap = len(set(target_segments) & set(candidate_segments))
-        similarity = SequenceMatcher(None, target_path, candidate_path).ratio()
-        score = similarity + (0.15 * segment_overlap)
+        score = _score_candidate_path(target_segments, target_path, candidate_path)
         if score > best_score:
             best_score = score
             best_match = (candidate_path, candidate_operations[method_name])
@@ -139,6 +136,36 @@ def _match_operation(
         )
 
     return best_match
+
+
+def _score_candidate_path(
+    target_segments: list[str],
+    target_path: str,
+    candidate_path: str,
+) -> float:
+    candidate_segments = normalize_path(candidate_path).strip("/").split("/")
+    similarity = SequenceMatcher(None, target_path, candidate_path).ratio()
+    segment_overlap = len(set(target_segments) & set(candidate_segments))
+
+    param_score = 0.0
+    for target_segment, candidate_segment in zip(target_segments, candidate_segments):
+        if target_segment == candidate_segment:
+            param_score += 0.3
+        elif _is_path_parameter(candidate_segment):
+            param_score += 0.22
+        elif _normalize_token(target_segment) == _normalize_token(candidate_segment):
+            param_score += 0.2
+
+    length_penalty = abs(len(target_segments) - len(candidate_segments)) * 0.1
+    return similarity + (0.15 * segment_overlap) + param_score - length_penalty
+
+
+def _is_path_parameter(segment: str) -> bool:
+    return segment.startswith("{") and segment.endswith("}")
+
+
+def _normalize_token(segment: str) -> str:
+    return "".join(character.lower() for character in segment if character.isalnum())
 
 
 def _extract_request_schema(

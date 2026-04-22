@@ -4,11 +4,17 @@ from time import perf_counter
 
 from app.models.request_models import TrappedError
 from app.models.response_models import HealedRequest, RepairDiagnostics
+from app.services.repair_cache import (
+    build_repair_cache_key,
+    get_cached_repair,
+    store_cached_repair,
+)
 from app.services.deterministic_repair import build_deterministic_repair
 from app.services.doc_fetcher import fetch_openapi_spec_with_source
 from app.services.llm_client import call_healing_model
 from app.services.prompt_builder import build_healing_prompt, build_system_prompt
 from app.services.schema_extractor import extract_schema_for_route
+from app.services.telemetry import record_healing_event
 from app.services.url_utils import extract_path
 from app.utils.error_utils import LLMHealingError
 from app.utils.logger import get_logger
@@ -39,6 +45,24 @@ def heal_request(
     )
     logger.info("Endpoint schema extracted for %s", endpoint_schema.path)
 
+    cache_key = build_repair_cache_key(trapped_error, endpoint_schema)
+    cached_repair = get_cached_repair(cache_key)
+    if cached_repair is not None:
+        logger.info("Using cached repair for %s %s", trapped_error.method, trapped_error.target_url)
+        cached_result = _attach_diagnostics(
+            cached_repair,
+            trapped_error=trapped_error,
+            endpoint_path=endpoint_schema.path,
+            docs_source=docs_source,
+            repair_strategy="cache",
+            llm_attempted=False,
+            llm_succeeded=False,
+            fallback_used=False,
+            processing_ms=_elapsed_ms(started_at),
+        )
+        record_healing_event(trapped_error, cached_result)
+        return cached_result
+
     system_prompt = build_system_prompt()
     user_prompt = build_healing_prompt(trapped_error, endpoint_schema)
     logger.info("Healing prompt constructed")
@@ -50,7 +74,7 @@ def heal_request(
         healed_request = call_healing_model(system_prompt, user_prompt)
         logger.info("Healing response validated through the model provider")
         merged_repair = _merge_repairs(deterministic_repair, healed_request)
-        return _attach_diagnostics(
+        final_result = _attach_diagnostics(
             merged_repair,
             trapped_error=trapped_error,
             endpoint_path=endpoint_schema.path,
@@ -61,12 +85,15 @@ def heal_request(
             fallback_used=False,
             processing_ms=_elapsed_ms(started_at),
         )
+        store_cached_repair(cache_key, final_result)
+        record_healing_event(trapped_error, final_result)
+        return final_result
     except LLMHealingError as exc:
         logger.warning(
             "Falling back to deterministic repair because model healing failed: %s",
             exc,
         )
-        return _attach_diagnostics(
+        final_result = _attach_diagnostics(
             deterministic_repair,
             trapped_error=trapped_error,
             endpoint_path=endpoint_schema.path,
@@ -77,6 +104,9 @@ def heal_request(
             fallback_used=True,
             processing_ms=_elapsed_ms(started_at),
         )
+        store_cached_repair(cache_key, final_result)
+        record_healing_event(trapped_error, final_result)
+        return final_result
 
 
 def _merge_repairs(

@@ -34,15 +34,18 @@ Important:
 - route matching that can recover the closest route when the original path drifts
 - prompt construction for the healing model
 - deterministic repair strategies for payload, route, and auth drift
+- proxy-facing adapter contract for external orchestration
+- retry orchestrator for repair-and-retry workflows
+- persistent telemetry sink for healing/workflow metrics
+- reusable repair cache for repeated drift patterns
 - a local CLI harness for smoke tests and full healing attempts
 - a passing test suite for the current baseline
 
 ## What Is Not Ready Yet
 
-- proxy integration or HTTP server exposure
-- persistent caching or memory of previous repairs
-- stronger route matching heuristics for large specs
+- HTTP server exposure if you choose FastAPI instead of direct Python integration
 - live end-to-end validation against a real provider key
+- full OpenEnv environment, reward logic, and training pipeline from Sprint 4
 
 ## How To Run
 
@@ -109,6 +112,10 @@ scenarios locally:
 - `app/services/doc_fetcher.py`: OpenAPI loading from local files or remote docs endpoints
 - `app/services/schema_extractor.py`: route matching, `$ref` resolution, and normalized endpoint schema extraction
 - `app/services/deterministic_repair.py`: deterministic fallback repairs for payload, route, and auth drift
+- `app/services/repair_cache.py`: reusable cache for repeated drift patterns
+- `app/services/telemetry.py`: persistent healing and workflow telemetry sink
+- `app/services/proxy_adapter.py`: stable integration boundary for Jenish's proxy
+- `app/services/retry_orchestrator.py`: repair-and-retry loop for Sprint 4 style workflows
 - `app/services/prompt_builder.py`: builds the strict LLM repair prompt
 - `app/services/llm_client.py`: model invocation and structured output parsing
 - `app/services/healer.py`: orchestration layer that combines docs lookup, schema extraction, deterministic repair, LLM refinement, and diagnostics
@@ -116,6 +123,8 @@ scenarios locally:
 - `app/utils/`: logging, JSON helpers, and project exceptions
 - `tests/`: automated validation for fetching, extraction, parsing, and healing behavior
 - `docs/context/`: product context, sprint ownership, architecture notes, and runbooks
+- `docs/context/jenish-proxy-contract.md`: what Jenish must send and what ReMorph returns
+- `docs/context/sachin-training-handoff.md`: what Sachin can use for training, rewards, and evaluation
 - `docs/changes/`: concise running change log
 - `docs/journal/`: implementation notes with what changed and why
 
@@ -123,14 +132,14 @@ scenarios locally:
 
 - `Jenish`: Sprint 1 and integration pipes/proxy ownership
 - `Vedant`: Sprint 2 reasoning layer and Sprint 4 end-to-end integration ownership
-- `Sachin`: Sprint 3 complementary sprint{dashboard} ownership alongside environment/training delivery
+- `Sachin`: Sprint 3 support across environment, training, and evaluation delivery
 
 ## Change Tracking Rule
 
 Every future code change should be accompanied by a doc update. The working
-agreement for that process lives in [docs/context/change-management.md]().
+agreement for that process lives in [docs/context/change-management.md](/home/matter/Documents/ReMorph/docs/context/change-management.md).
 
 ## Detailed Runbook
 
 For setup, run commands, expected scenario outputs, and validation guidance, use
-[docs/context/run-and-test-guide.md]().
+[docs/context/run-and-test-guide.md](/home/matter/Documents/ReMorph/docs/context/run-and-test-guide.md).
