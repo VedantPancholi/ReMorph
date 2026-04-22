@@ -43,12 +43,14 @@ The repository already contains a working baseline for Sprint 2:
 
 - request, response, and schema models are implemented
 - schema extraction works against the local sample spec
+- docs metadata now includes source, version, hash, and completeness signals
 - route drift and auth metadata extraction are covered in tests
 - the full healing orchestration path is wired end to end
 - deterministic repair strategies now cover the core three demo scenarios without requiring a live model key
 - healing responses now include diagnostics needed by proxy integration and Sprint 4 metrics
 - proxy-facing adapters now exist for Jenish's integration boundary
 - persistent telemetry and repair cache are now implemented for repeated drifts and later reward analysis
+- proxy adapters now return explicit unrepairable failure reasons when repair cannot proceed safely
 
 The remaining gap is not the architecture. The remaining gap is product
 hardening: stronger heuristics at production scale, real provider validation,

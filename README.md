@@ -30,8 +30,9 @@ Important:
 - typed input and output models for trapped errors and healed requests
 - config, logging, JSON helpers, and custom error types
 - local OpenAPI loading plus remote docs probe scaffolding
-- schema extraction for nested request bodies, `$ref` resolution, and security schemes
-- route matching that can recover the closest route when the original path drifts
+- docs metadata including source, version, hash, completeness flags, and fetch state
+- schema extraction for nested request bodies, query parameters, multiple content types, `$ref` resolution, and security schemes
+- route matching that can recover the closest route when the original path drifts and score parameterized routes more safely
 - prompt construction for the healing model
 - deterministic repair strategies for payload, route, and auth drift
 - proxy-facing adapter contract for external orchestration
@@ -40,6 +41,7 @@ Important:
 - reusable repair cache for repeated drift patterns
 - a local CLI harness for smoke tests and full healing attempts
 - a passing test suite for the current baseline
+- explicit unrepairable failure outputs at the proxy boundary
 
 ## What Is Not Ready Yet
 
@@ -110,7 +112,7 @@ scenarios locally:
 - `app/main.py`: top-level entry point used by local runs or future proxy integration
 - `app/models/`: typed request, response, diagnostics, and schema models
 - `app/services/doc_fetcher.py`: OpenAPI loading from local files or remote docs endpoints
-- `app/services/schema_extractor.py`: route matching, `$ref` resolution, and normalized endpoint schema extraction
+- `app/services/schema_extractor.py`: route matching, completeness scoring, content-type extraction, query parameter extraction, and normalized endpoint schema extraction
 - `app/services/deterministic_repair.py`: deterministic fallback repairs for payload, route, and auth drift
 - `app/services/repair_cache.py`: reusable cache for repeated drift patterns
 - `app/services/telemetry.py`: persistent healing and workflow telemetry sink

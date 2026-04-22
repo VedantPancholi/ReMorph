@@ -302,3 +302,48 @@ Local `.env` model keys made retry-orchestrator tests nondeterministic because
 they unexpectedly exercised the live LLM path. The retry tests now explicitly
 clear `REMORPH_GROQ_API_KEY` so they always validate the deterministic
 integration contract.
+
+## 2026-04-22 - Sprint 2 Hardening Upgrade
+
+### Goal
+
+Make Sprint 2 robust enough to freeze as a reusable repair component before
+moving fully into Sprint 4 system integration.
+
+### What Changed
+
+- upgraded docs fetching to emit spec metadata such as source, version, hash,
+  and completeness flags
+- upgraded schema extraction with content types, query parameters, route-match
+  scores, completeness scoring, and docs confidence
+- added explicit unrepairable failure outputs for the proxy-facing contract
+- extended telemetry with scenario type, docs confidence, and spec metadata
+- expanded tests to cover spec metadata and explicit proxy failure handling
+
+### Files Touched
+
+- `app/models/schema_models.py`
+- `app/models/response_models.py`
+- `app/services/doc_fetcher.py`
+- `app/services/schema_extractor.py`
+- `app/services/healer.py`
+- `app/services/retry_orchestrator.py`
+- `app/services/proxy_adapter.py`
+- `app/services/telemetry.py`
+- `app/main.py`
+- `tests/test_doc_fetcher.py`
+- `tests/test_schema_extractor.py`
+- `tests/test_retry_orchestrator.py`
+- `README.md`
+- `docs/context/project-context.md`
+- `docs/context/run-and-test-guide.md`
+- `docs/context/jenish-proxy-contract.md`
+- `docs/context/sachin-training-handoff.md`
+- `docs/changes/change-log.md`
+- `docs/journal/implementation-journal.md`
+
+### Outcome
+
+Sprint 2 now has a clearer contract, more honest confidence signals, and
+explicit failure modes, which makes it much safer to embed into the Sprint 4
+proxy, reward, and evaluation loop.

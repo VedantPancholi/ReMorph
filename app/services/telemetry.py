@@ -32,7 +32,19 @@ def record_healing_event(trapped_error: TrappedError, healed_request: HealedRequ
         "method": trapped_error.method,
         "error_code": trapped_error.error_code,
         "healing_action": healed_request.healing_action,
+        "scenario_type": healed_request.diagnostics.scenario_type
+        if healed_request.diagnostics
+        else None,
         "repair_strategy": healed_request.diagnostics.repair_strategy
+        if healed_request.diagnostics
+        else None,
+        "docs_confidence": healed_request.diagnostics.docs_confidence
+        if healed_request.diagnostics
+        else None,
+        "spec_hash": healed_request.diagnostics.spec_hash
+        if healed_request.diagnostics
+        else None,
+        "spec_version": healed_request.diagnostics.spec_version
         if healed_request.diagnostics
         else None,
         "fallback_used": healed_request.diagnostics.fallback_used
@@ -41,6 +53,12 @@ def record_healing_event(trapped_error: TrappedError, healed_request: HealedRequ
         "processing_ms": healed_request.diagnostics.processing_ms
         if healed_request.diagnostics
         else None,
+        "failure_reason": healed_request.failure_reason
+        or (
+            healed_request.diagnostics.failure_reason
+            if healed_request.diagnostics
+            else None
+        ),
     }
     _append_jsonl(telemetry_dir / "healing_events.jsonl", event)
     _update_healing_summary(telemetry_dir / "healing_summary.json", event)
@@ -89,6 +107,10 @@ def _update_healing_summary(path: Path, event: dict[str, Any]) -> None:
     strategy_counts = summary.setdefault("repair_strategy_counts", {})
     strategy = event.get("repair_strategy") or "unknown"
     strategy_counts[strategy] = strategy_counts.get(strategy, 0) + 1
+
+    scenario_counts = summary.setdefault("scenario_type_counts", {})
+    scenario = event.get("scenario_type") or "unknown"
+    scenario_counts[scenario] = scenario_counts.get(scenario, 0) + 1
 
     if summary["total_healings"] > 0:
         summary["average_processing_ms"] = round(

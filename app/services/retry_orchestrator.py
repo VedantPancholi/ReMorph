@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Callable
 
-from app.main import process_trapped_error
+from app.main import process_trapped_error_safe
 from app.models.request_models import TrappedError
 from app.models.response_models import (
     HealedRequest,
@@ -30,12 +30,34 @@ def heal_and_retry(
     history: list[RetryAttemptRecord] = []
 
     for attempt in range(1, max_retries + 2):
-        healed = HealedRequest.model_validate(
-            process_trapped_error(
-                current_error.model_dump(mode="json"),
-                local_spec_path=local_spec_path,
-            )
+        healed, failure_reason = process_trapped_error_safe(
+            current_error.model_dump(mode="json"),
+            local_spec_path=local_spec_path,
         )
+        if healed is None:
+            unrepairable = HealedRequest(
+                reasoning="ReMorph could not produce a safe repair.",
+                fixed_url=current_error.target_url,
+                fixed_method=current_error.method,
+                fixed_payload=current_error.failed_payload,
+                fixed_headers=current_error.failed_headers,
+                healing_action="no_change",
+                status="unrepairable",
+                failure_reason=failure_reason or "unknown",
+            )
+            result = ProxyWorkflowResult(
+                status="failed",
+                final_healed_request=_enrich_diagnostics(
+                    unrepairable,
+                    retry_succeeded=False,
+                    total_recovery_steps=attempt,
+                    final_reward=_estimate_reward(success=False, attempts=attempt, fallback_used=True),
+                ),
+                attempts=max(1, attempt),
+                history=history,
+            )
+            record_workflow_event(result)
+            return result
 
         execution_result = _normalize_execution_result(
             execute_request(
@@ -61,7 +83,18 @@ def heal_and_retry(
         if execution_result.success:
             result = ProxyWorkflowResult(
                 status="success",
-                final_healed_request=healed,
+                final_healed_request=_enrich_diagnostics(
+                    healed,
+                    retry_succeeded=True,
+                    total_recovery_steps=attempt,
+                    final_reward=_estimate_reward(
+                        success=True,
+                        attempts=attempt,
+                        fallback_used=bool(
+                            healed.diagnostics and healed.diagnostics.fallback_used
+                        ),
+                    ),
+                ),
                 attempts=attempt,
                 history=history,
             )
@@ -82,7 +115,19 @@ def heal_and_retry(
 
     result = ProxyWorkflowResult(
         status="failed",
-        final_healed_request=history[-1].healed_request,
+        final_healed_request=_enrich_diagnostics(
+            history[-1].healed_request,
+            retry_succeeded=False,
+            total_recovery_steps=len(history),
+            final_reward=_estimate_reward(
+                success=False,
+                attempts=len(history),
+                fallback_used=bool(
+                    history[-1].healed_request.diagnostics
+                    and history[-1].healed_request.diagnostics.fallback_used
+                ),
+            ),
+        ),
         attempts=len(history),
         history=history,
     )
@@ -96,3 +141,35 @@ def _normalize_execution_result(
     if isinstance(result, UpstreamExecutionResult):
         return result
     return UpstreamExecutionResult.model_validate(result)
+
+
+def _enrich_diagnostics(
+    healed_request: HealedRequest,
+    *,
+    retry_succeeded: bool,
+    total_recovery_steps: int,
+    final_reward: float,
+) -> HealedRequest:
+    if healed_request.diagnostics is None:
+        return healed_request
+    return healed_request.model_copy(
+        update={
+            "diagnostics": healed_request.diagnostics.model_copy(
+                update={
+                    "retry_succeeded": retry_succeeded,
+                    "total_recovery_steps": total_recovery_steps,
+                    "final_reward": final_reward,
+                }
+            )
+        }
+    )
+
+
+def _estimate_reward(*, success: bool, attempts: int, fallback_used: bool) -> float:
+    reward = 1.0 if success else -0.5
+    if attempts == 1 and success:
+        reward += 0.2
+    reward -= 0.1 * max(0, attempts - 1)
+    if fallback_used:
+        reward -= 0.2
+    return round(reward, 2)

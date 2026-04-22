@@ -230,6 +230,7 @@ Also validate the new diagnostics block:
 3. `diagnostics.repair_strategy` tells you whether the result came from deterministic, merged, or LLM-assisted behavior.
 4. `diagnostics.fallback_used` tells you whether model refinement failed and deterministic repair was used instead.
 5. `diagnostics.request_id` and `diagnostics.retry_count` preserve proxy-side context for Sprint 4.
+6. `diagnostics.docs_confidence`, `diagnostics.spec_hash`, and `diagnostics.spec_version` help explain how reliable the chosen repair context was.
 
 ## 5. Automated Tests
 
@@ -259,6 +260,8 @@ Current coverage checks:
 - proxy adapter contract
 - repair cache read/write
 - retry orchestration success path
+- explicit unrepairable proxy failure response
+- local spec metadata output
 
 If tests pass, the current repo baseline is internally consistent.
 

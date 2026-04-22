@@ -32,6 +32,17 @@ def test_handle_proxy_failure_returns_contract_envelope() -> None:
     assert response["healed_request"]["healing_action"] == "payload_rewrite"
 
 
+def test_handle_proxy_failure_returns_explicit_unrepairable_state() -> None:
+    response = handle_proxy_failure(
+        SCENARIO_A_KEY_MUTATION,
+        local_spec_path="app/testsupport/missing.json",
+    )
+
+    assert response["contract_version"] == "remorph.proxy.v1"
+    assert response["status"] == "unrepairable"
+    assert response["failure_reason"] == "docs_unavailable"
+
+
 def test_heal_and_retry_returns_successful_workflow() -> None:
     def execute_request(request: dict) -> dict:
         if request["url"].endswith("/api/v2/finance/ledger") and request["headers"] == {
@@ -50,3 +61,4 @@ def test_heal_and_retry_returns_successful_workflow() -> None:
     assert workflow.status == "success"
     assert workflow.attempts == 1
     assert workflow.final_healed_request.fixed_url.endswith("/api/v2/finance/ledger")
+    assert workflow.final_healed_request.diagnostics.retry_succeeded is True

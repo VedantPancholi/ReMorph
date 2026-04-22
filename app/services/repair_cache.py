@@ -19,6 +19,9 @@ logger = get_logger(__name__)
 def build_repair_cache_key(
     trapped_error: TrappedError,
     endpoint_schema: EndpointSchema,
+    *,
+    spec_hash: str | None = None,
+    spec_version: str | None = None,
 ) -> str:
     """Create a stable cache key for repeated drift patterns."""
 
@@ -30,6 +33,8 @@ def build_repair_cache_key(
         "failed_headers": sorted((trapped_error.failed_headers or {}).keys()),
         "endpoint_path": endpoint_schema.path,
         "required_fields": endpoint_schema.required_fields,
+        "spec_hash": spec_hash,
+        "spec_version": spec_version,
         "security_requirements": [
             requirement.model_dump(mode="json")
             for requirement in endpoint_schema.security_requirements

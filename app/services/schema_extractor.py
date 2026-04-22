@@ -5,9 +5,9 @@ from __future__ import annotations
 from difflib import SequenceMatcher
 from typing import Any
 
-from app.models.schema_models import EndpointSchema, SecurityRequirement
+from app.models.schema_models import EndpointSchema, QueryParameter, SecurityRequirement
 from app.services.url_utils import normalize_path
-from app.utils.error_utils import SchemaExtractionError
+from app.utils.error_utils import AmbiguousRouteMatchError, SchemaExtractionError
 
 
 def extract_schema_for_route(
@@ -17,9 +17,29 @@ def extract_schema_for_route(
 ) -> EndpointSchema:
     """Extract the most relevant endpoint contract for a failed route."""
 
-    resolved_path, operation = _match_operation(spec, normalize_path(target_path), method)
+    resolved_path, operation, route_match_score = _match_operation(
+        spec,
+        normalize_path(target_path),
+        method,
+    )
     request_schema = _extract_request_schema(spec, operation)
     security_requirements = _extract_security_requirements(spec, operation)
+    query_parameters = _extract_parameters(operation, location="query")
+    supported_content_types = _extract_supported_content_types(operation)
+    completeness_flags = _build_completeness_flags(
+        request_schema=request_schema,
+        security_requirements=security_requirements,
+        supported_content_types=supported_content_types,
+    )
+    completeness_score = _compute_completeness_score(
+        completeness_flags=completeness_flags,
+        request_schema=request_schema,
+        query_parameters=query_parameters,
+    )
+    docs_confidence = _compute_docs_confidence(
+        completeness_score=completeness_score,
+        route_match_score=route_match_score,
+    )
 
     return EndpointSchema(
         path=resolved_path,
@@ -31,7 +51,13 @@ def extract_schema_for_route(
         request_structure=_annotate_schema_names(
             flatten_request_schema(spec, request_schema)
         ),
+        query_parameters=query_parameters,
+        supported_content_types=supported_content_types,
         security_requirements=security_requirements,
+        completeness_flags=completeness_flags,
+        completeness_score=completeness_score,
+        docs_confidence=docs_confidence,
+        route_match_score=route_match_score,
     )
 
 
@@ -108,7 +134,7 @@ def _match_operation(
     spec: dict[str, Any],
     target_path: str,
     method: str,
-) -> tuple[str, dict[str, Any]]:
+) -> tuple[str, dict[str, Any], float]:
     paths = spec.get("paths", {})
     if not isinstance(paths, dict) or not paths:
         raise SchemaExtractionError("OpenAPI spec does not contain paths")
@@ -116,10 +142,11 @@ def _match_operation(
     method_name = method.lower()
     exact_path = paths.get(target_path)
     if isinstance(exact_path, dict) and method_name in exact_path:
-        return target_path, exact_path[method_name]
+        return target_path, exact_path[method_name], 1.0
 
     best_score = 0.0
     best_match: tuple[str, dict[str, Any]] | None = None
+    second_best_score = 0.0
     target_segments = normalize_path(target_path).strip("/").split("/")
 
     for candidate_path, candidate_operations in paths.items():
@@ -127,15 +154,27 @@ def _match_operation(
             continue
         score = _score_candidate_path(target_segments, target_path, candidate_path)
         if score > best_score:
+            second_best_score = best_score
             best_score = score
             best_match = (candidate_path, candidate_operations[method_name])
+        elif score > second_best_score:
+            second_best_score = score
 
     if best_match is None:
         raise SchemaExtractionError(
             f"No route match found for {method.upper()} {target_path}"
         )
 
-    return best_match
+    if best_score < 0.45:
+        raise SchemaExtractionError(
+            f"No confident route match found for {method.upper()} {target_path}"
+        )
+    if second_best_score and (best_score - second_best_score) < 0.05:
+        raise AmbiguousRouteMatchError(
+            f"Ambiguous route match for {method.upper()} {target_path}"
+        )
+
+    return best_match[0], best_match[1], best_score
 
 
 def _score_candidate_path(
@@ -174,8 +213,17 @@ def _extract_request_schema(
 ) -> dict[str, Any]:
     request_body = operation.get("requestBody", {})
     content = request_body.get("content", {})
-    json_body = content.get("application/json", {})
-    schema = json_body.get("schema", {})
+    supported_content_types = [
+        "application/json",
+        "application/x-www-form-urlencoded",
+        "multipart/form-data",
+        "text/plain",
+    ]
+    schema: dict[str, Any] = {}
+    for content_type in supported_content_types:
+        if content_type in content:
+            schema = content[content_type].get("schema", {})
+            break
     return _resolve_schema(spec, schema)
 
 
@@ -220,3 +268,85 @@ def _extract_security_requirements(
                 )
             )
     return normalized
+
+
+def _extract_parameters(
+    operation: dict[str, Any],
+    *,
+    location: str,
+) -> list[QueryParameter]:
+    parameters = operation.get("parameters", [])
+    normalized: list[QueryParameter] = []
+    for parameter in parameters:
+        if not isinstance(parameter, dict) or parameter.get("in") != location:
+            continue
+        schema = parameter.get("schema", {})
+        normalized.append(
+            QueryParameter(
+                name=parameter.get("name", "unknown"),
+                location=location,
+                required=bool(parameter.get("required", False)),
+                schema_type=schema.get("type"),
+            )
+        )
+    return normalized
+
+
+def _extract_supported_content_types(operation: dict[str, Any]) -> list[str]:
+    request_body = operation.get("requestBody", {})
+    content = request_body.get("content", {})
+    return sorted(content.keys()) if isinstance(content, dict) else []
+
+
+def _build_completeness_flags(
+    *,
+    request_schema: dict[str, Any],
+    security_requirements: list[SecurityRequirement],
+    supported_content_types: list[str],
+) -> list[str]:
+    flags: list[str] = []
+    if not request_schema:
+        flags.append("missing_request_schema")
+    if request_schema and request_schema.get("type") != "object":
+        flags.append("non_object_request_schema")
+    if not supported_content_types:
+        flags.append("missing_request_content_type")
+    if security_requirements:
+        unsupported = [
+            requirement.name
+            for requirement in security_requirements
+            if requirement.type not in {"apiKey", "http", "oauth2"}
+        ]
+        if unsupported:
+            flags.append("contains_unsupported_auth_scheme")
+    if not flags:
+        flags.append("complete")
+    return flags
+
+
+def _compute_completeness_score(
+    *,
+    completeness_flags: list[str],
+    request_schema: dict[str, Any],
+    query_parameters: list[QueryParameter],
+) -> float:
+    score = 1.0
+    if "missing_request_schema" in completeness_flags:
+        score -= 0.35
+    if "missing_request_content_type" in completeness_flags:
+        score -= 0.15
+    if "contains_unsupported_auth_scheme" in completeness_flags:
+        score -= 0.2
+    if request_schema.get("properties"):
+        score += 0.05
+    if query_parameters:
+        score += 0.05
+    return max(0.0, min(score, 1.0))
+
+
+def _compute_docs_confidence(
+    *,
+    completeness_score: float,
+    route_match_score: float,
+) -> float:
+    return max(0.0, min((0.55 * completeness_score) + (0.45 * min(route_match_score, 1.0)), 1.0))

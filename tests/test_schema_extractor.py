@@ -9,6 +9,9 @@ def test_extract_schema_for_nested_user_payload() -> None:
     assert schema.path == "/users"
     assert schema.required_fields == ["user"]
     assert "user" in schema.request_structure["properties"]
+    assert schema.supported_content_types == ["application/json"]
+    assert schema.completeness_score > 0.5
+    assert schema.docs_confidence > 0.5
 
 
 def test_extract_schema_for_route_drift_target() -> None:
@@ -17,3 +20,4 @@ def test_extract_schema_for_route_drift_target() -> None:
 
     assert schema.path == "/api/v2/finance/ledger"
     assert schema.security_requirements[0].header_name == "x-api-key"
+    assert schema.route_match_score > 0.45

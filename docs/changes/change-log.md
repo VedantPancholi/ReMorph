@@ -23,3 +23,4 @@
 - implemented the remaining Sprint 2 integration layer: proxy adapter, retry orchestrator, telemetry sink, repair cache, and stronger route matching
 - added Jenish and Sachin handoff docs plus tests for cache, route matching, and retry flow
 - fixed retry-orchestrator test isolation so local Groq keys do not make the suite nondeterministic
+- hardened Sprint 2 further with docs metadata, schema confidence/completeness, explicit proxy failure reasons, and richer training telemetry fields

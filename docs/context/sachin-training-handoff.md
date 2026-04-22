@@ -25,6 +25,9 @@ Suggested reward features:
 
 - `diagnostics.original_error_code`
 - `diagnostics.processing_ms`
+- `diagnostics.docs_confidence`
+- `diagnostics.spec_hash`
+- `diagnostics.spec_version`
 - `diagnostics.fallback_used`
 - `healing_action`
 - workflow `status`
