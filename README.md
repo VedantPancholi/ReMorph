@@ -1,168 +1,101 @@
-# ReMorph
+# ReMorph Phase 1: Chaos Gym & API Fuzzer
 
-ReMorph is the Sprint 2 repair engine for a self-healing API agent. It takes a
-trapped API failure, inspects the latest contract, and returns a structured
-repair for payload drift, route drift, or auth drift.
+**ReMorph** is a synthetic API Fuzzer and target engine designed to train Reinforcement Learning (RL) agents. Phase 1 provides the live testing environment—a "Chaos Gym" consisting of a strictly validated live FastAPI server, and a fully generic Abstract Syntax Tree (AST) Fuzzing script that attacks it.
 
-## Why This Repo Exists
+---
 
-The project is built from the product direction captured in
-`from_gpt_context.txt`. The goal of Sprint 2 is not to build the whole system.
-The goal is to freeze one believable, explainable, integration-ready repair
-module that Sprint 4 can plug into a proxy, environment, retry loop, and reward
-pipeline.
+## 🛠️ 1. Project Requirements
 
-## Quick Start
+You must install the ecosystem dependencies before running the project. 
 
 ```bash
-python3 -m venv .venv
-.venv/bin/pip install -r requirements.txt
-cp .env.example .env
-.venv/bin/pytest -q
-.venv/bin/python run_local_test.py --mode heal --scenario a
+pip install -r requirements.txt
 ```
 
-If you want model-assisted refinement, add `REMORPH_GROQ_API_KEY` to `.env`.
-The local demo still works without it because deterministic repair is already
-implemented.
+*(If you are running in a virtual environment, ensure it is activated: `source .venv/bin/activate`)*
 
-## Docker Quick Start
+---
 
-If you want to share the repo without requiring local Python setup:
+## 🚀 2. Step-by-Step Execution Guide
 
+To utilize the Phase 1 ecosystem, run these components sequentially in your terminal:
+
+### Step 1: Boot the Live Target Server
+ReMorph utilizes a highly strict Financial Gateway mock built in FastAPI. It utilizes heavy Pydantic constraints, nested regex, and Cryptographic PyJWT validations. It is the target your RL agent will hit.
+
+Open a terminal and start the server:
 ```bash
-docker build -t remorph .
-docker run --rm remorph
-docker run --rm remorph --mode heal --scenario a
+uvicorn server.main:app --reload
 ```
+*The server will boot on `http://127.0.0.1:8000`.*
 
-If you want model-assisted refinement inside Docker, pass the local `.env` file:
+### Step 2: Generate (or review) the Universal Contract
+The Fuzzer relies entirely on `openapi.json` to reverse-engineer schemas. It does not use hardcoded arrays. You can look at the spec we use inside `specs/openapi.json`. 
 
+If you ever add new routes to `server/app/endpoints.py`, re-generate the contract via:
 ```bash
-docker run --rm --env-file .env remorph --mode heal --scenario a
+python server/export_openapi.py
+or
+python3 -m server.export_openapi
 ```
+*This will sync the absolute latest FastAPI routing into the Swagger schema file.*
 
-If you want runtime cache and telemetry artifacts to persist on the host:
+### Step 3: Unleash the Universal Fuzzer
+The `dataset_generator.py` is the algorithmic weapon. It dynamically loops through the AST defined in `openapi.json`, bypasses generic bounds, and aggressively tests the target server using 11 Advanced Array mutations (Type Coercion, Null Injection, Route Regression, Signatures Forgery, etc).
 
+Run the Generator to generate the Dataset mapping:
 ```bash
-docker run --rm --env-file .env -v "$(pwd)/runtime:/app/runtime" remorph --mode heal --scenario a
+# This iterates 1 pass over the API surface (Generates ~47 deep dataset records)
+python dataset_generator.py -m 1
+
+# This iterates 10 passes for deep epoch weighting (Generates ~470 RL records)
+python dataset_generator.py -m 10
 ```
 
-## Configuration
+---
 
-All environment variables use the `REMORPH_` prefix to avoid collisions with
-machine-level settings.
+## 🌐 3. Interactive Swagger UI & Authentication Guide
 
-Important:
+Because the server is fully operational, you can test the APIs manually through the UI! 
 
-- keep `REMORPH_GROQ_API_KEY` only in `.env`
-- do not hardcode provider keys in tracked Python files
-- prefer `.venv/bin/python` and `.venv/bin/pytest` unless the venv is already active
+1. Ensure the server is running (`uvicorn server.main:app`).
+2. Open your browser to the Interactive Dashboard: **`http://127.0.0.1:8000/docs`**
 
-## What Sprint 2 Already Delivers
+### 🔓 How to Authorize in Swagger
+Because the server enforces genuine enterprise cryptography, you must authenticate yourself first before hitting ANY endpoints smoothly:
+1. Locate the **Green "Authorize" Padlock Button** at the top right of the Swagger dashboard.
+2. In the `HTTPBearer` pop-up box, simply paste the cryptographically signed JWT below *(do **not** type "Bearer ", Swagger handles it natively!)*:
+   `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZnV6emVyX2FnZW50XzAwNyIsInJvbGUiOiJhZG1pbiJ9.UuceJXhdiSBpwb47N1MffwuX3vd8KFwvtNYZP8wVTTo`
+3. Click "Authorize" and then "Close".
 
-- typed request, response, diagnostics, schema, and proxy-contract models
-- local OpenAPI loading plus multi-source docs-fetch scaffolding
-- docs metadata including source, version, hash, fetch state, and completeness flags
-- schema extraction for nested bodies, query parameters, multiple content types, `$ref` resolution, and security schemes
-- route matching with confidence, ranked candidates, and match reasons
-- deterministic repair strategies for payload, route, auth, and combined drift
-- optional model refinement with safe fallback on invalid model output
-- proxy-facing adapter and retry orchestration
-- persistent telemetry and reusable repair cache
-- explicit unrepairable failure responses
-- a local CLI harness and passing automated test suite
+### 🧪 Executing a Manual API Payload
+1. Click on the `POST /api/v1/payments/process` route.
+2. Click **"Try it out"**.
+3. Under the `x-api-key` header box, type the string: `secret`
+4. Under the `x-vendor-id` header box, type the string: `ven-123`
+5. In the Request Body box, use this perfect baseline:
+```json
+{
+  "amount": 100.50,
+  "currency": "USD",
+  "card_details": {
+    "card_number": "1234567812345678",
+    "cvv": "123",
+    "expiry": "12/26"
+  },
+  "billing_address": {
+    "street": "123 Wall St",
+    "zip_code": "10005",
+    "iso_country": "US"
+  }
+}
+```
+6. Click **Execute**. You should witness a pure `201 Created` string return from the backend!
 
-## What Sprint 2 Does Not Try To Be
+---
 
-- not the HTTP proxy itself
-- not the OpenEnv environment
-- not the reward function or training pipeline
-- not the final Sprint 4 evaluation harness
+## 📊 4. Consuming the Final Output (`training_dataset.json`)
 
-Those pieces belong to the next phase once the repair engine contract is frozen.
+The final output is `training_dataset.json`. 
 
-## Frozen Sprint 2 Contract
-
-Sprint 2 should now be treated as a stable repair component:
-
-- input: `TrappedError`
-- output: `HealedRequest`
-- primary callable: `app.main.process_trapped_error()`
-
-For safer orchestration and explicit failure reasons, integrations can also use:
-
-- `app.main.process_trapped_error_safe()`
-- `app.services.proxy_adapter.handle_proxy_failure()`
-- `app.services.proxy_adapter.handle_proxy_failure_with_retry()`
-
-## Runtime Flow
-
-1. A proxy traps an upstream API failure.
-2. ReMorph loads the latest docs or spec bundle.
-3. ReMorph extracts the best endpoint contract with explainable route matching.
-4. ReMorph builds a repair context and prepares a deterministic baseline.
-5. The model may refine the repair if configured.
-6. ReMorph returns a structured healed request with diagnostics.
-
-## Demo Strength
-
-The current local baseline is strong enough to show the three core cases:
-
-- Scenario A: payload rewritten into the nested `user` schema
-- Scenario B: route migrated to `/api/v2/finance/ledger` and auth rewritten
-- Scenario C: bearer auth converted into `x-api-key`
-
-## Optional Upgrades After Freeze
-
-These are upgrades worth doing later, but they are no longer required to freeze
-Sprint 2:
-
-- stronger route heuristics for large, noisy specs
-- broader auth support such as OAuth2, cookie auth, and basic auth
-- FastAPI exposure if the team wants HTTP instead of direct Python integration
-- live end-to-end validation with the chosen provider and production-like docs sources
-
-## Repository Layout
-
-- `app/`: main application package
-- `app/config.py`: environment-driven configuration
-- `app/constants.py`: shared enums and repair constants
-- `app/main.py`: stable integration entry points
-- `app/models/`: typed contracts for requests, repairs, schemas, and workflows
-- `app/services/doc_fetcher.py`: spec loading, docs probing, and spec metadata
-- `app/services/schema_extractor.py`: route matching, completeness scoring, and normalized endpoint extraction
-- `app/services/deterministic_repair.py`: deterministic repair engine
-- `app/services/healer.py`: end-to-end healing orchestration
-- `app/services/llm_client.py`: model call and structured-output parsing
-- `app/services/prompt_builder.py`: strict prompt generation
-- `app/services/proxy_adapter.py`: Jenish-facing repair contract
-- `app/services/retry_orchestrator.py`: repair-and-retry workflow logic
-- `app/services/telemetry.py`: persistent healing and workflow telemetry
-- `app/services/repair_cache.py`: reusable repair memory keyed by drift signature
-- `app/testsupport/`: sample OpenAPI spec and trapped-error fixtures
-- `app/utils/`: logging, JSON utilities, and error helpers
-- `tests/`: automated coverage for schema extraction, repair logic, proxy flow, cache, and telemetry
-- `Dockerfile`: portable container image for local runs and demos
-- `.dockerignore`: trims the Docker build context and keeps secrets/local artifacts out of the image
-- `docs/context/`: runbooks, contracts, project notes, and team handoff docs
-- `docs/changes/`: change log for repo-level traceability
-- `docs/journal/`: implementation journal with why each change happened
-- `runtime/`: local cache and telemetry artifacts generated during runs
-
-## Team Ownership
-
-- `Jenish`: Sprint 1 proxy and transport/integration layer
-- `Vedant`: Sprint 2 repair engine and Sprint 4 system integration
-- `Sachin`: Sprint 3 support across environment, training, and evaluation delivery
-
-## Change Tracking Rule
-
-Every code edit should ship with a documentation update. The working agreement
-for that process lives in [docs/context/change-management.md](/home/matter/Documents/ReMorph/docs/context/change-management.md).
-
-## Runbook And Handoffs
-
-- run and validation guide: [docs/context/run-and-test-guide.md](/home/matter/Documents/ReMorph/docs/context/run-and-test-guide.md)
-- proxy contract for Jenish: [docs/context/jenish-proxy-contract.md](/home/matter/Documents/ReMorph/docs/context/jenish-proxy-contract.md)
-- training and reward handoff for Sachin: [docs/context/sachin-training-handoff.md](/home/matter/Documents/ReMorph/docs/context/sachin-training-handoff.md)
+By design, it structurally logs Live Server logic. The Phase 2 Developer/RL Agent must ingest this file and parse the `"actual_server_response"` tracing data, calculating the exact algorithmic divergence to bridge the `"failed_payload"` matrix back into the `"success_payload"`.

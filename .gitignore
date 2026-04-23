@@ -1,36 +1,6 @@
-# Python
-__pycache__/
-*.py[cod]
-*.pyo
-*.pyd
-*.egg-info/
-.pytest_cache/
-
-# Virtual environments
-venv/
 .venv/
-env/
-
-# Environment
-.env
-
-# Coverage and reports
-.coverage
-htmlcov/
-
-# IDE and OS
-.vscode/
-.idea/
-.DS_Store
-Thumbs.db
-
-# Logs
-*.log
-
-# Local-only Codex and source context
-.codex
-.codex/
-from_gpt_context.txt
-
-# Local runtime artifacts
-# runtime/
+__pycache__/
+*.pyc
+.pytest_cache/
+training_dataset copy.json
+dataset_generator copy.py
