@@ -1,9 +1,6 @@
-# Python
+.venv/
 __pycache__/
-*.py[cod]
-*.pyo
-*.pyd
-*.egg-info/
+*.pyc
 .pytest_cache/
 
 # Virtual environments
@@ -37,5 +34,8 @@ from_gpt_context.txt
 # Local runtime artifacts
 # runtime/
 
-
+*.pyc
+.pytest_cache/
+training_dataset copy.json
+dataset_generator copy.py
 prompt_to_codex.txt

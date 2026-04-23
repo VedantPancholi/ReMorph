@@ -1,16 +1,21 @@
 # ReMorph
 
-ReMorph is the Sprint 2 repair engine for a self-healing API agent. It takes a
-trapped API failure, inspects the latest contract, and returns a structured
-repair for payload drift, route drift, or auth drift.
+ReMorph is the self-healing API agent project built across multiple sprint
+phases.
+
+- Sprint 1 provides the live mock server, OpenAPI contract export, and chaos
+  gym / fuzzing setup.
+- Sprint 2 provides the repair engine that takes a trapped API failure and
+  returns a structured repair for payload drift, route drift, or auth drift.
+- Sprint 4 wraps the repair engine with a mutable environment, benchmark loop,
+  reward scoring, and training-facing dataset pipeline.
 
 ## Why This Repo Exists
 
 The project is built from the product direction captured in
-`from_gpt_context.txt`. The goal of Sprint 2 is not to build the whole system.
-The goal is to freeze one believable, explainable, integration-ready repair
-module that Sprint 4 can plug into a proxy, environment, retry loop, and reward
-pipeline.
+`from_gpt_context.txt`. The goal is to move from a believable repair module to
+an end-to-end API self-healing system with benchmarking and training-ready
+artifacts.
 
 ## Quick Start
 
@@ -59,32 +64,30 @@ Important:
 - do not hardcode provider keys in tracked Python files
 - prefer `.venv/bin/python` and `.venv/bin/pytest` unless the venv is already active
 
-## What Sprint 2 Already Delivers
+## What The Repo Delivers Now
 
-- typed request, response, diagnostics, schema, and proxy-contract models
+- Sprint 1 live FastAPI mock server and fuzzing foundation
+- Sprint 2 typed request, response, diagnostics, schema, and proxy-contract models
 - local OpenAPI loading plus multi-source docs-fetch scaffolding
-- docs metadata including source, version, hash, fetch state, and completeness flags
-- schema extraction for nested bodies, query parameters, multiple content types, `$ref` resolution, and security schemes
-- route matching with confidence, ranked candidates, and match reasons
+- schema extraction with route matching, confidence, ranked candidates, and auth parsing
 - deterministic repair strategies for payload, route, auth, and combined drift
 - optional model refinement with safe fallback on invalid model output
 - proxy-facing adapter and retry orchestration
 - persistent telemetry and reusable repair cache
-- explicit unrepairable failure responses
-- a local CLI harness and passing automated test suite
+- Sprint 4 mutable environment, benchmark loop, and reward scoring
+- training-facing episode formatting and TRL-ready dataset preparation
 
-## What Sprint 2 Does Not Try To Be
+## What This Repo Does Not Yet Claim
 
-- not the HTTP proxy itself
-- not the OpenEnv environment
-- not the reward function or training pipeline
-- not the final Sprint 4 evaluation harness
+- not a fully trained production RL policy
+- not final OpenEnv deployment as the only runtime mode
+- not final judge-facing model-improvement proof across large unseen scenario sets
 
-Those pieces belong to the next phase once the repair engine contract is frozen.
+Those pieces come after the benchmark and dataset pipeline are validated.
 
-## Frozen Sprint 2 Contract
+## Stable Repair Contract
 
-Sprint 2 should now be treated as a stable repair component:
+Sprint 2 should be treated as the stable repair component:
 
 - input: `TrappedError`
 - output: `HealedRequest`
@@ -96,14 +99,15 @@ For safer orchestration and explicit failure reasons, integrations can also use:
 - `app.services.proxy_adapter.handle_proxy_failure()`
 - `app.services.proxy_adapter.handle_proxy_failure_with_retry()`
 
-## Runtime Flow
+## Current Runtime Flow
 
-1. A proxy traps an upstream API failure.
-2. ReMorph loads the latest docs or spec bundle.
+1. A proxy or test harness traps an upstream API failure.
+2. ReMorph loads the relevant docs or spec bundle.
 3. ReMorph extracts the best endpoint contract with explainable route matching.
 4. ReMorph builds a repair context and prepares a deterministic baseline.
 5. The model may refine the repair if configured.
 6. ReMorph returns a structured healed request with diagnostics.
+7. Sprint 4 can benchmark the repair, score reward, and format training data.
 
 ## Demo Strength
 
@@ -113,46 +117,130 @@ The current local baseline is strong enough to show the three core cases:
 - Scenario B: route migrated to `/api/v2/finance/ledger` and auth rewritten
 - Scenario C: bearer auth converted into `x-api-key`
 
-## Optional Upgrades After Freeze
+## Sprint 4 Benchmark And Training Flow
 
-These are upgrades worth doing later, but they are no longer required to freeze
-Sprint 2:
+Sprint 4 adds:
 
-- stronger route heuristics for large, noisy specs
-- broader auth support such as OAuth2, cookie auth, and basic auth
-- FastAPI exposure if the team wants HTTP instead of direct Python integration
-- live end-to-end validation with the chosen provider and production-like docs sources
+- a simulated or OpenEnv-style environment backend
+- baseline vs adaptive benchmark runs
+- deterministic reward scoring
+- cache-aware benchmark modes
+- training/eval JSONL generation from benchmark episodes
+- TRL-ready prompt/completion dataset preparation
+
+Typical local flow:
+
+```bash
+.venv/bin/python scripts/run_benchmark.py --episodes-per-scenario 3 --output-dir runtime/sprint4_clean --cache-mode clear --disable-telemetry
+.venv/bin/python scripts/generate_sprint4_dataset.py --episodes-path runtime/sprint4_clean/episodes.jsonl --output-dir runtime/sprint4_clean/dataset --eval-ratio 0.2
+.venv/bin/python -m sprint4.training.trl_train_grpo --episodes-path runtime/sprint4_clean/episodes.jsonl --output-dir runtime/sprint4_clean/training --eval-ratio 0.2
+```
+
+## Sprint 1 Setup
+
+Jenish's Sprint 1 work is the setup for the live mock-server and chaos-gym
+foundation.
+
+### Sprint 1 Requirements
+
+Install the ecosystem dependencies first:
+
+```bash
+pip install -r requirements.txt
+```
+
+If you are using a virtual environment, activate it before running the server
+or generator.
+
+### Sprint 1 Run Order
+
+1. Boot the live target server:
+
+```bash
+uvicorn server.main:app --reload
+```
+
+The server starts on `http://127.0.0.1:8000`.
+
+2. Export or review the OpenAPI contract:
+
+```bash
+python server/export_openapi.py
+```
+
+or
+
+```bash
+python3 -m server.export_openapi
+```
+
+3. Run the universal dataset generator:
+
+```bash
+python dataset_generator.py -m 1
+python dataset_generator.py -m 10
+```
+
+### Sprint 1 Swagger Setup
+
+With the server running, open:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+To authorize in Swagger, paste this JWT into the `HTTPBearer` authorize box:
+
+```text
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZnV6emVyX2FnZW50XzAwNyIsInJvbGUiOiJhZG1pbiJ9.UuceJXhdiSBpwb47N1MffwuX3vd8KFwvtNYZP8wVTTo
+```
+
+For the sample `POST /api/v1/payments/process` route, use:
+
+- `x-api-key: secret`
+- `x-vendor-id: ven-123`
+
+and this baseline payload:
+
+```json
+{
+  "amount": 100.50,
+  "currency": "USD",
+  "card_details": {
+    "card_number": "1234567812345678",
+    "cvv": "123",
+    "expiry": "12/26"
+  },
+  "billing_address": {
+    "street": "123 Wall St",
+    "zip_code": "10005",
+    "iso_country": "US"
+  }
+}
+```
+
+### Sprint 1 Dataset Intent
+
+The Sprint 1 generator produces `training_dataset.json`, which logs valid and
+failing requests against the live mock server. That dataset is the Phase 1
+chaos-gym output that later repair and RL layers can build on.
 
 ## Repository Layout
 
-- `app/`: main application package
-- `app/config.py`: environment-driven configuration
-- `app/constants.py`: shared enums and repair constants
-- `app/main.py`: stable integration entry points
-- `app/models/`: typed contracts for requests, repairs, schemas, and workflows
-- `app/services/doc_fetcher.py`: spec loading, docs probing, and spec metadata
-- `app/services/schema_extractor.py`: route matching, completeness scoring, and normalized endpoint extraction
-- `app/services/deterministic_repair.py`: deterministic repair engine
-- `app/services/healer.py`: end-to-end healing orchestration
-- `app/services/llm_client.py`: model call and structured-output parsing
-- `app/services/prompt_builder.py`: strict prompt generation
-- `app/services/proxy_adapter.py`: Jenish-facing repair contract
-- `app/services/retry_orchestrator.py`: repair-and-retry workflow logic
-- `app/services/telemetry.py`: persistent healing and workflow telemetry
-- `app/services/repair_cache.py`: reusable repair memory keyed by drift signature
-- `app/testsupport/`: sample OpenAPI spec and trapped-error fixtures
-- `app/utils/`: logging, JSON utilities, and error helpers
-- `tests/`: automated coverage for schema extraction, repair logic, proxy flow, cache, and telemetry
-- `Dockerfile`: portable container image for local runs and demos
-- `.dockerignore`: trims the Docker build context and keeps secrets/local artifacts out of the image
-- `docs/context/`: runbooks, contracts, project notes, and team handoff docs
+- `app/`: main repair engine package
+- `server/`: Sprint 1 live mock server and API target
+- `specs/`: exported OpenAPI contracts used by the fuzzer and integrations
+- `sprint4/`: benchmark, environment, rewards, evaluation, and training helpers
+- `scripts/`: local demo, benchmark, and dataset-generation entrypoints
+- `tests/`: automated coverage for repair logic, benchmark flow, and training prep
+- `docs/context/`: runbooks, contracts, project notes, and handoff docs
 - `docs/changes/`: change log for repo-level traceability
-- `docs/journal/`: implementation journal with why each change happened
-- `runtime/`: local cache and telemetry artifacts generated during runs
+- `docs/journal/`: implementation notes with what changed and why
+- `runtime/`: generated cache, telemetry, benchmark, and training artifacts
 
 ## Team Ownership
 
-- `Jenish`: Sprint 1 proxy and transport/integration layer
+- `Jenish`: Sprint 1 proxy / transport layer and live mock-server foundation
 - `Vedant`: Sprint 2 repair engine and Sprint 4 system integration
 - `Sachin`: Sprint 3 support across environment, training, and evaluation delivery
 

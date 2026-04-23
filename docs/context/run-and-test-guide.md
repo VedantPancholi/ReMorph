@@ -9,23 +9,37 @@ Important:
 - prefer `.venv/bin/python` and `.venv/bin/pytest` so you use the project dependencies
 - if you activate the environment with `source .venv/bin/activate`, plain `python` and `pytest` are fine too
 - deterministic repair works without a provider key, so local validation does not depend on Groq
+This guide is the main runbook for ReMorph. It covers setup, local demo flows,
+test execution, correctness checks, and the expected behavior of the Sprint 2
+repair engine.
+
+Important:
+
+- prefer `.venv/bin/python` and `.venv/bin/pytest` so you use the project dependencies
+- if you activate the environment with `source .venv/bin/activate`, plain `python` and `pytest` are fine too
+- deterministic repair works without a provider key, so local validation does not depend on Groq
 
 ## 1. Setup
 
+Create the environment and install dependencies:
 Create the environment and install dependencies:
 
 ```bash
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
 cp .env.example .env
+cp .env.example .env
 ```
 
+Optional activation:
 Optional activation:
 
 ```bash
 source .venv/bin/activate
+source .venv/bin/activate
 ```
 
+If you want model-assisted refinement, add this to `.env`:
 If you want model-assisted refinement, add this to `.env`:
 
 ```env
@@ -119,11 +133,105 @@ docker run --rm --env-file .env remorph --mode heal --scenario c
 ```
 
 ## 3. What Each Run Mode Means
+Security note:
+
+- keep the key in `.env` only
+- never paste secrets into tracked Python files or Markdown docs
+
+## 1A. Docker Setup
+
+If you want anyone to run ReMorph without creating a local Python environment,
+use Docker.
+
+Build the image:
+
+```bash
+docker build -t remorph .
+```
+
+Default container run:
+
+```bash
+docker run --rm remorph
+```
+
+That default command maps to:
+
+```bash
+python run_local_test.py --mode smoke --scenario a
+```
+
+Run a full healing scenario:
+
+```bash
+docker run --rm remorph --mode heal --scenario a
+docker run --rm remorph --mode heal --scenario b
+docker run --rm remorph --mode heal --scenario c
+```
+
+Pass local environment variables into the container:
+
+```bash
+docker run --rm --env-file .env remorph --mode heal --scenario a
+```
+
+Persist runtime artifacts like cache and telemetry on the host:
+
+```bash
+docker run --rm --env-file .env -v "$(pwd)/runtime:/app/runtime" remorph --mode heal --scenario a
+```
+
+Run tests inside Docker:
+
+```bash
+docker run --rm --entrypoint pytest remorph -q
+```
+
+## 2. Fastest Way To Run Everything
+
+Use this sequence from the repo root:
+
+```bash
+.venv/bin/pytest -q
+.venv/bin/python run_local_test.py --mode smoke --scenario a
+.venv/bin/python run_local_test.py --mode smoke --scenario b
+.venv/bin/python run_local_test.py --mode smoke --scenario c
+.venv/bin/python run_local_test.py --mode heal --scenario a
+.venv/bin/python run_local_test.py --mode heal --scenario b
+.venv/bin/python run_local_test.py --mode heal --scenario c
+```
+
+This gives you:
+
+- automated validation
+- schema-extraction validation
+- full repair validation for payload, route, and auth drift
+
+Docker equivalent:
+
+```bash
+docker run --rm --entrypoint pytest remorph -q
+docker run --rm remorph --mode smoke --scenario a
+docker run --rm remorph --mode smoke --scenario b
+docker run --rm remorph --mode smoke --scenario c
+docker run --rm --env-file .env remorph --mode heal --scenario a
+docker run --rm --env-file .env remorph --mode heal --scenario b
+docker run --rm --env-file .env remorph --mode heal --scenario c
+```
+
+## 3. What Each Run Mode Means
 
 ### Smoke Mode
 
 Smoke mode does not call the healing model. It verifies that ReMorph can:
+Smoke mode does not call the healing model. It verifies that ReMorph can:
 
+- validate the trapped error
+- load the spec
+- find the correct route
+- extract schema and auth requirements
+
+Commands:
 - validate the trapped error
 - load the spec
 - find the correct route
@@ -140,8 +248,16 @@ Commands:
 ### Heal Mode
 
 Heal mode runs the real Sprint 2 repair flow:
+Heal mode runs the real Sprint 2 repair flow:
 
 1. validate trapped error
+2. load docs/spec metadata
+3. extract the best endpoint contract
+4. prepare deterministic repair
+5. optionally ask the model for refinement
+6. return a `HealedRequest` with diagnostics
+
+Commands:
 2. load docs/spec metadata
 3. extract the best endpoint contract
 4. prepare deterministic repair
@@ -171,7 +287,24 @@ Safe orchestration wrappers:
 `run_local_test.py` is only a local harness around these core interfaces.
 
 ## 5. Scenario Expectations
+## 4. Integration Entry Points
 
+The stable callable boundary for Sprint 2 is:
+
+- `app.main.process_trapped_error()`
+
+Safe orchestration wrappers:
+
+- `app.main.process_trapped_error_safe()`
+- `app.services.proxy_adapter.handle_proxy_failure()`
+- `app.services.proxy_adapter.handle_proxy_failure_with_retry()`
+
+`run_local_test.py` is only a local harness around these core interfaces.
+
+## 5. Scenario Expectations
+
+The output is correct when the repaired request matches the changed contract,
+not when it preserves the original broken request.
 The output is correct when the repaired request matches the changed contract,
 not when it preserves the original broken request.
 
@@ -184,7 +317,11 @@ Command:
 ```
 
 Expected behavior:
+Expected behavior:
 
+- `healing_action` is `payload_rewrite`
+- `fixed_url` remains `/users`
+- `diagnostics.selected_endpoint_path` is `/users`
 - `healing_action` is `payload_rewrite`
 - `fixed_url` remains `/users`
 - `diagnostics.selected_endpoint_path` is `/users`
@@ -208,7 +345,11 @@ Command:
 ```
 
 Expected behavior:
+Expected behavior:
 
+- `healing_action` is `combined_rewrite`
+- `fixed_url` becomes `https://mock.example.com/api/v2/finance/ledger`
+- `diagnostics.selected_endpoint_path` is `/api/v2/finance/ledger`
 - `healing_action` is `combined_rewrite`
 - `fixed_url` becomes `https://mock.example.com/api/v2/finance/ledger`
 - `diagnostics.selected_endpoint_path` is `/api/v2/finance/ledger`
@@ -229,7 +370,11 @@ Command:
 ```
 
 Expected behavior:
+Expected behavior:
 
+- `healing_action` is `auth_rewrite`
+- `fixed_url` stays on `/api/v2/finance/ledger`
+- `diagnostics.selected_endpoint_path` is `/api/v2/finance/ledger`
 - `healing_action` is `auth_rewrite`
 - `fixed_url` stays on `/api/v2/finance/ledger`
 - `diagnostics.selected_endpoint_path` is `/api/v2/finance/ledger`
@@ -242,7 +387,9 @@ Expected behavior:
 ```
 
 ## 6. Correctness Checklist
+## 6. Correctness Checklist
 
+Whenever you run `--mode heal`, validate these output fields:
 Whenever you run `--mode heal`, validate these output fields:
 
 1. `fixed_url` matches the updated route from the spec.
@@ -265,15 +412,53 @@ Also validate route-explainability signals:
 1. `route_match_score` and `route_match_confidence` are present.
 2. `ranked_candidate_endpoints` shows the top route options.
 3. `route_match_reason` explains why the winning route was selected.
+2. `fixed_payload` uses only fields present in the extracted schema.
+3. `fixed_headers` match the documented auth requirement.
+4. `healing_action` reflects what actually changed.
+5. `schema_summary` or extracted schema context points to the selected endpoint.
+
+Also validate diagnostics:
+
+1. `diagnostics.docs_source` shows which spec source was used.
+2. `diagnostics.selected_endpoint_path` matches the chosen endpoint.
+3. `diagnostics.repair_strategy` tells you whether the result was deterministic, merged, or LLM-assisted.
+4. `diagnostics.fallback_used` tells you whether the model path failed and deterministic repair was used instead.
+5. `diagnostics.docs_confidence`, `diagnostics.spec_hash`, and `diagnostics.spec_version` explain the reliability of the contract that was chosen.
+6. `diagnostics.request_id` and `diagnostics.retry_count` preserve proxy-side context for Sprint 4.
+
+Also validate route-explainability signals:
+
+1. `route_match_score` and `route_match_confidence` are present.
+2. `ranked_candidate_endpoints` shows the top route options.
+3. `route_match_reason` explains why the winning route was selected.
 
 ## 7. Automated Tests
+## 7. Automated Tests
 
+Run the full suite:
 Run the full suite:
 
 ```bash
 .venv/bin/pytest -q
 ```
 
+Targeted suites:
+
+```bash
+.venv/bin/pytest tests/test_schema_extractor.py tests/test_schema_matching.py -q
+.venv/bin/pytest tests/test_healer.py -q
+.venv/bin/pytest tests/test_retry_orchestrator.py -q
+```
+
+Docker equivalents:
+
+```bash
+docker run --rm --entrypoint pytest remorph tests/test_schema_extractor.py tests/test_schema_matching.py -q
+docker run --rm --entrypoint pytest remorph tests/test_healer.py -q
+docker run --rm --entrypoint pytest remorph tests/test_retry_orchestrator.py -q
+```
+
+Current coverage includes:
 Targeted suites:
 
 ```bash
@@ -303,9 +488,22 @@ Current coverage includes:
 - proxy adapter contract
 - retry orchestration
 - repair cache behavior
+- local OpenAPI loading and spec metadata
+- nested payload extraction
+- parameterized route matching
+- ambiguous match handling
+- low-confidence route rejection
+- ranked route recovery when exact matching fails
+- deterministic payload, route, and auth repair
+- model-output parsing and fallback behavior
+- proxy adapter contract
+- retry orchestration
+- repair cache behavior
 
 If these tests pass, the current Sprint 2 baseline is internally consistent.
+If these tests pass, the current Sprint 2 baseline is internally consistent.
 
+## 8. Model-Assisted Validation
 ## 8. Model-Assisted Validation
 
 After adding `REMORPH_GROQ_API_KEY` to `.env`, run:
@@ -316,6 +514,31 @@ After adding `REMORPH_GROQ_API_KEY` to `.env`, run:
 
 What changes when the key is present:
 
+- deterministic repair still prepares a safe baseline
+- the model may refine the repaired output
+- if the model fails or returns invalid structure, ReMorph falls back safely
+
+Model-assisted correctness still has to obey the same contract:
+
+- no invented fields outside the schema
+- no preservation of the old broken route or auth shape
+- no downgrade from the deterministic baseline
+
+## 9. Runtime Artifacts To Inspect
+
+After running heal flows, inspect:
+
+- `runtime/repair_cache.json`
+- `runtime/telemetry/healing_events.jsonl`
+- `runtime/telemetry/healing_summary.json`
+- `runtime/telemetry/workflow_events.jsonl`
+- `runtime/telemetry/workflow_summary.json`
+
+These files are especially useful for team handoff, reward design, and demo screenshots.
+
+## 10. Demo Flow
+
+For a live walkthrough:
 - deterministic repair still prepares a safe baseline
 - the model may refine the repaired output
 - if the model fails or returns invalid structure, ReMorph falls back safely
