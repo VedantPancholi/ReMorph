@@ -178,7 +178,7 @@ summary, while the raw labels remain visible in `benchmark_report.json` and
 Run the main suite:
 
 ```bash
-.venv/bin/pytest -q
+.venv/bin/python -m pytest -q
 ```
 
 Key focused areas:

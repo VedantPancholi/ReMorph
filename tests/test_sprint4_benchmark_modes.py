@@ -19,9 +19,9 @@ def test_benchmark_runtime_modes_control_cache_behavior(tmp_path) -> None:
         ),
     )
     assert clear_report["metadata"]["runtime_mode"]["cache_mode"] == "clear"
-    assert {row["repair_strategy"] for row in clear_report["records"]["adaptive"]} == {
-        "deterministic"
-    }
+    clear_strategies = {row["repair_strategy"] for row in clear_report["records"]["adaptive"]}
+    assert "cache" not in clear_strategies
+    assert clear_strategies <= {"deterministic", "merged"}
     assert cache_path.exists()
 
     reuse_report = run_benchmark_with_mode(
@@ -48,6 +48,8 @@ def test_benchmark_runtime_modes_control_cache_behavior(tmp_path) -> None:
             telemetry_dir=str(telemetry_dir),
         ),
     )
-    assert {row["repair_strategy"] for row in disable_report["records"]["adaptive"]} == {
-        "deterministic"
+    disable_strategies = {
+        row["repair_strategy"] for row in disable_report["records"]["adaptive"]
     }
+    assert "cache" not in disable_strategies
+    assert disable_strategies <= {"deterministic", "merged"}

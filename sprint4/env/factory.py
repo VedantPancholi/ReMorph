@@ -32,7 +32,7 @@ class LiveEnvConfig:
     """Settings needed to construct the live FastAPI environment."""
 
     base_url: str
-    spec_path: str = "chaos_gym/specs/openapi.json"
+    spec_path: str = "target_api/specs/openapi.json"
 
 
 def build_environment(
