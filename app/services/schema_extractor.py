@@ -30,6 +30,7 @@ def extract_schema_for_route(
     request_schema = _extract_request_schema(spec, operation)
     security_requirements = _extract_security_requirements(spec, operation)
     query_parameters = _extract_parameters(operation, location="query")
+    header_parameters = _extract_parameters(operation, location="header")
     supported_content_types = _extract_supported_content_types(operation)
     completeness_flags = _build_completeness_flags(
         request_schema=request_schema,
@@ -57,6 +58,7 @@ def extract_schema_for_route(
             flatten_request_schema(spec, request_schema)
         ),
         query_parameters=query_parameters,
+        header_parameters=header_parameters,
         supported_content_types=supported_content_types,
         security_requirements=security_requirements,
         completeness_flags=completeness_flags,

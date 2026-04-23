@@ -31,8 +31,9 @@ Thumbs.db
 .codex/
 from_gpt_context.txt
 
-# Local runtime artifacts
-# runtime/
+# Runtime benchmark artifacts are intentionally tracked for demos and reports.
+!runtime/
+!runtime/**
 
 *.pyc
 .pytest_cache/

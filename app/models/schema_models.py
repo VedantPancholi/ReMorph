@@ -59,6 +59,7 @@ class EndpointSchema(BaseModel):
     properties: dict[str, Any] = Field(default_factory=dict)
     request_structure: dict[str, Any] = Field(default_factory=dict)
     query_parameters: list[QueryParameter] = Field(default_factory=list)
+    header_parameters: list[QueryParameter] = Field(default_factory=list)
     supported_content_types: list[str] = Field(default_factory=list)
     security_requirements: list[SecurityRequirement] = Field(default_factory=list)
     completeness_flags: list[str] = Field(default_factory=list)

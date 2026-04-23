@@ -71,20 +71,38 @@ def _rewrite_headers(
     endpoint_schema: EndpointSchema,
 ) -> dict[str, str] | None:
     headers = dict(trapped_error.failed_headers or {})
-    if not endpoint_schema.security_requirements:
-        return headers or None
-
-    token = _extract_auth_token(headers)
+    failure_signals = trapped_error.failure_signals or {}
+    missing_headers = {
+        field
+        for field in failure_signals.get("missing_headers", [])
+        if isinstance(field, str)
+    }
     changed = False
 
+    token = _extract_auth_token(headers)
     for requirement in endpoint_schema.security_requirements:
         if requirement.type == "apiKey" and requirement.header_name:
-            if token:
+            if token and requirement.header_name not in headers:
                 headers[requirement.header_name] = token
-            headers.pop("Authorization", None)
-            changed = True
-        elif requirement.type == "http" and requirement.scheme == "bearer" and token:
-            headers["Authorization"] = f"Bearer {token}"
+                changed = True
+            if token and "Authorization" in headers and requirement.header_name != "Authorization":
+                headers.pop("Authorization", None)
+                changed = True
+        elif requirement.type == "http" and requirement.scheme == "bearer":
+            if token and headers.get("Authorization") != f"Bearer {token}":
+                headers["Authorization"] = f"Bearer {token}"
+                changed = True
+
+    for parameter in endpoint_schema.header_parameters:
+        if not parameter.required:
+            continue
+        if parameter.name in headers and headers.get(parameter.name):
+            continue
+        if missing_headers and parameter.name not in missing_headers:
+            continue
+        default_value = _default_header_value(parameter.name)
+        if default_value is not None:
+            headers[parameter.name] = default_value
             changed = True
 
     return headers if changed or headers else None
@@ -98,19 +116,42 @@ def _rewrite_payload(
         return trapped_error.failed_payload
 
     source_payload = trapped_error.failed_payload or {}
-    if not source_payload:
-        return source_payload or None
+    failure_signals = trapped_error.failure_signals or {}
+    missing_fields = failure_signals.get("missing_fields", [])
+    if not source_payload and not missing_fields:
+        return trapped_error.failed_payload
 
-    rebuilt = _materialize_from_schema(endpoint_schema.request_structure, source_payload)
+    rebuilt = _materialize_from_schema(
+        endpoint_schema.request_structure,
+        source_payload,
+        failure_signals=failure_signals,
+    )
     return rebuilt or source_payload
 
 
-def _materialize_from_schema(schema: dict[str, Any], source_payload: dict[str, Any]) -> Any:
+def _materialize_from_schema(
+    schema: dict[str, Any],
+    source_payload: dict[str, Any],
+    *,
+    failure_signals: dict[str, Any],
+) -> Any:
     schema_type = schema.get("type")
     if schema_type == "object":
         result: dict[str, Any] = {}
+        required_fields = set(schema.get("required", []))
+        missing_fields = {
+            field
+            for field in failure_signals.get("missing_fields", [])
+            if isinstance(field, str)
+        }
         for key, child_schema in schema.get("properties", {}).items():
-            value = _materialize_from_schema(child_schema, source_payload)
+            value = _materialize_from_schema(
+                child_schema,
+                source_payload,
+                failure_signals=failure_signals,
+            )
+            if value is None and (key in required_fields or key in missing_fields):
+                value = _default_value_for_schema(child_schema, key=key)
             if value is not None:
                 result[key] = value
         return result
@@ -118,7 +159,10 @@ def _materialize_from_schema(schema: dict[str, Any], source_payload: dict[str, A
     if schema_type == "array":
         return []
 
-    return _best_source_value(source_payload, schema)
+    value = _best_source_value(source_payload, schema)
+    if value is not None:
+        return value
+    return _default_value_for_schema(schema)
 
 
 def _best_source_value(source_payload: dict[str, Any], schema: dict[str, Any]) -> Any:
@@ -132,6 +176,45 @@ def _best_source_value(source_payload: dict[str, Any], schema: dict[str, Any]) -
         if exact is not None:
             return exact
 
+    return None
+
+
+def _default_value_for_schema(schema: dict[str, Any], *, key: str | None = None) -> Any:
+    schema_type = schema.get("type")
+    enum_values = schema.get("enum")
+    if isinstance(enum_values, list) and enum_values:
+        return enum_values[0]
+
+    normalized_key = _normalize_key(key or schema.get("name", ""))
+    schema_format = str(schema.get("format") or "")
+
+    if "email" in normalized_key or schema_format == "email":
+        return "test@example.com"
+    if "expiry" in normalized_key:
+        return "12/26"
+    if "cvv" in normalized_key:
+        return "123"
+    if "cardnumber" in normalized_key or "pan" in normalized_key:
+        return "1234567812345678"
+    if "zipcode" in normalized_key or "postal" in normalized_key:
+        return "12345"
+    if "country" in normalized_key or "iso" in normalized_key:
+        return "US"
+    if "amount" in normalized_key:
+        return 100
+
+    if schema_type == "string":
+        return "test_string"
+    if schema_type == "integer":
+        return 1
+    if schema_type == "number":
+        return 100
+    if schema_type == "boolean":
+        return True
+    if schema_type == "object":
+        return {}
+    if schema_type == "array":
+        return []
     return None
 
 
@@ -230,7 +313,7 @@ def _build_reasoning(changes: list[str], endpoint_schema: EndpointSchema) -> str
 
 def _estimate_confidence(changes: list[str], endpoint_schema: EndpointSchema, error_code: int) -> float:
     confidence = 0.55
-    if error_code in {400, 401, 404}:
+    if error_code in {400, 401, 404, 422}:
         confidence += 0.1
     if endpoint_schema.path:
         confidence += 0.1
@@ -248,9 +331,25 @@ def _build_schema_summary(endpoint_schema: EndpointSchema, changes: list[str]) -
         "path": endpoint_schema.path,
         "method": endpoint_schema.method,
         "required_fields": endpoint_schema.required_fields,
+        "required_header_parameters": [
+            parameter.name
+            for parameter in endpoint_schema.header_parameters
+            if parameter.required
+        ],
         "security_requirements": [
             requirement.model_dump(mode="json")
             for requirement in endpoint_schema.security_requirements
         ],
         "applied_changes": changes,
     }
+
+
+def _default_header_value(header_name: str) -> str | None:
+    normalized = _normalize_key(header_name)
+    if normalized in {"xvendorid", "vendorid"}:
+        return "ven-123"
+    if normalized in {"xapikey", "apikey"}:
+        return "secret"
+    if normalized == "authorization":
+        return "Bearer demo-token"
+    return None

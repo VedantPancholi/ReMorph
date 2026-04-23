@@ -19,6 +19,9 @@ class Sprint4Settings(BaseSettings):
     )
 
     ENV_BACKEND: str = "simulated"
+    ENV_MODE: str = "local"
+    LIVE_BASE_URL: str = "http://127.0.0.1:8000"
+    LIVE_SPEC_PATH: str = "specs/openapi.json"
     OPENENV_CLIENT_MODULE: str = "echo_env"
     OPENENV_CLIENT_CLASS: str = "EchoEnv"
     OPENENV_BASE_URL: str = ""
@@ -33,4 +36,3 @@ class Sprint4Settings(BaseSettings):
 def get_sprint4_settings() -> Sprint4Settings:
     """Return cached settings object."""
     return Sprint4Settings()
-

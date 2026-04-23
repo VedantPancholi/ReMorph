@@ -45,9 +45,18 @@ def write_markdown_summary(report: dict[str, Any], output_path: str) -> str:
     ]
     for scenario, accuracy in adaptive["per_scenario_accuracy"].items():
         lines.append(f"- {scenario}: {accuracy:.2%}")
+    raw_accuracy = adaptive.get("per_raw_scenario_accuracy", {})
+    if raw_accuracy:
+        lines.extend(
+            [
+                "",
+                "## Per Raw Scenario Accuracy (Adaptive)",
+            ]
+        )
+        for scenario, accuracy in raw_accuracy.items():
+            lines.append(f"- {scenario}: {accuracy:.2%}")
 
     path = Path(output_path)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return str(path)
-

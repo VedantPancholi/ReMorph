@@ -46,6 +46,8 @@ class EpisodeRecord:
     latency_ms: int
     reward_breakdown: dict[str, float]
     agent_type: str
+    environment_mode: str
+    raw_scenario_type: str | None = None
 
 
 @dataclass(frozen=True)
@@ -69,11 +71,13 @@ class WorkflowRunner:
         reward_function: RewardFunction | None = None,
         episode_log_path: str = "runtime/sprint4/episodes.jsonl",
         max_repair_cycles: int = 2,
+        environment_mode: str = "local",
     ) -> None:
         self._env = env
         self._reward_function = reward_function or RewardFunction()
         self._episode_log_path = Path(episode_log_path)
         self._max_repair_cycles = max_repair_cycles
+        self._environment_mode = environment_mode
 
     def run_episode(
         self,
@@ -167,6 +171,7 @@ class WorkflowRunner:
                 headers=current_request.get("headers"),
                 execution_result=current_result,
                 scenario_type=scenario_type,
+                raw_scenario_type=request.get("raw_scenario_type"),
                 retry_count=cycle - 1,
             )
             repair_result = run_repair(trapped_error, local_spec_path=local_spec_path)
@@ -263,6 +268,9 @@ class WorkflowRunner:
             latency_ms=latency_ms,
             reward_breakdown=reward.breakdown,
             agent_type=agent_type,
+            environment_mode=self._environment_mode,
+            raw_scenario_type=(trapped_error or {}).get("raw_scenario_type")
+            or original_request.get("raw_scenario_type"),
         )
         self._episode_log_path.parent.mkdir(parents=True, exist_ok=True)
         with self._episode_log_path.open("a", encoding="utf-8") as handle:

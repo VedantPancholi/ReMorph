@@ -121,12 +121,14 @@ The current local baseline is strong enough to show the three core cases:
 
 Sprint 4 adds:
 
-- a simulated or OpenEnv-style environment backend
+- local and live environment modes
+- a simulated, live FastAPI, or OpenEnv-style backend
 - baseline vs adaptive benchmark runs
 - deterministic reward scoring
 - cache-aware benchmark modes
 - training/eval JSONL generation from benchmark episodes
 - TRL-ready prompt/completion dataset preparation
+- a Phase 1 dataset adapter for `training_dataset.json`
 
 Typical local flow:
 
@@ -135,6 +137,32 @@ Typical local flow:
 .venv/bin/python scripts/generate_sprint4_dataset.py --episodes-path runtime/sprint4_clean/episodes.jsonl --output-dir runtime/sprint4_clean/dataset --eval-ratio 0.2
 .venv/bin/python -m sprint4.training.trl_train_grpo --episodes-path runtime/sprint4_clean/episodes.jsonl --output-dir runtime/sprint4_clean/training --eval-ratio 0.2
 ```
+
+Live benchmark flow:
+
+```bash
+.venv/bin/python -m uvicorn server.main:app --reload
+.venv/bin/python scripts/run_benchmark.py --env-mode live --live-base-url http://127.0.0.1:8000 --episodes-per-scenario 1 --output-dir runtime/sprint4_live --cache-mode disable --disable-telemetry
+```
+
+Run every raw Sprint 1 live scenario:
+
+```bash
+.venv/bin/python scripts/run_benchmark.py --env-mode live --live-base-url http://127.0.0.1:8000 --live-scenario-selection all --episodes-per-scenario 1 --output-dir runtime/sprint4_live_all --cache-mode disable --disable-telemetry
+```
+
+Representative live auth now defaults to `auth_missing_tenant`, because that
+case is repairable from the contract. If you want to benchmark the harder
+unrecoverable case, run `--live-raw-scenario auth_missing_token`.
+
+Top-level summaries use broad categories:
+
+- `payload_drift`
+- `route_drift`
+- `auth_drift`
+
+Exact Sprint 1 labels are preserved as `raw_scenario_type` inside
+`episodes.jsonl` and `benchmark_report.json`.
 
 ## Sprint 1 Setup
 

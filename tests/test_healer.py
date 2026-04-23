@@ -112,3 +112,102 @@ def test_heal_request_falls_back_to_deterministic_auth_repair(monkeypatch) -> No
     assert result.fixed_headers == {"x-api-key": "demo-token"}
     assert result.diagnostics is not None
     assert result.diagnostics.retry_count == 1
+
+
+def test_heal_request_uses_failure_signals_for_422_missing_fields(monkeypatch) -> None:
+    monkeypatch.setattr(
+        healer,
+        "call_healing_model",
+        lambda _system_prompt, _user_prompt: (_ for _ in ()).throw(
+            healer.LLMHealingError("provider unavailable")
+        ),
+    )
+
+    trapped_error = healer.TrappedError.model_validate(
+        {
+            "target_url": "http://127.0.0.1:8000/api/v1/payments/process",
+            "method": "POST",
+            "failed_payload": {
+                "currency": "USD",
+                "card_details": {
+                    "card_number": "1234567812345678",
+                    "cvv": "123",
+                    "expiry": "12/26",
+                },
+                "billing_address": {
+                    "street": "test_string",
+                    "zip_code": "12345",
+                    "iso_country": "US",
+                },
+            },
+            "failed_headers": {
+                "x-api-key": "secret",
+                "x-vendor-id": "ven-123",
+                "Authorization": "Bearer demo-token",
+            },
+            "error_code": 422,
+            "error_message": "Field required",
+            "failure_signals": {
+                "missing_fields": ["amount"],
+                "validation_paths": [["body", "amount"]],
+            },
+        }
+    )
+    result = healer.heal_request(
+        trapped_error,
+        local_spec_path="specs/openapi.json",
+    )
+
+    assert result.healing_action == "payload_rewrite"
+    assert result.fixed_payload is not None
+    assert result.fixed_payload["amount"] == 100
+
+
+def test_heal_request_repairs_missing_required_header_from_live_failure(monkeypatch) -> None:
+    monkeypatch.setattr(
+        healer,
+        "call_healing_model",
+        lambda _system_prompt, _user_prompt: (_ for _ in ()).throw(
+            healer.LLMHealingError("provider unavailable")
+        ),
+    )
+
+    trapped_error = healer.TrappedError.model_validate(
+        {
+            "target_url": "http://127.0.0.1:8000/api/v1/payments/process",
+            "method": "POST",
+            "failed_payload": {
+                "amount": 100,
+                "currency": "USD",
+                "card_details": {
+                    "card_number": "1234567812345678",
+                    "cvv": "123",
+                    "expiry": "12/26",
+                },
+                "billing_address": {
+                    "street": "test_string",
+                    "zip_code": "12345",
+                    "iso_country": "US",
+                },
+            },
+            "failed_headers": {
+                "x-api-key": "secret",
+                "Authorization": "Bearer demo-token",
+            },
+            "error_code": 422,
+            "error_message": "Field required",
+            "raw_scenario_type": "auth_missing_tenant",
+            "failure_signals": {
+                "missing_headers": ["x-vendor-id"],
+                "validation_paths": [["header", "x-vendor-id"]],
+            },
+        }
+    )
+    result = healer.heal_request(
+        trapped_error,
+        local_spec_path="specs/openapi.json",
+    )
+
+    assert result.healing_action == "auth_rewrite"
+    assert result.fixed_headers is not None
+    assert result.fixed_headers["x-vendor-id"] == "ven-123"

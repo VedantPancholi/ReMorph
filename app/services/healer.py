@@ -213,7 +213,7 @@ def _elapsed_ms(started_at: float) -> int:
 
 
 def _infer_scenario_type(error_code: int) -> str:
-    if error_code == 400:
+    if error_code in {400, 422}:
         return "payload_drift"
     if error_code == 401:
         return "auth_drift"

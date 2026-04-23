@@ -20,7 +20,12 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Run Sprint 4 benchmark.")
     parser.add_argument("--episodes-per-scenario", type=int, default=1)
     parser.add_argument("--output-dir", default=settings.BENCHMARK_OUTPUT_DIR)
-    parser.add_argument("--backend", choices=["simulated", "openenv"], default=settings.ENV_BACKEND)
+    parser.add_argument("--env-mode", choices=["local", "live"], default=settings.ENV_MODE)
+    parser.add_argument("--backend", choices=["simulated", "live", "openenv"], default=settings.ENV_BACKEND)
+    parser.add_argument("--live-base-url", default=settings.LIVE_BASE_URL)
+    parser.add_argument("--live-spec-path", default=settings.LIVE_SPEC_PATH)
+    parser.add_argument("--live-scenario-selection", choices=["representative", "all"], default="representative")
+    parser.add_argument("--live-raw-scenario", default="")
     parser.add_argument("--openenv-client-module", default=settings.OPENENV_CLIENT_MODULE)
     parser.add_argument("--openenv-client-class", default=settings.OPENENV_CLIENT_CLASS)
     parser.add_argument("--openenv-base-url", default=settings.OPENENV_BASE_URL)
@@ -42,6 +47,11 @@ def main() -> None:
         episodes_per_scenario=args.episodes_per_scenario,
         output_dir=args.output_dir,
         backend=args.backend,
+        env_mode=args.env_mode,
+        live_base_url=args.live_base_url,
+        live_spec_path=args.live_spec_path,
+        live_scenario_selection=args.live_scenario_selection,
+        live_raw_scenario_filter=args.live_raw_scenario or None,
         openenv_config=openenv_config if args.backend == "openenv" else None,
         mode=BenchmarkRuntimeMode(
             cache_mode=args.cache_mode,

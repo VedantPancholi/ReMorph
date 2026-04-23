@@ -17,6 +17,9 @@ class EnvironmentResponse:
     status_code: int
     message: str | None = None
     body: dict[str, Any] | None = None
+    raw_response_text: str | None = None
+    parsed_error: dict[str, Any] | list[Any] | None = None
+    metadata: dict[str, Any] | None = None
 
 
 class MutableAPIEnvironment(APIEnvironment):

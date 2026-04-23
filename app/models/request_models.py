@@ -32,6 +32,8 @@ class TrappedError(BaseModel):
     request_id: str | None = None
     source_component: str | None = None
     retry_count: int = 0
+    raw_scenario_type: str | None = None
+    failure_signals: dict[str, Any] | None = None
 
     @field_validator("method")
     @classmethod

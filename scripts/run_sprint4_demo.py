@@ -10,19 +10,32 @@ from typing import cast
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from sprint4.config import get_sprint4_settings
-from sprint4.env.factory import EnvironmentBackend, OpenEnvClientConfig, build_environment
-from sprint4.env.scenario_loader import default_scenarios, load_contract_bundle
+from sprint4.env.factory import (
+    EnvironmentBackend,
+    LiveEnvConfig,
+    OpenEnvClientConfig,
+    build_environment,
+    resolve_backend,
+)
+from sprint4.env.scenario_loader import default_live_scenarios, default_scenarios, load_contract_bundle
 from sprint4.proxy.workflow_runner import WorkflowRunner
 
 
 def main() -> None:
     settings = get_sprint4_settings()
-    backend_value = settings.ENV_BACKEND.strip().lower()
-    if backend_value not in {"simulated", "openenv"}:
-        raise ValueError("REMORPH_S4_ENV_BACKEND must be 'simulated' or 'openenv'")
-    backend = cast(EnvironmentBackend, backend_value)
+    backend = cast(
+        EnvironmentBackend,
+        resolve_backend(
+            backend=cast(EnvironmentBackend, settings.ENV_BACKEND.strip().lower()),
+            env_mode=cast(str, settings.ENV_MODE.strip().lower()),
+        ),
+    )
     bundle = load_contract_bundle()
-    scenario = next(item for item in default_scenarios() if item.drift_mode == "route")
+    scenario = (
+        next(item for item in default_live_scenarios() if item.drift_mode == "route")
+        if backend == "live"
+        else next(item for item in default_scenarios() if item.drift_mode == "route")
+    )
     openenv_cfg = OpenEnvClientConfig(
         module=settings.OPENENV_CLIENT_MODULE,
         class_name=settings.OPENENV_CLIENT_CLASS,
@@ -33,12 +46,19 @@ def main() -> None:
         bundle=bundle,
         backend=backend,
         openenv_config=openenv_cfg if backend == "openenv" else None,
+        live_config=LiveEnvConfig(
+            base_url=settings.LIVE_BASE_URL,
+            spec_path=settings.LIVE_SPEC_PATH,
+        )
+        if backend == "live"
+        else None,
     )
     env.apply_drift(scenario.drift_mode)
     runner = WorkflowRunner(
         env=env,
         episode_log_path=settings.EPISODE_LOG_PATH,
         max_repair_cycles=settings.MAX_REPAIR_CYCLES,
+        environment_mode="live" if backend == "live" else "local",
     )
 
     request = {
@@ -46,17 +66,18 @@ def main() -> None:
         "url": scenario.url,
         "headers": scenario.headers,
         "payload": scenario.payload,
+        "raw_scenario_type": scenario.raw_scenario_type,
     }
     baseline = runner.run_episode(
         scenario_type=scenario.scenario_type,
         request=request,
-        local_spec_path=bundle.drift_paths[scenario.drift_mode],
+        local_spec_path=scenario.local_spec_path or bundle.drift_paths[scenario.drift_mode],
         adaptive=False,
     )
     adaptive = runner.run_episode(
         scenario_type=scenario.scenario_type,
         request=request,
-        local_spec_path=bundle.drift_paths[scenario.drift_mode],
+        local_spec_path=scenario.local_spec_path or bundle.drift_paths[scenario.drift_mode],
         adaptive=True,
     )
 

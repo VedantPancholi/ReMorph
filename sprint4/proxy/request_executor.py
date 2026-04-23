@@ -17,6 +17,9 @@ class RequestExecutionResult:
     status_code: int
     error_message: str | None = None
     response_body: dict[str, Any] | None = None
+    raw_response_text: str | None = None
+    parsed_error: dict[str, Any] | list[Any] | None = None
+    metadata: dict[str, Any] | None = None
 
 
 def execute_against_env(
@@ -37,5 +40,8 @@ def _normalize_response(response: EnvironmentResponse) -> RequestExecutionResult
         success=response.success,
         status_code=response.status_code,
         error_message=None if response.success else response.message,
-        response_body=response.body if response.success else None,
+        response_body=response.body,
+        raw_response_text=response.raw_response_text,
+        parsed_error=response.parsed_error,
+        metadata=response.metadata,
     )
