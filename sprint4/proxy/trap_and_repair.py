@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Any
+from urllib.parse import parse_qsl, urlsplit
 from uuid import uuid4
 
 from app.main import process_trapped_error
@@ -57,6 +58,8 @@ def package_trapped_error(
         "failed_headers": headers,
         "error_code": execution_result.status_code,
         "error_message": execution_result.error_message or "Unknown failure",
+        "query_params": _extract_query_params(url),
+        "path_params": _extract_path_params(url, failure_signals),
         "source_component": metadata.get("source_component") or f"sprint4:{scenario_type}",
         "request_id": metadata.get("request_id") or f"sprint4-{uuid4().hex[:12]}",
         "retry_count": retry_count,
@@ -66,6 +69,31 @@ def package_trapped_error(
         "actual_server_response_json": execution_result.parsed_error,
         "failure_signals": failure_signals,
     }
+
+
+def _extract_query_params(url: str) -> dict[str, Any] | None:
+    pairs = parse_qsl(urlsplit(url).query, keep_blank_values=True)
+    if not pairs:
+        return None
+    return {key: value for key, value in pairs}
+
+
+def _extract_path_params(url: str, failure_signals: dict[str, Any]) -> dict[str, Any] | None:
+    path_names = [
+        loc[-1]
+        for loc in failure_signals.get("validation_paths", [])
+        if isinstance(loc, list) and len(loc) >= 2 and loc[0] == "path"
+    ]
+    if not path_names:
+        return None
+
+    path_segments = [segment for segment in urlsplit(url).path.split("/") if segment]
+    extracted: dict[str, Any] = {}
+    for name in path_names:
+        placeholder = f"{{{name}}}"
+        if placeholder in path_segments:
+            extracted[name] = placeholder
+    return extracted or None
 
 
 def run_repair(

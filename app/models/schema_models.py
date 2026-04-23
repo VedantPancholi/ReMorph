@@ -22,6 +22,9 @@ class QueryParameter(BaseModel):
     location: str
     required: bool = False
     schema_type: str | None = None
+    schema_format: str | None = None
+    schema_default: Any | None = None
+    schema_pattern: str | None = None
 
 
 class RouteMatchCandidate(BaseModel):
@@ -59,6 +62,7 @@ class EndpointSchema(BaseModel):
     properties: dict[str, Any] = Field(default_factory=dict)
     request_structure: dict[str, Any] = Field(default_factory=dict)
     query_parameters: list[QueryParameter] = Field(default_factory=list)
+    path_parameters: list[QueryParameter] = Field(default_factory=list)
     header_parameters: list[QueryParameter] = Field(default_factory=list)
     supported_content_types: list[str] = Field(default_factory=list)
     security_requirements: list[SecurityRequirement] = Field(default_factory=list)

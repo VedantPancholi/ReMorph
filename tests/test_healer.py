@@ -211,3 +211,214 @@ def test_heal_request_repairs_missing_required_header_from_live_failure(monkeypa
     assert result.healing_action == "auth_rewrite"
     assert result.fixed_headers is not None
     assert result.fixed_headers["x-vendor-id"] == "ven-123"
+
+
+def test_heal_request_corrects_method_spoof_on_exact_live_route(monkeypatch) -> None:
+    monkeypatch.setattr(
+        healer,
+        "call_healing_model",
+        lambda _system_prompt, _user_prompt: (_ for _ in ()).throw(
+            healer.LLMHealingError("provider unavailable")
+        ),
+    )
+
+    trapped_error = healer.TrappedError.model_validate(
+        {
+            "target_url": "http://127.0.0.1:8000/api/v1/payments/process",
+            "method": "GET",
+            "failed_payload": None,
+            "failed_headers": {
+                "x-api-key": "secret",
+                "x-vendor-id": "ven-123",
+                "Authorization": "Bearer demo-token",
+            },
+            "error_code": 405,
+            "error_message": "Method not allowed",
+        }
+    )
+    result = healer.heal_request(
+        trapped_error,
+        local_spec_path="target_api/specs/openapi.json",
+    )
+
+    assert result.healing_action == "route_rewrite"
+    assert result.fixed_method == "POST"
+    assert result.fixed_url == "http://127.0.0.1:8000/api/v1/payments/process"
+
+
+def test_heal_request_fills_required_live_query_parameters(monkeypatch) -> None:
+    monkeypatch.setattr(
+        healer,
+        "call_healing_model",
+        lambda _system_prompt, _user_prompt: (_ for _ in ()).throw(
+            healer.LLMHealingError("provider unavailable")
+        ),
+    )
+
+    trapped_error = healer.TrappedError.model_validate(
+        {
+            "target_url": "http://127.0.0.1:8000/api/v1/ledger/transactions",
+            "method": "GET",
+            "failed_payload": None,
+            "failed_headers": {
+                "Authorization": "Bearer demo-token",
+            },
+            "error_code": 422,
+            "error_message": "Field required; Field required",
+            "failure_signals": {
+                "validation_paths": [
+                    ["query", "start_date"],
+                    ["query", "end_date"],
+                ],
+            },
+        }
+    )
+    result = healer.heal_request(
+        trapped_error,
+        local_spec_path="target_api/specs/openapi.json",
+    )
+
+    assert "start_date=2024-01-01T00%3A00%3A00Z" in result.fixed_url
+    assert "end_date=2024-01-01T00%3A00%3A00Z" in result.fixed_url
+
+
+def test_heal_request_fills_unresolved_live_path_parameter(monkeypatch) -> None:
+    monkeypatch.setattr(
+        healer,
+        "call_healing_model",
+        lambda _system_prompt, _user_prompt: (_ for _ in ()).throw(
+            healer.LLMHealingError("provider unavailable")
+        ),
+    )
+
+    trapped_error = healer.TrappedError.model_validate(
+        {
+            "target_url": "http://127.0.0.1:8000/api/v1/payments/{trx_id}",
+            "method": "DELETE",
+            "failed_payload": None,
+            "failed_headers": {
+                "x-api-key": "secret",
+                "x-vendor-id": "ven-123",
+                "Authorization": "Bearer demo-token",
+            },
+            "error_code": 422,
+            "error_message": "Input should be a valid UUID",
+            "failure_signals": {
+                "validation_paths": [["path", "trx_id"]],
+            },
+        }
+    )
+    result = healer.heal_request(
+        trapped_error,
+        local_spec_path="target_api/specs/openapi.json",
+    )
+
+    assert result.fixed_url == "http://127.0.0.1:8000/api/v1/payments/123e4567-e89b-12d3-a456-426614174000"
+
+
+def test_heal_request_builds_body_after_method_correction(monkeypatch) -> None:
+    monkeypatch.setattr(
+        healer,
+        "call_healing_model",
+        lambda _system_prompt, _user_prompt: (_ for _ in ()).throw(
+            healer.LLMHealingError("provider unavailable")
+        ),
+    )
+
+    trapped_error = healer.TrappedError.model_validate(
+        {
+            "target_url": "http://127.0.0.1:8000/api/v1/payments/process",
+            "method": "POST",
+            "failed_payload": None,
+            "failed_headers": {
+                "x-api-key": "secret",
+                "x-vendor-id": "ven-123",
+                "Authorization": "Bearer demo-token",
+            },
+            "error_code": 422,
+            "error_message": "Field required",
+            "failure_signals": {
+                "validation_paths": [["body"]],
+            },
+        }
+    )
+    result = healer.heal_request(
+        trapped_error,
+        local_spec_path="target_api/specs/openapi.json",
+    )
+
+    assert result.healing_action == "payload_rewrite"
+    assert result.fixed_payload is not None
+    assert result.fixed_payload["amount"] == 100
+    assert result.fixed_payload["currency"] == "USD"
+
+
+def test_heal_request_replaces_invalid_live_query_parameter(monkeypatch) -> None:
+    monkeypatch.setattr(
+        healer,
+        "call_healing_model",
+        lambda _system_prompt, _user_prompt: (_ for _ in ()).throw(
+            healer.LLMHealingError("provider unavailable")
+        ),
+    )
+
+    trapped_error = healer.TrappedError.model_validate(
+        {
+            "target_url": "http://127.0.0.1:8000/api/v1/ledger/transactions?start_date=2024-01-01T00:00:00Z&end_date=2024-01-02T00:00:00Z&limit=100/invalid_path_404",
+            "method": "GET",
+            "failed_payload": None,
+            "failed_headers": {
+                "Authorization": "Bearer demo-token",
+            },
+            "error_code": 422,
+            "error_message": "Input should be a valid integer",
+            "failure_signals": {
+                "validation_paths": [["query", "limit"]],
+            },
+        }
+    )
+    result = healer.heal_request(
+        trapped_error,
+        local_spec_path="target_api/specs/openapi.json",
+    )
+
+    assert "limit=100" in result.fixed_url
+    assert "100%2Finvalid_path_404" not in result.fixed_url
+
+
+def test_heal_request_uses_pattern_aware_defaults_for_live_payload(monkeypatch) -> None:
+    monkeypatch.setattr(
+        healer,
+        "call_healing_model",
+        lambda _system_prompt, _user_prompt: (_ for _ in ()).throw(
+            healer.LLMHealingError("provider unavailable")
+        ),
+    )
+
+    trapped_error = healer.TrappedError.model_validate(
+        {
+            "target_url": "http://127.0.0.1:8000/api/v1/clients/onboard",
+            "method": "POST",
+            "failed_payload": {
+                "contact_email": "test@example.com",
+                "company_name": "Acme Corp",
+                "registration_code": None,
+            },
+            "failed_headers": {
+                "Authorization": "Bearer demo-token",
+            },
+            "error_code": 422,
+            "error_message": "Input should be a valid string",
+            "failure_signals": {
+                "missing_fields": ["registration_code"],
+                "validation_paths": [["body", "registration_code"]],
+            },
+        }
+    )
+    result = healer.heal_request(
+        trapped_error,
+        local_spec_path="target_api/specs/openapi.json",
+    )
+
+    assert result.fixed_payload is not None
+    assert result.fixed_payload["registration_code"] == "ABCD12345XYZ"

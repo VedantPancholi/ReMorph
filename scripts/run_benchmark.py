@@ -24,6 +24,7 @@ def main() -> None:
     parser.add_argument("--backend", choices=["simulated", "live", "openenv"], default=settings.ENV_BACKEND)
     parser.add_argument("--live-base-url", default=settings.LIVE_BASE_URL)
     parser.add_argument("--live-spec-path", default=settings.LIVE_SPEC_PATH)
+    parser.add_argument("--live-dataset-path", default=settings.LIVE_DATASET_PATH)
     parser.add_argument("--live-scenario-selection", choices=["representative", "all"], default="representative")
     parser.add_argument("--live-raw-scenario", default="")
     parser.add_argument("--openenv-client-module", default=settings.OPENENV_CLIENT_MODULE)
@@ -50,6 +51,7 @@ def main() -> None:
         env_mode=args.env_mode,
         live_base_url=args.live_base_url,
         live_spec_path=args.live_spec_path,
+        live_dataset_path=args.live_dataset_path,
         live_scenario_selection=args.live_scenario_selection,
         live_raw_scenario_filter=args.live_raw_scenario or None,
         openenv_config=openenv_config if args.backend == "openenv" else None,

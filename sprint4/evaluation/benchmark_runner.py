@@ -35,6 +35,7 @@ def run_benchmark(
     env_mode: EnvironmentMode | None = None,
     live_base_url: str = "http://127.0.0.1:8000",
     live_spec_path: str = "target_api/specs/openapi.json",
+    live_dataset_path: str = "target_api/training_dataset.json",
     live_scenario_selection: str = "representative",
     live_raw_scenario_filter: str | None = None,
     openenv_config: OpenEnvClientConfig | None = None,
@@ -44,6 +45,7 @@ def run_benchmark(
     active_mode = env_mode or ("live" if resolved_backend == "live" else "local")
     scenario_list = scenarios or (
         default_live_scenarios(
+            dataset_path=live_dataset_path,
             live_spec_path=live_spec_path,
             selection=live_scenario_selection,
             raw_scenario_filter=live_raw_scenario_filter,
@@ -119,6 +121,7 @@ def run_benchmark(
             "scenario_count": len(scenario_list),
             "environment_mode": active_mode,
             "backend": resolved_backend,
+            "live_dataset_path": live_dataset_path if resolved_backend == "live" else None,
             "live_scenario_selection": live_scenario_selection if resolved_backend == "live" else None,
             "live_raw_scenario_filter": live_raw_scenario_filter if resolved_backend == "live" else None,
         },

@@ -88,7 +88,7 @@ def default_scenarios() -> list[ScenarioRequest]:
 
 
 def default_live_scenarios(
-    dataset_path: str = "chaos_gym/training_dataset.json",
+    dataset_path: str = "target_api/training_dataset.json",
     *,
     live_spec_path: str = "chaos_gym/specs/openapi.json",
     selection: str = "representative",
@@ -105,6 +105,7 @@ def default_live_scenarios(
         if isinstance(records, list):
             selected = _select_live_scenarios(
                 records,
+                live_spec_path=live_spec_path,
                 selection=selection,
                 raw_scenario_filter=raw_scenario_filter,
             )
@@ -162,21 +163,26 @@ def drift_paths() -> dict[DriftMode, str]:
 def _select_live_scenarios(
     records: list[dict[str, Any]],
     *,
+    live_spec_path: str,
     selection: str,
     raw_scenario_filter: str | None,
 ) -> list[ScenarioRequest]:
     if raw_scenario_filter:
         selected = [
-            item for item in _records_to_live_scenarios(records)
+            item for item in _records_to_live_scenarios(records, live_spec_path=live_spec_path)
             if item.raw_scenario_type == raw_scenario_filter
         ]
         return selected
     if selection == "all":
-        return _records_to_live_scenarios(records)
-    return _pick_live_representatives(records)
+        return _records_to_live_scenarios(records, live_spec_path=live_spec_path)
+    return _pick_live_representatives(records, live_spec_path=live_spec_path)
 
 
-def _pick_live_representatives(records: list[dict[str, Any]]) -> list[ScenarioRequest]:
+def _pick_live_representatives(
+    records: list[dict[str, Any]],
+    *,
+    live_spec_path: str,
+) -> list[ScenarioRequest]:
     chosen: dict[str, ScenarioRequest] = {}
     priorities = {
         "payload_drift": ["schema_missing_key", "schema_null_injection", "schema_type_coercion"],
@@ -188,7 +194,7 @@ def _pick_live_representatives(records: list[dict[str, Any]]) -> list[ScenarioRe
         "route_drift": [],
         "auth_drift": [],
     }
-    for scenario in _records_to_live_scenarios(records):
+    for scenario in _records_to_live_scenarios(records, live_spec_path=live_spec_path):
         if scenario.scenario_type == "unknown":
             continue
         grouped.setdefault(scenario.scenario_type, []).append(scenario)
@@ -205,7 +211,11 @@ def _pick_live_representatives(records: list[dict[str, Any]]) -> list[ScenarioRe
     return [chosen[key] for key in ("payload_drift", "route_drift", "auth_drift") if key in chosen]
 
 
-def _records_to_live_scenarios(records: list[dict[str, Any]]) -> list[ScenarioRequest]:
+def _records_to_live_scenarios(
+    records: list[dict[str, Any]],
+    *,
+    live_spec_path: str,
+) -> list[ScenarioRequest]:
     scenarios: list[ScenarioRequest] = []
     for record in records:
         if not isinstance(record, dict):
@@ -234,7 +244,7 @@ def _records_to_live_scenarios(records: list[dict[str, Any]]) -> list[ScenarioRe
                 url=target_url,
                 headers=_select_headers(record),
                 payload=_select_payload(record),
-                local_spec_path="chaos_gym/specs/openapi.json",
+                local_spec_path=live_spec_path,
             )
         )
     return scenarios

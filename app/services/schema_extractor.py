@@ -22,7 +22,14 @@ def extract_schema_for_route(
 ) -> EndpointSchema:
     """Extract the most relevant endpoint contract for a failed route."""
 
-    resolved_path, operation, route_match_score, route_match_reason, ranked_candidates = _match_operation(
+    (
+        resolved_path,
+        resolved_method,
+        operation,
+        route_match_score,
+        route_match_reason,
+        ranked_candidates,
+    ) = _match_operation(
         spec,
         normalize_path(target_path),
         method,
@@ -30,6 +37,7 @@ def extract_schema_for_route(
     request_schema = _extract_request_schema(spec, operation)
     security_requirements = _extract_security_requirements(spec, operation)
     query_parameters = _extract_parameters(operation, location="query")
+    path_parameters = _extract_parameters(operation, location="path")
     header_parameters = _extract_parameters(operation, location="header")
     supported_content_types = _extract_supported_content_types(operation)
     completeness_flags = _build_completeness_flags(
@@ -49,7 +57,7 @@ def extract_schema_for_route(
 
     return EndpointSchema(
         path=resolved_path,
-        method=method.upper(),
+        method=resolved_method,
         summary=operation.get("summary"),
         description=operation.get("description"),
         required_fields=request_schema.get("required", []),
@@ -58,6 +66,7 @@ def extract_schema_for_route(
             flatten_request_schema(spec, request_schema)
         ),
         query_parameters=query_parameters,
+        path_parameters=path_parameters,
         header_parameters=header_parameters,
         supported_content_types=supported_content_types,
         security_requirements=security_requirements,
@@ -117,6 +126,18 @@ def flatten_request_schema(spec: dict[str, Any], schema: dict[str, Any]) -> dict
         flattened["enum"] = resolved["enum"]
     if "format" in resolved:
         flattened["format"] = resolved["format"]
+    if "pattern" in resolved:
+        flattened["pattern"] = resolved["pattern"]
+    if "default" in resolved:
+        flattened["default"] = resolved["default"]
+    if "minLength" in resolved:
+        flattened["minLength"] = resolved["minLength"]
+    if "maxLength" in resolved:
+        flattened["maxLength"] = resolved["maxLength"]
+    if "minimum" in resolved:
+        flattened["minimum"] = resolved["minimum"]
+    if "maximum" in resolved:
+        flattened["maximum"] = resolved["maximum"]
     return flattened
 
 
@@ -144,7 +165,7 @@ def _match_operation(
     spec: dict[str, Any],
     target_path: str,
     method: str,
-) -> tuple[str, dict[str, Any], float, str, list[RouteMatchCandidate]]:
+) -> tuple[str, str, dict[str, Any], float, str, list[RouteMatchCandidate]]:
     paths = spec.get("paths", {})
     if not isinstance(paths, dict) or not paths:
         raise SchemaExtractionError("OpenAPI spec does not contain paths")
@@ -154,6 +175,7 @@ def _match_operation(
     if isinstance(exact_path, dict) and method_name in exact_path:
         return (
             target_path,
+            method.upper(),
             exact_path[method_name],
             1.0,
             "Exact path and method match found in spec.",
@@ -166,8 +188,52 @@ def _match_operation(
             ],
         )
 
+    if isinstance(exact_path, dict) and exact_path:
+        selected_method, selected_operation = _pick_exact_path_operation(
+            exact_path,
+            payload_expected=method_name in {"post", "put", "patch"},
+        )
+        return (
+            target_path,
+            selected_method.upper(),
+            selected_operation,
+            0.98,
+            f"Exact path match found in spec; method corrected to {selected_method.upper()}.",
+            [
+                RouteMatchCandidate(
+                    path=target_path,
+                    score=0.98,
+                    reason=f"Exact path match found in spec; method corrected to {selected_method.upper()}.",
+                )
+            ],
+        )
+
+    for candidate_path, candidate_operations in paths.items():
+        if not isinstance(candidate_operations, dict):
+            continue
+        if not _path_template_matches_target(candidate_path, target_path):
+            continue
+        selected_method, selected_operation = _pick_exact_path_operation(
+            candidate_operations,
+            payload_expected=method_name in {"post", "put", "patch"},
+        )
+        return (
+            candidate_path,
+            selected_method.upper(),
+            selected_operation,
+            0.97,
+            f"Parameterized path match found in spec; method corrected to {selected_method.upper()}.",
+            [
+                RouteMatchCandidate(
+                    path=candidate_path,
+                    score=0.97,
+                    reason=f"Parameterized path match found in spec; method corrected to {selected_method.upper()}.",
+                )
+            ],
+        )
+
     best_score = 0.0
-    best_match: tuple[str, dict[str, Any]] | None = None
+    best_match: tuple[str, str, dict[str, Any]] | None = None
     second_best_score = 0.0
     target_segments = normalize_path(target_path).strip("/").split("/")
     candidate_scores: list[tuple[str, dict[str, Any], float, str]] = []
@@ -180,7 +246,7 @@ def _match_operation(
         if score > best_score:
             second_best_score = best_score
             best_score = score
-            best_match = (candidate_path, candidate_operations[method_name])
+            best_match = (candidate_path, method_name.upper(), candidate_operations[method_name])
         elif score > second_best_score:
             second_best_score = score
 
@@ -210,7 +276,26 @@ def _match_operation(
     best_reason = next(
         reason for path, _operation, score, reason in candidate_scores if path == best_match[0] and score == best_score
     )
-    return best_match[0], best_match[1], best_score, best_reason, ranked_candidates
+    return best_match[0], best_match[1], best_match[2], best_score, best_reason, ranked_candidates
+
+
+def _pick_exact_path_operation(
+    operations: dict[str, Any],
+    *,
+    payload_expected: bool,
+) -> tuple[str, dict[str, Any]]:
+    """Choose the best operation when the path is exact but the method drifted."""
+
+    preferred_order = ["post", "put", "patch"] if payload_expected else ["get", "delete"]
+    for method_name in preferred_order:
+        operation = operations.get(method_name)
+        if isinstance(operation, dict):
+            return method_name, operation
+
+    for method_name, operation in operations.items():
+        if isinstance(operation, dict):
+            return method_name, operation
+    raise SchemaExtractionError("Exact path match did not contain a usable operation")
 
 
 def _score_candidate_path(
@@ -247,6 +332,20 @@ def _is_path_parameter(segment: str) -> bool:
 
 def _normalize_token(segment: str) -> str:
     return "".join(character.lower() for character in segment if character.isalnum())
+
+
+def _path_template_matches_target(candidate_path: str, target_path: str) -> bool:
+    candidate_segments = normalize_path(candidate_path).strip("/").split("/")
+    target_segments = normalize_path(target_path).strip("/").split("/")
+    if len(candidate_segments) != len(target_segments):
+        return False
+
+    for candidate_segment, target_segment in zip(candidate_segments, target_segments):
+        if _is_path_parameter(candidate_segment):
+            continue
+        if candidate_segment != target_segment:
+            return False
+    return True
 
 
 def _extract_request_schema(
@@ -329,6 +428,9 @@ def _extract_parameters(
                 location=location,
                 required=bool(parameter.get("required", False)),
                 schema_type=schema.get("type"),
+                schema_format=schema.get("format"),
+                schema_default=schema.get("default"),
+                schema_pattern=schema.get("pattern"),
             )
         )
     return normalized

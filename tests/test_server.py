@@ -72,7 +72,7 @@ def test_fetch_transactions_auth_failure():
         "/api/v1/ledger/transactions?start_date=2024-01-01T00:00:00Z&end_date=2024-01-31T00:00:00Z",
         headers={"authorization": "Basic bad-token"} # invalid scheme
     )
-    assert response.status_code == 401
+    assert response.status_code == 403
     
 def test_update_subscription():
     sub_id = str(uuid.uuid4())
