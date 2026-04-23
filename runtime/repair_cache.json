@@ -1,18 +1,18 @@
 {
   "4baa0b310ddaa6a05abcc72b77959bb229044b6cf1081fb69bf060a735e29f7f": {
-    "confidence": 0.95,
+    "confidence": 0.8,
     "diagnostics": {
       "docs_confidence": 0.6467857142857143,
       "docs_source": "local:sprint4/env/contracts/drift_route.json",
-      "failure_reason": "invalid_llm_output",
-      "fallback_used": true,
+      "failure_reason": null,
+      "fallback_used": false,
       "final_reward": null,
       "llm_attempted": true,
-      "llm_succeeded": false,
+      "llm_succeeded": true,
       "original_error_code": 404,
-      "processing_ms": 27,
-      "repair_strategy": "deterministic",
-      "request_id": "sprint4-2b1ea0b58ef5",
+      "processing_ms": 1219,
+      "repair_strategy": "merged",
+      "request_id": "sprint4-0dddefd470af",
       "retry_count": 0,
       "retry_succeeded": null,
       "scenario_type": "route_drift",
@@ -30,7 +30,7 @@
     "fixed_payload": null,
     "fixed_url": "https://mock.example.com/api/v2/finance/ledger",
     "healing_action": "combined_rewrite",
-    "reasoning": "Deterministic repair applied: route updated to /api/v2/finance/ledger; headers aligned with the extracted security scheme.",
+    "reasoning": "The original request targeted /api/v1/transactions which does not match the available endpoint /api/v2/finance/ledger. The security requirement expects an x-api-key header, but the request used Authorization. The method is already GET, so only the URL and headers need adjustment.",
     "schema_summary": {
       "applied_changes": [
         "route",
@@ -53,19 +53,19 @@
     "status": "healed"
   },
   "7f03390c5ed53b1dd37f271bcaf926d0237762b6323abf85ce3dc5fc1a3e5567": {
-    "confidence": 0.9,
+    "confidence": 0.95,
     "diagnostics": {
       "docs_confidence": 0.7525000000000001,
       "docs_source": "local:target_api/specs/openapi.json",
-      "failure_reason": null,
-      "fallback_used": false,
+      "failure_reason": "invalid_llm_output",
+      "fallback_used": true,
       "final_reward": null,
       "llm_attempted": true,
-      "llm_succeeded": true,
+      "llm_succeeded": false,
       "original_error_code": 404,
-      "processing_ms": 1164,
-      "repair_strategy": "merged",
-      "request_id": "sprint4-d29c52a8e9b6",
+      "processing_ms": 138,
+      "repair_strategy": "deterministic",
+      "request_id": "sprint4-b389ceaf6588",
       "retry_count": 0,
       "retry_succeeded": null,
       "scenario_type": "route_drift",
@@ -81,34 +81,43 @@
     },
     "fixed_method": "GET",
     "fixed_payload": null,
-    "fixed_url": "http://127.0.0.1:8000/api/v1/ledger/transactions?start_date=2023-01-01&end_date=2023-12-31",
-    "healing_action": "combined_rewrite",
-    "reasoning": "The request failed because the target URL used the v0 path (/api/v0/ledger/transactions) while the API schema defines the correct v1 path (/api/v1/ledger/transactions). Additionally, the required query parameters start_date and end_date were missing, causing the route to be considered incomplete. The healing rewrites the URL to match the schema and injects placeholder dates for the required parameters.",
+    "fixed_url": "http://127.0.0.1:8000/api/v1/ledger/transactions",
+    "healing_action": "route_rewrite",
+    "reasoning": "Deterministic repair applied: route updated to /api/v1/ledger/transactions.",
     "schema_summary": {
-      "optional_query_parameters": [
-        "limit"
+      "applied_changes": [
+        "route"
       ],
-      "required_query_parameters": [
-        "start_date",
-        "end_date"
+      "method": "GET",
+      "path": "/api/v1/ledger/transactions",
+      "required_fields": [],
+      "required_header_parameters": [],
+      "security_requirements": [
+        {
+          "header_name": null,
+          "location": null,
+          "name": "HTTPBearer",
+          "scheme": "bearer",
+          "type": "http"
+        }
       ]
     },
     "status": "healed"
   },
   "9459c915dbb7200a058765502e5867f8696e1a3a2a05e89771fa30fcd9f55a38": {
-    "confidence": 0.95,
+    "confidence": 0.9,
     "diagnostics": {
       "docs_confidence": 0.7250000000000001,
       "docs_source": "local:sprint4/env/contracts/drift_auth.json",
-      "failure_reason": "invalid_llm_output",
-      "fallback_used": true,
+      "failure_reason": null,
+      "fallback_used": false,
       "final_reward": null,
       "llm_attempted": true,
-      "llm_succeeded": false,
+      "llm_succeeded": true,
       "original_error_code": 401,
-      "processing_ms": 21,
-      "repair_strategy": "deterministic",
-      "request_id": "sprint4-1081c3198284",
+      "processing_ms": 1029,
+      "repair_strategy": "merged",
+      "request_id": "sprint4-ee44623d2495",
       "retry_count": 0,
       "retry_succeeded": null,
       "scenario_type": "auth_drift",
@@ -126,21 +135,13 @@
     "fixed_payload": null,
     "fixed_url": "https://mock.example.com/api/v2/finance/ledger",
     "healing_action": "auth_rewrite",
-    "reasoning": "Deterministic repair applied: headers aligned with the extracted security scheme.",
+    "reasoning": "The request failed due to an authentication error. The API specification requires an 'x-api-key' header for authentication, but the original request used a 'Bearer' token in the 'Authorization' header. The healing action rewrites the authentication header to match the spec, removing the unsupported 'Authorization' header and adding the required 'x-api-key' header with the same token value.",
     "schema_summary": {
-      "applied_changes": [
-        "auth"
-      ],
-      "method": "GET",
-      "path": "/api/v2/finance/ledger",
-      "required_fields": [],
-      "required_header_parameters": [],
       "security_requirements": [
         {
           "header_name": "x-api-key",
           "location": "header",
           "name": "ApiKeyAuth",
-          "scheme": null,
           "type": "apiKey"
         }
       ]
@@ -148,19 +149,19 @@
     "status": "healed"
   },
   "9debe6f67869e6955f3e959873e159833cc45cec5df61b12c86b0a923c1c96bd": {
-    "confidence": 0.9,
+    "confidence": 1.0,
     "diagnostics": {
       "docs_confidence": 1.0,
       "docs_source": "local:sprint4/env/contracts/drift_payload.json",
-      "failure_reason": "invalid_llm_output",
-      "fallback_used": true,
+      "failure_reason": null,
+      "fallback_used": false,
       "final_reward": null,
       "llm_attempted": true,
-      "llm_succeeded": false,
+      "llm_succeeded": true,
       "original_error_code": 400,
-      "processing_ms": 3952,
-      "repair_strategy": "deterministic",
-      "request_id": "sprint4-6ebfe7f3f931",
+      "processing_ms": 4411,
+      "repair_strategy": "merged",
+      "request_id": "sprint4-17ab41fdf18c",
       "retry_count": 0,
       "retry_succeeded": null,
       "scenario_type": "payload_drift",
@@ -172,7 +173,8 @@
     },
     "failure_reason": null,
     "fixed_headers": {
-      "Authorization": "Bearer demo-token"
+      "Authorization": "Bearer demo-token",
+      "Content-Type": "application/json"
     },
     "fixed_method": "POST",
     "fixed_payload": {
@@ -183,66 +185,32 @@
     },
     "fixed_url": "https://mock.example.com/users",
     "healing_action": "payload_rewrite",
-    "reasoning": "Deterministic repair applied: payload rebuilt from the normalized request schema.",
+    "reasoning": "The original payload omitted the required 'user' wrapper and used incorrect field names. The schema requires a 'user' object with 'f_name' and 'l_name'. The headers lacked 'Content-Type', so added it.",
     "schema_summary": {
-      "applied_changes": [
-        "payload"
-      ],
-      "method": "POST",
-      "path": "/users",
-      "required_fields": [
+      "properties": {
+        "user": {
+          "name": "user",
+          "properties": {
+            "f_name": {
+              "name": "f_name",
+              "type": "string"
+            },
+            "l_name": {
+              "name": "l_name",
+              "type": "string"
+            }
+          },
+          "required": [
+            "f_name",
+            "l_name"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
         "user"
       ],
-      "required_header_parameters": [],
-      "security_requirements": []
-    },
-    "status": "healed"
-  },
-  "d9c99c1ecd5a6299fc2c51ec55d050fabbbaa8be2feac4c892e4744dce665c14": {
-    "confidence": 0.9,
-    "diagnostics": {
-      "docs_confidence": 0.7525000000000001,
-      "docs_source": "local:target_api/specs/openapi.json",
-      "failure_reason": "invalid_llm_output",
-      "fallback_used": true,
-      "final_reward": null,
-      "llm_attempted": true,
-      "llm_succeeded": false,
-      "original_error_code": 404,
-      "processing_ms": 25,
-      "repair_strategy": "deterministic",
-      "request_id": "sprint4-c351e0ca3a0d",
-      "retry_count": 0,
-      "retry_succeeded": null,
-      "scenario_type": "route_drift",
-      "selected_endpoint_path": "/api/v1/ledger/transactions",
-      "source_component": "sprint4:route_drift",
-      "spec_hash": "9caacea2a6221a3840c2d9d3782b8d4921978cd988dadd8d0677797b8f2c9174",
-      "spec_version": "3.1.0",
-      "total_recovery_steps": 1
-    },
-    "failure_reason": null,
-    "fixed_headers": {
-      "Authorization": "Bearer token",
-      "authorization": "Bearer demo-token"
-    },
-    "fixed_method": "GET",
-    "fixed_payload": null,
-    "fixed_url": "http://127.0.0.1:8000/api/v1/ledger/transactions",
-    "healing_action": "combined_rewrite",
-    "reasoning": "Deterministic repair applied: route updated to /api/v1/ledger/transactions; headers aligned with the extracted security scheme.",
-    "schema_summary": {
-      "applied_changes": [
-        "route",
-        "auth"
-      ],
-      "method": "GET",
-      "path": "/api/v1/ledger/transactions",
-      "required_fields": [],
-      "required_header_parameters": [
-        "authorization"
-      ],
-      "security_requirements": []
+      "type": "object"
     },
     "status": "healed"
   }
