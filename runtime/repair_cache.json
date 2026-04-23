@@ -1,30 +1,44 @@
 {
-  "5a62f7939d4c571021bd293b7d3b345caa9de45dbd99a34a1ec6dd3a2526ef5f": {
-    "confidence": 0.9,
+  "4baa0b310ddaa6a05abcc72b77959bb229044b6cf1081fb69bf060a735e29f7f": {
+    "confidence": 0.95,
     "diagnostics": {
-      "docs_source": "local:app/testsupport/sample_openapi.json",
-      "fallback_used": false,
+      "docs_confidence": 0.6467857142857143,
+      "docs_source": "local:sprint4/env/contracts/drift_route.json",
+      "failure_reason": "invalid_llm_output",
+      "fallback_used": true,
+      "final_reward": null,
       "llm_attempted": true,
-      "llm_succeeded": true,
+      "llm_succeeded": false,
       "original_error_code": 404,
-      "processing_ms": 2515,
-      "repair_strategy": "merged",
-      "request_id": "req-scenario-b",
-      "retry_count": 1,
+      "processing_ms": 20,
+      "repair_strategy": "deterministic",
+      "request_id": "sprint4-eec1c8bfd92b",
+      "retry_count": 0,
+      "retry_succeeded": null,
+      "scenario_type": "route_drift",
       "selected_endpoint_path": "/api/v2/finance/ledger",
-      "source_component": "proxy"
+      "source_component": "sprint4:route_drift",
+      "spec_hash": "e5b05df453f757d82fb855494bffb7da2a9f6fbe435af3140bc7d4f9e10c2f98",
+      "spec_version": "3.0.3",
+      "total_recovery_steps": 1
     },
+    "failure_reason": null,
     "fixed_headers": {
       "x-api-key": "demo-token"
     },
     "fixed_method": "GET",
     "fixed_payload": null,
     "fixed_url": "https://mock.example.com/api/v2/finance/ledger",
-    "healing_action": "route_rewrite",
-    "reasoning": "The original request targeted /api/v1/transactions which does not exist in the normalized endpoint schema. The schema defines the correct path as /api/v2/finance/ledger and requires an x-api-key header. The method is already GET, so only the URL and headers need adjustment.",
+    "healing_action": "combined_rewrite",
+    "reasoning": "Deterministic repair applied: route updated to /api/v2/finance/ledger; headers aligned with the extracted security scheme.",
     "schema_summary": {
+      "applied_changes": [
+        "route",
+        "auth"
+      ],
       "method": "GET",
       "path": "/api/v2/finance/ledger",
+      "required_fields": [],
       "security_requirements": [
         {
           "header_name": "x-api-key",
@@ -34,90 +48,29 @@
           "type": "apiKey"
         }
       ]
-    }
-  },
-  "605f5d6811173d6e37206e4940c4a5bdb32e608a79c4811cb6441bd1c178a424": {
-    "confidence": 0.9,
-    "diagnostics": {
-      "docs_confidence": 1.0,
-      "docs_source": "local:app/testsupport/sample_openapi.json",
-      "failure_reason": null,
-      "fallback_used": false,
-      "final_reward": null,
-      "llm_attempted": true,
-      "llm_succeeded": true,
-      "original_error_code": 400,
-      "processing_ms": 4692,
-      "repair_strategy": "merged",
-      "request_id": "req-scenario-a",
-      "retry_count": 0,
-      "retry_succeeded": null,
-      "scenario_type": "payload_drift",
-      "selected_endpoint_path": "/users",
-      "source_component": "proxy",
-      "spec_hash": "977aefb9a05b6b7f69f08bbf16f5c49b6749228410f59e81179a464df3f3210e",
-      "spec_version": "3.0.3",
-      "total_recovery_steps": 1
-    },
-    "failure_reason": null,
-    "fixed_headers": {
-      "Authorization": "Bearer demo-token",
-      "Content-Type": "application/json"
-    },
-    "fixed_method": "POST",
-    "fixed_payload": {
-      "user": {
-        "f_name": "John",
-        "l_name": "Doe"
-      }
-    },
-    "fixed_url": "https://mock.example.com/users",
-    "healing_action": "no_change",
-    "reasoning": "The request body did not match the API schema. The schema expects a 'user' object with 'f_name' and 'l_name' fields, but the payload contained 'first_name' and 'last_name'. The payload was rewritten to match the schema. A 'Content-Type: application/json' header was added.",
-    "schema_summary": {
-      "confidence": 1.0,
-      "healing_action": "payload_rewrite",
-      "properties": {
-        "user": {
-          "properties": {
-            "f_name": {
-              "type": "string"
-            },
-            "l_name": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "f_name",
-            "l_name"
-          ],
-          "type": "object"
-        }
-      },
-      "status": "healed"
     },
     "status": "healed"
   },
-  "640cb592d00019fbcd59665258a1a1c5b4c1ba720f1c2cc531df78e07d088687": {
-    "confidence": 0.9,
+  "9459c915dbb7200a058765502e5867f8696e1a3a2a05e89771fa30fcd9f55a38": {
+    "confidence": 0.95,
     "diagnostics": {
       "docs_confidence": 0.7250000000000001,
-      "docs_source": "local:app/testsupport/sample_openapi.json",
-      "failure_reason": null,
-      "fallback_used": false,
+      "docs_source": "local:sprint4/env/contracts/drift_auth.json",
+      "failure_reason": "invalid_llm_output",
+      "fallback_used": true,
       "final_reward": null,
       "llm_attempted": true,
-      "llm_succeeded": true,
+      "llm_succeeded": false,
       "original_error_code": 401,
-      "processing_ms": 2222,
-      "repair_strategy": "merged",
-      "request_id": "req-scenario-c",
-      "retry_count": 1,
+      "processing_ms": 17,
+      "repair_strategy": "deterministic",
+      "request_id": "sprint4-6578362ca880",
+      "retry_count": 0,
       "retry_succeeded": null,
       "scenario_type": "auth_drift",
       "selected_endpoint_path": "/api/v2/finance/ledger",
-      "source_component": "proxy",
-      "spec_hash": "977aefb9a05b6b7f69f08bbf16f5c49b6749228410f59e81179a464df3f3210e",
+      "source_component": "sprint4:auth_drift",
+      "spec_hash": "58e7bbb4941734ff7c02b7b189e6d969d57607476e142188c4f81fcf24fbea6f",
       "spec_version": "3.0.3",
       "total_recovery_steps": 1
     },
@@ -129,7 +82,7 @@
     "fixed_payload": null,
     "fixed_url": "https://mock.example.com/api/v2/finance/ledger",
     "healing_action": "auth_rewrite",
-    "reasoning": "The target endpoint requires an API key in the header 'x-api-key', but the request used a Bearer token. Replacing the Authorization header with the required x-api-key header resolves the 401.",
+    "reasoning": "Deterministic repair applied: headers aligned with the extracted security scheme.",
     "schema_summary": {
       "applied_changes": [
         "auth"
@@ -149,102 +102,30 @@
     },
     "status": "healed"
   },
-  "8727d56328bcc44eebdee5b7fbbdaf4f9eeb4dccb128426d7ea33213b3e6303a": {
+  "9debe6f67869e6955f3e959873e159833cc45cec5df61b12c86b0a923c1c96bd": {
     "confidence": 0.9,
     "diagnostics": {
-      "docs_source": "local:app/testsupport/sample_openapi.json",
-      "fallback_used": false,
-      "llm_attempted": true,
-      "llm_succeeded": true,
-      "original_error_code": 401,
-      "processing_ms": 3294,
-      "repair_strategy": "merged",
-      "request_id": "req-scenario-c",
-      "retry_count": 1,
-      "selected_endpoint_path": "/api/v2/finance/ledger",
-      "source_component": "proxy"
-    },
-    "fixed_headers": {
-      "x-api-key": "demo-token"
-    },
-    "fixed_method": "GET",
-    "fixed_payload": null,
-    "fixed_url": "https://mock.example.com/api/v2/finance/ledger",
-    "healing_action": "auth_rewrite",
-    "reasoning": "Auth header mismatch; endpoint requires x-api-key; replaced Authorization with x-api-key.",
-    "schema_summary": {
-      "security_requirements": [
-        {
-          "header_name": "x-api-key",
-          "location": "header",
-          "name": "ApiKeyAuth",
-          "scheme": null,
-          "type": "apiKey"
-        }
-      ]
-    }
-  },
-  "be0a782cdfdbbcacf0697ebf2f8b0df0389a4a619f90e0c4035663840a69cbbb": {
-    "confidence": 0.9,
-    "diagnostics": {
-      "docs_confidence": 0.6467857142857143,
-      "docs_source": "local:app/testsupport/sample_openapi.json",
-      "failure_reason": null,
-      "fallback_used": false,
+      "docs_confidence": 1.0,
+      "docs_source": "local:sprint4/env/contracts/drift_payload.json",
+      "failure_reason": "invalid_llm_output",
+      "fallback_used": true,
       "final_reward": null,
       "llm_attempted": true,
-      "llm_succeeded": true,
-      "original_error_code": 404,
-      "processing_ms": 2392,
-      "repair_strategy": "merged",
-      "request_id": "req-scenario-b",
-      "retry_count": 1,
+      "llm_succeeded": false,
+      "original_error_code": 400,
+      "processing_ms": 1874,
+      "repair_strategy": "deterministic",
+      "request_id": "sprint4-0608faef2a7f",
+      "retry_count": 0,
       "retry_succeeded": null,
-      "scenario_type": "route_drift",
-      "selected_endpoint_path": "/api/v2/finance/ledger",
-      "source_component": "proxy",
-      "spec_hash": "977aefb9a05b6b7f69f08bbf16f5c49b6749228410f59e81179a464df3f3210e",
+      "scenario_type": "payload_drift",
+      "selected_endpoint_path": "/users",
+      "source_component": "sprint4:payload_drift",
+      "spec_hash": "f9bd8013d766ae087c5e7278dd96c89061248008eb4dd88fbbac64796fd63214",
       "spec_version": "3.0.3",
       "total_recovery_steps": 1
     },
     "failure_reason": null,
-    "fixed_headers": {
-      "x-api-key": "demo-token"
-    },
-    "fixed_method": "GET",
-    "fixed_payload": null,
-    "fixed_url": "https://mock.example.com/api/v2/finance/ledger",
-    "healing_action": "combined_rewrite",
-    "reasoning": "The original request targeted /api/v1/transactions which does not match the documented endpoint /api/v2/finance/ledger. Additionally, the request used an Authorization header with a bearer token, whereas the API requires an x-api-key header. The method is correct (GET) and no payload is needed for this GET request. Therefore, the URL and headers are rewritten to match the schema.",
-    "schema_summary": {
-      "method": "GET",
-      "path": "/api/v2/finance/ledger",
-      "security_requirements": [
-        {
-          "header_name": "x-api-key",
-          "location": "header",
-          "name": "ApiKeyAuth",
-          "type": "apiKey"
-        }
-      ]
-    },
-    "status": "healed"
-  },
-  "ece956c3abb88055662817387a879317b897e601a7eb4c2061ff8a42eb48f98d": {
-    "confidence": 0.95,
-    "diagnostics": {
-      "docs_source": "local:app/testsupport/sample_openapi.json",
-      "fallback_used": false,
-      "llm_attempted": true,
-      "llm_succeeded": true,
-      "original_error_code": 400,
-      "processing_ms": 3142,
-      "repair_strategy": "merged",
-      "request_id": "req-scenario-a",
-      "retry_count": 0,
-      "selected_endpoint_path": "/users",
-      "source_component": "proxy"
-    },
     "fixed_headers": {
       "Authorization": "Bearer demo-token"
     },
@@ -257,29 +138,18 @@
     },
     "fixed_url": "https://mock.example.com/users",
     "healing_action": "payload_rewrite",
-    "reasoning": "The original payload used keys first_name and last_name, but the endpoint schema expects a nested user object with f_name and l_name. The URL and method are correct, so only the payload needs rewriting.",
+    "reasoning": "Deterministic repair applied: payload rebuilt from the normalized request schema.",
     "schema_summary": {
-      "properties": {
-        "required": [
-          "user"
-        ],
-        "user": {
-          "properties": {
-            "f_name": {
-              "type": "string"
-            },
-            "l_name": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "f_name",
-            "l_name"
-          ],
-          "type": "object"
-        }
-      },
-      "type": "object"
-    }
+      "applied_changes": [
+        "payload"
+      ],
+      "method": "POST",
+      "path": "/users",
+      "required_fields": [
+        "user"
+      ],
+      "security_requirements": []
+    },
+    "status": "healed"
   }
 }

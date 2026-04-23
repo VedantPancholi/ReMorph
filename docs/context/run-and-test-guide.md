@@ -377,3 +377,47 @@ If route matching fails:
 
 - inspect `route_match_confidence`, `route_match_reason`, and `ranked_candidate_endpoints`
 - compare against `app/testsupport/sample_openapi.json`
+
+## 12. Sprint 4 Run Flow
+
+Sprint 4 adds a mutable environment, retry loop, reward scoring, and benchmark
+artifacts around the frozen Sprint 2 repair brain. The default local backend is
+the deterministic `simulated` env, which is the fastest way to validate the
+full loop before switching to OpenEnv.
+
+Fastest Sprint 4 verification from the repo root:
+
+```bash
+.venv/bin/pytest -q tests/test_sprint4_reward_function.py tests/test_sprint4_env_factory.py tests/test_sprint4_openenv_adapter.py tests/test_sprint4_env_mutation.py tests/test_sprint4_workflow_runner.py tests/test_sprint4_benchmark_runner.py
+.venv/bin/python scripts/run_sprint4_demo.py
+.venv/bin/python scripts/run_benchmark.py --episodes-per-scenario 1
+```
+
+What those commands prove:
+
+- the simulated env returns the expected `400`, `404`, and `401` drift failures
+- the adaptive flow traps the failure, calls `process_trapped_error()`, retries, and succeeds
+- the demo script prints one baseline-vs-adaptive episode
+- the benchmark writes `episodes.jsonl`, `benchmark_report.json`, and `benchmark_summary.md` under `runtime/sprint4/`
+
+Expected Sprint 4 control flow:
+
+1. load the contract bundle for baseline plus drift contracts
+2. reset the environment and apply one drift mode
+3. send the original request
+4. capture the failing response
+5. package the failure as `TrappedError`
+6. run Sprint 2 repair against the active drift contract
+7. retry the healed request
+8. score the reward and persist one episode log
+
+To switch later to OpenEnv instead of the local simulator:
+
+```bash
+export REMORPH_S4_ENV_BACKEND=openenv
+export REMORPH_S4_OPENENV_CLIENT_MODULE=your_openenv_module
+export REMORPH_S4_OPENENV_CLIENT_CLASS=YourOpenEnvClient
+.venv/bin/python scripts/run_sprint4_demo.py
+```
+
+That keeps the same Sprint 4 flow while swapping only the backend implementation.

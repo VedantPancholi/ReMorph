@@ -23,9 +23,19 @@ class EpisodeRecord:
     scenario_type: str
     original_request: dict[str, Any]
     trapped_error: dict[str, Any] | None
+    request_id: str | None
+    error_code: int | None
+    error_message: str | None
+    local_spec_path: str | None
     selected_endpoint_path: str | None
     route_match_confidence: float | None
     repair_strategy: str | None
+    healing_action: str | None
+    healed_method: str | None
+    healed_url: str | None
+    healed_payload: dict[str, Any] | None
+    healed_headers: dict[str, str] | None
+    reasoning: str | None
     cache_hit: bool
     llm_attempted: bool
     llm_succeeded: bool
@@ -96,6 +106,7 @@ class WorkflowRunner:
                 scenario_type=scenario_type,
                 original_request=request,
                 trapped_error=None,
+                local_spec_path=local_spec_path,
                 healed_request=None,
                 retries_used=0,
                 final_result=initial,
@@ -126,6 +137,7 @@ class WorkflowRunner:
                 scenario_type=scenario_type,
                 original_request=request,
                 trapped_error=None,
+                local_spec_path=local_spec_path,
                 healed_request=None,
                 retries_used=0,
                 final_result=initial,
@@ -193,6 +205,7 @@ class WorkflowRunner:
             scenario_type=scenario_type,
             original_request=request,
             trapped_error=trapped_error,
+            local_spec_path=local_spec_path,
             healed_request=healed_request,
             retries_used=retries_used,
             final_result=current_result,
@@ -214,6 +227,7 @@ class WorkflowRunner:
         scenario_type: str,
         original_request: dict[str, Any],
         trapped_error: dict[str, Any] | None,
+        local_spec_path: str,
         healed_request: HealedRequest | None,
         retries_used: int,
         final_result: RequestExecutionResult,
@@ -226,9 +240,19 @@ class WorkflowRunner:
             scenario_type=scenario_type,
             original_request=original_request,
             trapped_error=trapped_error,
+            request_id=(trapped_error or {}).get("request_id"),
+            error_code=(trapped_error or {}).get("error_code"),
+            error_message=(trapped_error or {}).get("error_message"),
+            local_spec_path=local_spec_path,
             selected_endpoint_path=getattr(diagnostics, "selected_endpoint_path", None),
             route_match_confidence=getattr(diagnostics, "docs_confidence", None),
             repair_strategy=getattr(diagnostics, "repair_strategy", None),
+            healing_action=getattr(healed_request, "healing_action", None),
+            healed_method=getattr(healed_request, "fixed_method", None),
+            healed_url=getattr(healed_request, "fixed_url", None),
+            healed_payload=getattr(healed_request, "fixed_payload", None),
+            healed_headers=getattr(healed_request, "fixed_headers", None),
+            reasoning=getattr(healed_request, "reasoning", None),
             cache_hit=getattr(diagnostics, "repair_strategy", "") == "cache",
             llm_attempted=getattr(diagnostics, "llm_attempted", False),
             llm_succeeded=getattr(diagnostics, "llm_succeeded", False),

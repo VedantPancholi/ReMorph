@@ -1,0 +1,12 @@
+{
+  "agent_type": "adaptive",
+  "episodes_path": "runtime/sprint4_clean/episodes.jsonl",
+  "eval_path": "runtime/sprint4_clean/training/eval.jsonl",
+  "eval_ratio": 0.2,
+  "eval_sample_count": 2,
+  "include_failed": false,
+  "sample_count": 9,
+  "seed": 42,
+  "train_path": "runtime/sprint4_clean/training/train.jsonl",
+  "train_sample_count": 7
+}

@@ -10,6 +10,8 @@ __pycache__/
 venv/
 .venv/
 env/
+!sprint4/env/
+!sprint4/env/**
 
 # Environment
 .env
@@ -34,3 +36,6 @@ from_gpt_context.txt
 
 # Local runtime artifacts
 # runtime/
+
+
+prompt_to_codex.txt

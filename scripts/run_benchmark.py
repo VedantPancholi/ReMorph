@@ -12,7 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from sprint4.config import get_sprint4_settings
 from sprint4.env.factory import OpenEnvClientConfig
 from sprint4.env.scenario_loader import load_contract_bundle
-from sprint4.evaluation.benchmark_runner import run_benchmark
+from sprint4.evaluation.benchmark_modes import BenchmarkRuntimeMode, run_benchmark_with_mode
 
 
 def main() -> None:
@@ -25,6 +25,10 @@ def main() -> None:
     parser.add_argument("--openenv-client-class", default=settings.OPENENV_CLIENT_CLASS)
     parser.add_argument("--openenv-base-url", default=settings.OPENENV_BASE_URL)
     parser.add_argument("--openenv-strict", action="store_true", default=settings.OPENENV_STRICT)
+    parser.add_argument("--cache-mode", choices=["reuse", "clear", "disable"], default="reuse")
+    parser.add_argument("--disable-telemetry", action="store_true")
+    parser.add_argument("--cache-path", default="")
+    parser.add_argument("--telemetry-dir", default="")
     args = parser.parse_args()
 
     openenv_config = OpenEnvClientConfig(
@@ -33,12 +37,18 @@ def main() -> None:
         base_url=args.openenv_base_url or None,
         strict=bool(args.openenv_strict),
     )
-    report = run_benchmark(
+    report = run_benchmark_with_mode(
         bundle=load_contract_bundle(),
         episodes_per_scenario=args.episodes_per_scenario,
         output_dir=args.output_dir,
         backend=args.backend,
         openenv_config=openenv_config if args.backend == "openenv" else None,
+        mode=BenchmarkRuntimeMode(
+            cache_mode=args.cache_mode,
+            telemetry_enabled=not args.disable_telemetry,
+            cache_path=args.cache_path or None,
+            telemetry_dir=args.telemetry_dir or None,
+        ),
     )
     print(json.dumps(report["artifacts"], indent=2))
 
