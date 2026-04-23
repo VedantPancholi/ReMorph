@@ -88,9 +88,9 @@ def default_scenarios() -> list[ScenarioRequest]:
 
 
 def default_live_scenarios(
-    dataset_path: str = "training_dataset.json",
+    dataset_path: str = "chaos_gym/training_dataset.json",
     *,
-    live_spec_path: str = "specs/openapi.json",
+    live_spec_path: str = "chaos_gym/specs/openapi.json",
     selection: str = "representative",
     raw_scenario_filter: str | None = None,
 ) -> list[ScenarioRequest]:
@@ -234,7 +234,7 @@ def _records_to_live_scenarios(records: list[dict[str, Any]]) -> list[ScenarioRe
                 url=target_url,
                 headers=_select_headers(record),
                 payload=_select_payload(record),
-                local_spec_path="specs/openapi.json",
+                local_spec_path="chaos_gym/specs/openapi.json",
             )
         )
     return scenarios

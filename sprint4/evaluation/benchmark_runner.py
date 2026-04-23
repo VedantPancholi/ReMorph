@@ -34,7 +34,7 @@ def run_benchmark(
     backend: EnvironmentBackend = "simulated",
     env_mode: EnvironmentMode | None = None,
     live_base_url: str = "http://127.0.0.1:8000",
-    live_spec_path: str = "specs/openapi.json",
+    live_spec_path: str = "target_api/specs/openapi.json",
     live_scenario_selection: str = "representative",
     live_raw_scenario_filter: str | None = None,
     openenv_config: OpenEnvClientConfig | None = None,

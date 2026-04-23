@@ -1,4 +1,4 @@
-.venv/
+# Python caches
 __pycache__/
 *.pyc
 .pytest_cache/
@@ -7,8 +7,6 @@ __pycache__/
 venv/
 .venv/
 env/
-!sprint4/env/
-!sprint4/env/**
 
 # Environment
 .env
@@ -31,12 +29,17 @@ Thumbs.db
 .codex/
 from_gpt_context.txt
 
-# Runtime benchmark artifacts are intentionally tracked for demos and reports.
-!runtime/
-!runtime/**
+# Generated runtime outputs
+runtime/*
+!runtime/.gitkeep
 
-*.pyc
-.pytest_cache/
+# Generated benchmark examples should live under examples/artifacts/
+chaos_gym/server/__pycache__/
+app/__pycache__/
+sprint4/__pycache__/
+tests/__pycache__/
+
+# Local copies
 training_dataset copy.json
 dataset_generator copy.py
 prompt_to_codex.txt

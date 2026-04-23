@@ -1,0 +1,511 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "ReMorph Financial API",
+    "description": "Complex production API serving as a proxy target for the Universal Fuzzer",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/payments/process": {
+      "post": {
+        "summary": "Process Payment",
+        "operationId": "process_payment_api_v1_payments_process_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "x-api-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Provider API Key",
+              "title": "X-Api-Key"
+            },
+            "description": "Provider API Key"
+          },
+          {
+            "name": "x-vendor-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Multi-tenant Vendor Routing ID",
+              "title": "X-Vendor-Id"
+            },
+            "description": "Multi-tenant Vendor Routing ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentProcessRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ledger/transactions": {
+      "get": {
+        "summary": "Fetch Transactions",
+        "operationId": "fetch_transactions_api_v1_ledger_transactions_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "start_date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "title": "Start Date"
+            }
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "title": "End Date"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/clients/onboard": {
+      "post": {
+        "summary": "Onboard Client",
+        "operationId": "onboard_client_api_v1_clients_onboard_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CorporateClientOnboardRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/subscriptions/{sub_id}/status": {
+      "put": {
+        "summary": "Update Subscription",
+        "operationId": "update_subscription_api_v1_subscriptions__sub_id__status_put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "sub_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Sub Id"
+            }
+          },
+          {
+            "name": "x-api-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubscriptionStatusUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/payments/{trx_id}": {
+      "delete": {
+        "summary": "Refund Payment",
+        "operationId": "refund_payment_api_v1_payments__trx_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "trx_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Trx Id"
+            }
+          },
+          {
+            "name": "x-api-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "X-Api-Key"
+            }
+          },
+          {
+            "name": "x-vendor-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "X-Vendor-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BillingAddress": {
+        "properties": {
+          "street": {
+            "type": "string",
+            "title": "Street"
+          },
+          "zip_code": {
+            "type": "string",
+            "title": "Zip Code"
+          },
+          "iso_country": {
+            "type": "string",
+            "maxLength": 2,
+            "minLength": 2,
+            "title": "Iso Country"
+          }
+        },
+        "type": "object",
+        "required": [
+          "street",
+          "zip_code",
+          "iso_country"
+        ],
+        "title": "BillingAddress"
+      },
+      "CardDetails": {
+        "properties": {
+          "card_number": {
+            "type": "string",
+            "maxLength": 19,
+            "minLength": 16,
+            "title": "Card Number",
+            "description": "Raw PAN"
+          },
+          "cvv": {
+            "type": "string",
+            "maxLength": 4,
+            "minLength": 3,
+            "title": "Cvv"
+          },
+          "expiry": {
+            "type": "string",
+            "pattern": "^(0[1-9]|1[0-2])\\/?([0-9]{4}|[0-9]{2})$",
+            "title": "Expiry"
+          }
+        },
+        "type": "object",
+        "required": [
+          "card_number",
+          "cvv",
+          "expiry"
+        ],
+        "title": "CardDetails"
+      },
+      "CorporateClientOnboardRequest": {
+        "properties": {
+          "contact_email": {
+            "type": "string",
+            "format": "email",
+            "title": "Contact Email"
+          },
+          "company_name": {
+            "type": "string",
+            "title": "Company Name"
+          },
+          "registration_code": {
+            "type": "string",
+            "pattern": "^[A-Z0-9]{8,12}$",
+            "title": "Registration Code"
+          }
+        },
+        "type": "object",
+        "required": [
+          "contact_email",
+          "company_name",
+          "registration_code"
+        ],
+        "title": "CorporateClientOnboardRequest"
+      },
+      "CurrencyEnum": {
+        "type": "string",
+        "enum": [
+          "USD",
+          "EUR",
+          "GBP"
+        ],
+        "title": "CurrencyEnum"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "PaymentProcessRequest": {
+        "properties": {
+          "amount": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Amount"
+          },
+          "currency": {
+            "$ref": "#/components/schemas/CurrencyEnum"
+          },
+          "card_details": {
+            "$ref": "#/components/schemas/CardDetails"
+          },
+          "billing_address": {
+            "$ref": "#/components/schemas/BillingAddress"
+          }
+        },
+        "type": "object",
+        "required": [
+          "amount",
+          "currency",
+          "card_details",
+          "billing_address"
+        ],
+        "title": "PaymentProcessRequest"
+      },
+      "SubscriptionStatusEnum": {
+        "type": "string",
+        "enum": [
+          "ACTIVE",
+          "SUSPENDED",
+          "CANCELED"
+        ],
+        "title": "SubscriptionStatusEnum"
+      },
+      "SubscriptionStatusUpdate": {
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/SubscriptionStatusEnum"
+          },
+          "reason_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason Code"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "SubscriptionStatusUpdate"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}

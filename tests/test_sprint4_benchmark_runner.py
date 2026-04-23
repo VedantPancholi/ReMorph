@@ -73,7 +73,7 @@ def test_benchmark_supports_live_mode_with_custom_scenarios(tmp_path, monkeypatc
                 url="http://127.0.0.1:8000/api/v0/ledger/transactions",
                 headers={"Authorization": "Bearer token"},
                 payload=None,
-                local_spec_path="specs/openapi.json",
+                local_spec_path="target_api/specs/openapi.json",
             )
         ],
         episodes_per_scenario=1,

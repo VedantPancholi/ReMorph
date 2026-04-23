@@ -1,28 +1,24 @@
 {
-  "average_processing_ms": 445.13,
+  "average_processing_ms": 1006.25,
   "error_code_counts": {
-    "400": 26,
-    "401": 15,
-    "404": 28
+    "400": 1,
+    "401": 1,
+    "404": 2
   },
-  "fallback_count": 6,
+  "fallback_count": 4,
   "healing_action_counts": {
-    "auth_rewrite": 15,
-    "combined_rewrite": 20,
-    "no_change": 1,
-    "payload_rewrite": 25,
-    "route_rewrite": 8
+    "auth_rewrite": 1,
+    "combined_rewrite": 2,
+    "payload_rewrite": 1
   },
   "repair_strategy_counts": {
-    "cache": 57,
-    "deterministic": 6,
-    "merged": 6
+    "deterministic": 4
   },
   "scenario_type_counts": {
-    "auth_drift": 14,
-    "payload_drift": 23,
-    "route_drift": 24
+    "auth_drift": 1,
+    "payload_drift": 1,
+    "route_drift": 2
   },
-  "total_healings": 69,
-  "total_processing_ms": 30714
+  "total_healings": 4,
+  "total_processing_ms": 4025
 }

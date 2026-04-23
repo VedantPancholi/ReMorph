@@ -1,7 +1,7 @@
 # ReMorph Universal Fuzzer Architecture Plan
 
 ## Goal Description
-The Fuzzer is a pure Python engine (`dataset_generator.py`) designed to automatically ingest an enterprise API specification (`openapi.json`), deterministically mutate it to generate common failures (Schema, Route, and Auth drifts), and output a robust training dataset (`training_dataset.json`).
+The Fuzzer is a pure Python engine (`target_api/dataset_generator.py`) designed to automatically ingest an enterprise API specification (`target_api/specs/openapi.json`), deterministically mutate it to generate common failures (Schema, Route, and Auth drifts), and output a robust training dataset (`target_api/training_dataset.json`).
 
 Instead of hardcoding rules specifically for `/users` or `first_name`, this plan defines a **Universal** and **Generic** architecture so that the Fuzzer can adapt to any system's `openapi.json` automatically. This will allow ReMorph's AI to self-heal and resolve error states dynamically in a production environment.
 
@@ -46,9 +46,9 @@ To support tech giants like Amazon or Stripe (whose OpenAPI specs often exceed 5
 ## Engine Output Loop
 - Loop over valid paths randomly, call the 3 mutators systematically.
 - Use `uuid` and `random` standard libraries uniformly to generate a minimum of 100+ random but deterministic records.
-- Saves standard formatted JSON matching the ReMorph standard schema into `training_dataset.json`.
+- Saves standard formatted JSON matching the ReMorph standard schema into `target_api/training_dataset.json`.
 
 ## Verification Plan
-- Run `python dataset_generator.py` locally.
-- Validate `training_dataset.json` contains valid JSON.
+- Run `python target_api/dataset_generator.py` locally.
+- Validate `target_api/training_dataset.json` contains valid JSON.
 - Verify generated array matches the exact schema expected by the RL script.

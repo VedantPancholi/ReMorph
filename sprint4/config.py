@@ -21,7 +21,7 @@ class Sprint4Settings(BaseSettings):
     ENV_BACKEND: str = "simulated"
     ENV_MODE: str = "local"
     LIVE_BASE_URL: str = "http://127.0.0.1:8000"
-    LIVE_SPEC_PATH: str = "specs/openapi.json"
+    LIVE_SPEC_PATH: str = "target_api/specs/openapi.json"
     OPENENV_CLIENT_MODULE: str = "echo_env"
     OPENENV_CLIENT_CLASS: str = "EchoEnv"
     OPENENV_BASE_URL: str = ""

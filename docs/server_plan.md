@@ -7,7 +7,7 @@ We will build a Financial Payment Gateway server. Financial APIs are the best to
 
 ## 2. Directory Structure
 ```text
-server/
+target_api/server/
 ├── app/
 │   ├── __init__.py
 │   ├── endpoints.py     # FastAPI Routers and path operations

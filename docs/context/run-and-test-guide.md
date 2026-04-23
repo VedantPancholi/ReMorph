@@ -1,57 +1,40 @@
 # Run And Test Guide
 
-This is the main runbook for the integrated ReMorph repo.
+This is the primary runbook for the refactored ReMorph repo.
 
-- Sprint 2 remains the repair brain.
-- Sprint 4 now supports two environment modes:
-  - `local`: deterministic in-memory benchmark env
-  - `live`: Sprint 1 FastAPI target server
-- Sprint 1 dataset output is available as an offline adapter input through
-  `training_dataset.json`.
+## Install
 
-## Setup
+Development setup:
 
 ```bash
 python3 -m venv .venv
-.venv/bin/pip install -r requirements.txt
+.venv/bin/pip install -r requirements/dev.txt
 cp .env.example .env
 ```
 
-Optional model-assisted refinement:
-
-```env
-REMORPH_GROQ_API_KEY=your_key_here
-```
-
-If the copied virtualenv entrypoints point at an old machine path, use:
+Training/OpenEnv extras:
 
 ```bash
-PYTHONPATH=.venv/lib/python3.12/site-packages /usr/bin/python3 ...
+.venv/bin/pip install -r requirements/training.txt
 ```
 
-## Core Validation
+## Repo Map
 
-Run the main local suite:
+- `app/`: Sprint 2 repair brain
+- `sprint4/`: benchmark, environment adapters, rewards, evaluation, training prep
+- `target_api/`: live FastAPI target, spec export, and dataset generation
+- `runtime/`: disposable generated outputs
+- `examples/artifacts/`: tracked sample outputs
+
+## Fastest Verification
 
 ```bash
 .venv/bin/pytest -q
+.venv/bin/python run_local_test.py --mode smoke --scenario a
+.venv/bin/python run_local_test.py --mode heal --scenario a
 ```
 
-Focused Sprint 4 integration coverage:
-
-```bash
-.venv/bin/pytest -q \
-  tests/test_sprint4_env_factory.py \
-  tests/test_sprint4_live_api_env.py \
-  tests/test_sprint4_trap_and_repair.py \
-  tests/test_sprint4_phase1_dataset_adapter.py \
-  tests/test_sprint4_benchmark_runner.py \
-  tests/test_sprint4_workflow_runner.py
-```
-
-## Sprint 4 Local Mode
-
-Use local mode when you want fast deterministic benchmark runs.
+## Local Sprint 4 Benchmark
 
 ```bash
 .venv/bin/python scripts/run_benchmark.py \
@@ -62,24 +45,24 @@ Use local mode when you want fast deterministic benchmark runs.
   --disable-telemetry
 ```
 
-This mode uses:
-
-- `sprint4/env/mutable_api_env.py`
-- drift contracts under `sprint4/env/contracts/`
-- the same Sprint 2 repair loop as live mode
-
-## Sprint 4 Live Mode
-
-Use live mode when you want Sprint 4 to call the Sprint 1 FastAPI server over
-HTTP.
-
-1. Start the live server:
+Generate a local training dataset:
 
 ```bash
-.venv/bin/python -m uvicorn server.main:app --reload
+.venv/bin/python scripts/generate_sprint4_dataset.py \
+  --episodes-path runtime/sprint4_local/episodes.jsonl \
+  --output-dir runtime/sprint4_local/dataset \
+  --eval-ratio 0.2
 ```
 
-2. Run the live benchmark:
+## Live Target API Benchmark
+
+Start the live server:
+
+```bash
+.venv/bin/python -m uvicorn target_api.server.main:app --reload
+```
+
+Run the representative live benchmark:
 
 ```bash
 .venv/bin/python scripts/run_benchmark.py \
@@ -91,7 +74,7 @@ HTTP.
   --disable-telemetry
 ```
 
-3. Run all live raw scenarios from `training_dataset.json`:
+Run all raw scenarios from `target_api/training_dataset.json`:
 
 ```bash
 .venv/bin/python scripts/run_benchmark.py \
@@ -104,55 +87,7 @@ HTTP.
   --disable-telemetry
 ```
 
-4. Run one exact raw live scenario:
-
-```bash
-.venv/bin/python scripts/run_benchmark.py \
-  --env-mode live \
-  --live-base-url http://127.0.0.1:8000 \
-  --live-raw-scenario schema_missing_key \
-  --episodes-per-scenario 1 \
-  --output-dir runtime/sprint4_live_schema_missing_key \
-  --cache-mode disable \
-  --disable-telemetry
-```
-
-Live mode uses:
-
-- `sprint4/env/live_api_env.py`
-- `specs/openapi.json` as the repair spec
-- live HTTP status codes including `422`
-- richer response parsing from `actual_server_response`
-
-Default representative live scenarios are chosen to be meaningful for repair:
-
-- `payload_drift` -> prefers `schema_missing_key`
-- `route_drift` -> prefers `route_regression`
-- `auth_drift` -> prefers `auth_missing_tenant`
-
-The representative auth case is `auth_missing_tenant` because it is repairable
-from contract evidence. A totally missing JWT such as `auth_missing_token`
-remains a valid benchmark case, but ReMorph cannot safely invent a bearer token
-from nothing.
-
-Important labeling note:
-
-- `scenario_type` is the broad Sprint 4 bucket:
-  - `payload_drift`
-  - `route_drift`
-  - `auth_drift`
-- `raw_scenario_type` is the exact Sprint 1 label:
-  - `schema_missing_key`
-  - `schema_type_coercion`
-  - `route_regression`
-  - `auth_missing_token`
-  - and so on
-
-So if you run multiple schema mutations, they will all still appear under
-`payload_drift` in the top-level summary. Use `raw_scenario_type` or the
-`Per Raw Scenario Accuracy` section to distinguish them.
-
-To benchmark an unrecoverable auth case directly:
+Run one exact raw scenario:
 
 ```bash
 .venv/bin/python scripts/run_benchmark.py \
@@ -165,67 +100,53 @@ To benchmark an unrecoverable auth case directly:
   --disable-telemetry
 ```
 
-## Sprint 1 Dataset Adapter
+Important:
 
-Generate the Phase 1 live dataset:
+- `scenario_type` is the broad bucket:
+  - `payload_drift`
+  - `route_drift`
+  - `auth_drift`
+- `raw_scenario_type` is the exact Target API label:
+  - `schema_missing_key`
+  - `route_regression`
+  - `auth_missing_tenant`
+  - and so on
 
-```bash
-.venv/bin/python dataset_generator.py -m 1
-```
+Representative live auth prefers `auth_missing_tenant`, because ReMorph can
+repair a missing required header from contract evidence. A fully missing JWT is
+kept as a harder negative case.
 
-That writes `training_dataset.json`.
+## Target API Utilities
 
-Sprint 4 can consume it for offline analysis and replay seeding through:
-
-- `sprint4/training/phase1_dataset_adapter.py`
-
-The adapter preserves:
-
-- raw live scenario names such as `schema_missing_key`
-- mapped Sprint 4 categories such as `payload_drift`
-- parsed validation/auth/route signals from stringified server responses
-
-## Dataset And Training Prep
-
-Generate training rows from benchmark episodes:
+Export the live OpenAPI spec:
 
 ```bash
-.venv/bin/python scripts/generate_sprint4_dataset.py \
-  --episodes-path runtime/sprint4_local/episodes.jsonl \
-  --output-dir runtime/sprint4_local/dataset \
-  --eval-ratio 0.2
+.venv/bin/python -m target_api.server.export_openapi
 ```
 
-Prepare TRL-ready train/eval artifacts:
+Generate the Phase 1 dataset:
 
 ```bash
-.venv/bin/python -m sprint4.training.trl_train_grpo \
-  --episodes-path runtime/sprint4_local/episodes.jsonl \
-  --output-dir runtime/sprint4_local/training \
-  --eval-ratio 0.2
+.venv/bin/python target_api/dataset_generator.py -m 1
 ```
 
-## Output Files
+Outputs:
 
-Main Sprint 4 outputs stay stable across local and live modes:
+- `target_api/specs/openapi.json`
+- `target_api/training_dataset.json`
 
-- `runtime/.../episodes.jsonl`
-- `runtime/.../benchmark_report.json`
-- `runtime/.../benchmark_summary.md`
+## Runtime Strategy
 
-Live benchmark reports now include both:
+- `runtime/` is generated-only and should not be relied on as tracked state.
+- `examples/artifacts/` contains preserved benchmark samples for review and demos.
 
-- `per_scenario_accuracy`
-- `per_raw_scenario_accuracy`
+## Focused Tests
 
-Training-facing outputs:
-
-- `runtime/.../dataset/train.jsonl`
-- `runtime/.../dataset/eval.jsonl`
-- `runtime/.../training/trl_training_summary.json`
-
-## Notes
-
-- Local mode should remain the default for CI and fast iteration.
-- Live mode is optional and should not be required for the base test suite.
-- Sprint 2 entry point remains `app.main.process_trapped_error()`.
+```bash
+.venv/bin/pytest -q \
+  tests/test_server.py \
+  tests/test_healer.py \
+  tests/test_sprint4_benchmark_runner.py \
+  tests/test_sprint4_live_api_env.py \
+  tests/test_sprint4_live_scenario_loader.py
+```

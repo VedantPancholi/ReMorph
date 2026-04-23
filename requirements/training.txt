@@ -1,0 +1,7 @@
+-r base.txt
+
+openenv-core>=0.2.3
+trl>=0.9.0
+transformers
+accelerate
+datasets

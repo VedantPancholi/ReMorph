@@ -1,284 +1,196 @@
 # ReMorph
 
-ReMorph is the self-healing API agent project built across multiple sprint
-phases.
+ReMorph is an API self-healing project built in layers:
 
-- Sprint 1 provides the live mock server, OpenAPI contract export, and chaos
-  gym / fuzzing setup.
-- Sprint 2 provides the repair engine that takes a trapped API failure and
-  returns a structured repair for payload drift, route drift, or auth drift.
-- Sprint 4 wraps the repair engine with a mutable environment, benchmark loop,
-  reward scoring, and training-facing dataset pipeline.
+- `app/`: Sprint 2 repair brain
+- `sprint4/`: benchmark, reward, training, and evaluation pipeline
+- `target_api/`: live FastAPI target server, OpenAPI export, and dataset generation
 
-## Why This Repo Exists
+The repo now supports two main runtime modes:
 
-The project is built from the product direction captured in
-`from_gpt_context.txt`. The goal is to move from a believable repair module to
-an end-to-end API self-healing system with benchmarking and training-ready
-artifacts.
+- `local`: deterministic in-memory benchmark for fast validation
+- `live`: real HTTP calls against the Target API FastAPI server
 
-## Quick Start
+## Repo Structure
+
+- `app/`
+  Sprint 2 repair engine. This is the stable `TrappedError -> HealedRequest`
+  layer and should be treated as the core reasoning brain.
+- `sprint4/`
+  Sprint 4 benchmark runtime, environment adapters, reward scoring, dataset
+  formatting, and training-prep utilities.
+- `target_api/`
+  Sprint 1 live target environment:
+  - `target_api/server/`
+  - `target_api/specs/openapi.json`
+  - `target_api/dataset_generator.py`
+  - `target_api/training_dataset.json`
+- `docs/`
+  Main documentation hub.
+- `examples/artifacts/`
+  Example benchmark outputs that are safe to keep in git.
+- `runtime/`
+  Generated local outputs only. This should stay disposable.
+
+## Install
+
+Create the environment and install development dependencies:
 
 ```bash
 python3 -m venv .venv
-.venv/bin/pip install -r requirements.txt
+.venv/bin/pip install -r requirements/dev.txt
 cp .env.example .env
-.venv/bin/pytest -q
-.venv/bin/python run_local_test.py --mode heal --scenario a
 ```
 
-If you want model-assisted refinement, add `REMORPH_GROQ_API_KEY` to `.env`.
-The local demo still works without it because deterministic repair is already
-implemented.
-
-## Docker Quick Start
-
-If you want to share the repo without requiring local Python setup:
+If you want training/OpenEnv extras:
 
 ```bash
-docker build -t remorph .
-docker run --rm remorph
-docker run --rm remorph --mode heal --scenario a
+.venv/bin/pip install -r requirements/training.txt
 ```
 
-If you want model-assisted refinement inside Docker, pass the local `.env` file:
+If you want model-assisted refinement, set:
 
-```bash
-docker run --rm --env-file .env remorph --mode heal --scenario a
+```env
+REMORPH_GROQ_API_KEY=your_key_here
 ```
 
-If you want runtime cache and telemetry artifacts to persist on the host:
+## Core Contract
 
-```bash
-docker run --rm --env-file .env -v "$(pwd)/runtime:/app/runtime" remorph --mode heal --scenario a
-```
-
-## Configuration
-
-All environment variables use the `REMORPH_` prefix to avoid collisions with
-machine-level settings.
-
-Important:
-
-- keep `REMORPH_GROQ_API_KEY` only in `.env`
-- do not hardcode provider keys in tracked Python files
-- prefer `.venv/bin/python` and `.venv/bin/pytest` unless the venv is already active
-
-## What The Repo Delivers Now
-
-- Sprint 1 live FastAPI mock server and fuzzing foundation
-- Sprint 2 typed request, response, diagnostics, schema, and proxy-contract models
-- local OpenAPI loading plus multi-source docs-fetch scaffolding
-- schema extraction with route matching, confidence, ranked candidates, and auth parsing
-- deterministic repair strategies for payload, route, auth, and combined drift
-- optional model refinement with safe fallback on invalid model output
-- proxy-facing adapter and retry orchestration
-- persistent telemetry and reusable repair cache
-- Sprint 4 mutable environment, benchmark loop, and reward scoring
-- training-facing episode formatting and TRL-ready dataset preparation
-
-## What This Repo Does Not Yet Claim
-
-- not a fully trained production RL policy
-- not final OpenEnv deployment as the only runtime mode
-- not final judge-facing model-improvement proof across large unseen scenario sets
-
-Those pieces come after the benchmark and dataset pipeline are validated.
-
-## Stable Repair Contract
-
-Sprint 2 should be treated as the stable repair component:
+Sprint 2 remains the stable repair interface:
 
 - input: `TrappedError`
 - output: `HealedRequest`
-- primary callable: `app.main.process_trapped_error()`
+- entry point: `app.main.process_trapped_error()`
 
-For safer orchestration and explicit failure reasons, integrations can also use:
+## Local Mode
 
-- `app.main.process_trapped_error_safe()`
-- `app.services.proxy_adapter.handle_proxy_failure()`
-- `app.services.proxy_adapter.handle_proxy_failure_with_retry()`
-
-## Current Runtime Flow
-
-1. A proxy or test harness traps an upstream API failure.
-2. ReMorph loads the relevant docs or spec bundle.
-3. ReMorph extracts the best endpoint contract with explainable route matching.
-4. ReMorph builds a repair context and prepares a deterministic baseline.
-5. The model may refine the repair if configured.
-6. ReMorph returns a structured healed request with diagnostics.
-7. Sprint 4 can benchmark the repair, score reward, and format training data.
-
-## Demo Strength
-
-The current local baseline is strong enough to show the three core cases:
-
-- Scenario A: payload rewritten into the nested `user` schema
-- Scenario B: route migrated to `/api/v2/finance/ledger` and auth rewritten
-- Scenario C: bearer auth converted into `x-api-key`
-
-## Sprint 4 Benchmark And Training Flow
-
-Sprint 4 adds:
-
-- local and live environment modes
-- a simulated, live FastAPI, or OpenEnv-style backend
-- baseline vs adaptive benchmark runs
-- deterministic reward scoring
-- cache-aware benchmark modes
-- training/eval JSONL generation from benchmark episodes
-- TRL-ready prompt/completion dataset preparation
-- a Phase 1 dataset adapter for `training_dataset.json`
-
-Typical local flow:
+Run the deterministic local benchmark:
 
 ```bash
-.venv/bin/python scripts/run_benchmark.py --episodes-per-scenario 3 --output-dir runtime/sprint4_clean --cache-mode clear --disable-telemetry
-.venv/bin/python scripts/generate_sprint4_dataset.py --episodes-path runtime/sprint4_clean/episodes.jsonl --output-dir runtime/sprint4_clean/dataset --eval-ratio 0.2
-.venv/bin/python -m sprint4.training.trl_train_grpo --episodes-path runtime/sprint4_clean/episodes.jsonl --output-dir runtime/sprint4_clean/training --eval-ratio 0.2
+.venv/bin/python scripts/run_benchmark.py \
+  --env-mode local \
+  --episodes-per-scenario 3 \
+  --output-dir runtime/sprint4_local \
+  --cache-mode clear \
+  --disable-telemetry
 ```
 
-Live benchmark flow:
+Generate training rows from local episodes:
 
 ```bash
-.venv/bin/python -m uvicorn server.main:app --reload
-.venv/bin/python scripts/run_benchmark.py --env-mode live --live-base-url http://127.0.0.1:8000 --episodes-per-scenario 1 --output-dir runtime/sprint4_live --cache-mode disable --disable-telemetry
+.venv/bin/python scripts/generate_sprint4_dataset.py \
+  --episodes-path runtime/sprint4_local/episodes.jsonl \
+  --output-dir runtime/sprint4_local/dataset \
+  --eval-ratio 0.2
 ```
 
-Run every raw Sprint 1 live scenario:
+## Live Mode
+
+Start the Target API server:
 
 ```bash
-.venv/bin/python scripts/run_benchmark.py --env-mode live --live-base-url http://127.0.0.1:8000 --live-scenario-selection all --episodes-per-scenario 1 --output-dir runtime/sprint4_live_all --cache-mode disable --disable-telemetry
+.venv/bin/python -m uvicorn target_api.server.main:app --reload
 ```
 
-Representative live auth now defaults to `auth_missing_tenant`, because that
-case is repairable from the contract. If you want to benchmark the harder
-unrecoverable case, run `--live-raw-scenario auth_missing_token`.
-
-Top-level summaries use broad categories:
-
-- `payload_drift`
-- `route_drift`
-- `auth_drift`
-
-Exact Sprint 1 labels are preserved as `raw_scenario_type` inside
-`episodes.jsonl` and `benchmark_report.json`.
-
-## Sprint 1 Setup
-
-Jenish's Sprint 1 work is the setup for the live mock-server and chaos-gym
-foundation.
-
-### Sprint 1 Requirements
-
-Install the ecosystem dependencies first:
+In another terminal, run the representative live benchmark:
 
 ```bash
-pip install -r requirements.txt
+.venv/bin/python scripts/run_benchmark.py \
+  --env-mode live \
+  --live-base-url http://127.0.0.1:8000 \
+  --episodes-per-scenario 1 \
+  --output-dir runtime/sprint4_live \
+  --cache-mode disable \
+  --disable-telemetry
 ```
 
-If you are using a virtual environment, activate it before running the server
-or generator.
-
-### Sprint 1 Run Order
-
-1. Boot the live target server:
+Run every raw live scenario from the Target API dataset:
 
 ```bash
-uvicorn server.main:app --reload
+.venv/bin/python scripts/run_benchmark.py \
+  --env-mode live \
+  --live-base-url http://127.0.0.1:8000 \
+  --live-scenario-selection all \
+  --episodes-per-scenario 1 \
+  --output-dir runtime/sprint4_live_all \
+  --cache-mode disable \
+  --disable-telemetry
 ```
 
-The server starts on `http://127.0.0.1:8000`.
-
-2. Export or review the OpenAPI contract:
+Run one exact raw live scenario:
 
 ```bash
-python server/export_openapi.py
+.venv/bin/python scripts/run_benchmark.py \
+  --env-mode live \
+  --live-base-url http://127.0.0.1:8000 \
+  --live-raw-scenario auth_missing_token \
+  --episodes-per-scenario 1 \
+  --output-dir runtime/sprint4_live_auth_missing_token \
+  --cache-mode disable \
+  --disable-telemetry
 ```
 
-or
+Representative live auth defaults to `auth_missing_tenant` because it is
+repairable from contract evidence. `auth_missing_token` is still useful as a
+hard negative benchmark, but ReMorph should not invent a bearer token.
+
+## Target API
+
+Export the live OpenAPI contract:
 
 ```bash
-python3 -m server.export_openapi
+.venv/bin/python -m target_api.server.export_openapi
 ```
 
-3. Run the universal dataset generator:
+Generate the Phase 1 dataset:
 
 ```bash
-python dataset_generator.py -m 1
-python dataset_generator.py -m 10
+.venv/bin/python target_api/dataset_generator.py -m 1
 ```
 
-### Sprint 1 Swagger Setup
+That writes:
 
-With the server running, open:
+- `target_api/specs/openapi.json`
+- `target_api/training_dataset.json`
 
-```text
-http://127.0.0.1:8000/docs
+## Reports
+
+Tracked example outputs live under:
+
+- `examples/artifacts/sprint4_local/`
+- `examples/artifacts/sprint4_live/`
+
+Disposable run outputs live under:
+
+- `runtime/`
+
+Live benchmark reports keep both:
+
+- broad `scenario_type`
+- exact `raw_scenario_type`
+
+That means many schema variations still roll up to `payload_drift` in the top
+summary, while the raw labels remain visible in `benchmark_report.json` and
+`episodes.jsonl`.
+
+## Tests
+
+Run the main suite:
+
+```bash
+.venv/bin/pytest -q
 ```
 
-To authorize in Swagger, paste this JWT into the `HTTPBearer` authorize box:
+Key focused areas:
 
-```text
-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZnV6emVyX2FnZW50XzAwNyIsInJvbGUiOiJhZG1pbiJ9.UuceJXhdiSBpwb47N1MffwuX3vd8KFwvtNYZP8wVTTo
-```
+- `tests/test_server.py`
+- `tests/test_healer.py`
+- `tests/test_sprint4_*`
 
-For the sample `POST /api/v1/payments/process` route, use:
+## Docs
 
-- `x-api-key: secret`
-- `x-vendor-id: ven-123`
+Start here:
 
-and this baseline payload:
-
-```json
-{
-  "amount": 100.50,
-  "currency": "USD",
-  "card_details": {
-    "card_number": "1234567812345678",
-    "cvv": "123",
-    "expiry": "12/26"
-  },
-  "billing_address": {
-    "street": "123 Wall St",
-    "zip_code": "10005",
-    "iso_country": "US"
-  }
-}
-```
-
-### Sprint 1 Dataset Intent
-
-The Sprint 1 generator produces `training_dataset.json`, which logs valid and
-failing requests against the live mock server. That dataset is the Phase 1
-chaos-gym output that later repair and RL layers can build on.
-
-## Repository Layout
-
-- `app/`: main repair engine package
-- `server/`: Sprint 1 live mock server and API target
-- `specs/`: exported OpenAPI contracts used by the fuzzer and integrations
-- `sprint4/`: benchmark, environment, rewards, evaluation, and training helpers
-- `scripts/`: local demo, benchmark, and dataset-generation entrypoints
-- `tests/`: automated coverage for repair logic, benchmark flow, and training prep
-- `docs/context/`: runbooks, contracts, project notes, and handoff docs
-- `docs/changes/`: change log for repo-level traceability
-- `docs/journal/`: implementation notes with what changed and why
-- `runtime/`: generated cache, telemetry, benchmark, and training artifacts
-
-## Team Ownership
-
-- `Jenish`: Sprint 1 proxy / transport layer and live mock-server foundation
-- `Vedant`: Sprint 2 repair engine and Sprint 4 system integration
-- `Sachin`: Sprint 3 support across environment, training, and evaluation delivery
-
-## Change Tracking Rule
-
-Every code edit should ship with a documentation update. The working agreement
-for that process lives in [docs/context/change-management.md](/home/matter/Documents/ReMorph/docs/context/change-management.md).
-
-## Runbook And Handoffs
-
-- run and validation guide: [docs/context/run-and-test-guide.md](/home/matter/Documents/ReMorph/docs/context/run-and-test-guide.md)
-- proxy contract for Jenish: [docs/context/jenish-proxy-contract.md](/home/matter/Documents/ReMorph/docs/context/jenish-proxy-contract.md)
-- training and reward handoff for Sachin: [docs/context/sachin-training-handoff.md](/home/matter/Documents/ReMorph/docs/context/sachin-training-handoff.md)
+- [Run And Test Guide](docs/context/run-and-test-guide.md)
+- [Sprint 4 Architecture](docs/sprint4/sprint4-architecture.md)
+- [Change Management](docs/context/change-management.md)

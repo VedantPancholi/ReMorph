@@ -155,7 +155,7 @@ def test_heal_request_uses_failure_signals_for_422_missing_fields(monkeypatch) -
     )
     result = healer.heal_request(
         trapped_error,
-        local_spec_path="specs/openapi.json",
+        local_spec_path="target_api/specs/openapi.json",
     )
 
     assert result.healing_action == "payload_rewrite"
@@ -205,7 +205,7 @@ def test_heal_request_repairs_missing_required_header_from_live_failure(monkeypa
     )
     result = healer.heal_request(
         trapped_error,
-        local_spec_path="specs/openapi.json",
+        local_spec_path="target_api/specs/openapi.json",
     )
 
     assert result.healing_action == "auth_rewrite"

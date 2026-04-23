@@ -1,0 +1,886 @@
+[
+  {
+    "target_url": "http://127.0.0.1:8000/api/v1/payments/process",
+    "method": "POST",
+    "actual_server_response": "{\"status\":\"payment_approved\",\"transaction_id\":\"trx-5678\",\"amount_processed\":100.0,\"vendor_tenant\":\"ven-123\"}",
+    "request_id": "req-fd076fb1",
+    "source_component": "api_proxy",
+    "scenario_type": "success_attempt",
+    "success_payload": {
+      "amount": 100,
+      "currency": "USD",
+      "card_details": {
+        "card_number": "1234567812345678",
+        "cvv": "123",
+        "expiry": "12/26"
+      },
+      "billing_address": {
+        "street": "test_string",
+        "zip_code": "12345",
+        "iso_country": "US"
+      }
+    },
+    "success_headers": {
+      "x-api-key": "secret",
+      "x-vendor-id": "ven-123",
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZnV6emVyX2FnZW50XzAwNyIsInJvbGUiOiJhZG1pbiJ9.UuceJXhdiSBpwb47N1MffwuX3vd8KFwvtNYZP8wVTTo"
+    },
+    "status_code": 201
+  },
+  {
+    "target_url": "http://127.0.0.1:8000/api/v1/payments/process",
+    "method": "POST",
+    "actual_server_response": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"billing_address\"],\"msg\":\"Field required\",\"input\":{\"amount\":100,\"currency\":\"USD\",\"card_details\":{\"card_number\":\"1234567812345678\",\"cvv\":\"123\",\"expiry\":\"12/26\"}}}]}",
+    "request_id": "req-45f3fb05",
+    "source_component": "api_proxy",
+    "scenario_type": "schema_missing_key",
+    "failed_payload": {
+      "amount": 100,
+      "currency": "USD",
+      "card_details": {
+        "card_number": "1234567812345678",
+        "cvv": "123",
+        "expiry": "12/26"
+      }
+    },
+    "failed_headers": {
+      "x-api-key": "secret",
+      "x-vendor-id": "ven-123",
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZnV6emVyX2FnZW50XzAwNyIsInJvbGUiOiJhZG1pbiJ9.UuceJXhdiSBpwb47N1MffwuX3vd8KFwvtNYZP8wVTTo"
+    },
+    "error_code": 422
+  },
+  {
+    "target_url": "http://127.0.0.1:8000/api/v1/payments/process",
+    "method": "POST",
+    "actual_server_response": "{\"detail\":[{\"type\":\"model_attributes_type\",\"loc\":[\"body\",\"card_details\"],\"msg\":\"Input should be a valid dictionary or object to extract fields from\",\"input\":[1,2,3]}]}",
+    "request_id": "req-223ca9aa",
+    "source_component": "api_proxy",
+    "scenario_type": "schema_type_coercion",
+    "failed_payload": {
+      "amount": 100,
+      "currency": "USD",
+      "card_details": [
+        1,
+        2,
+        3
+      ],
+      "billing_address": {
+        "street": "test_string",
+        "zip_code": "12345",
+        "iso_country": "US"
+      }
+    },
+    "failed_headers": {
+      "x-api-key": "secret",
+      "x-vendor-id": "ven-123",
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZnV6emVyX2FnZW50XzAwNyIsInJvbGUiOiJhZG1pbiJ9.UuceJXhdiSBpwb47N1MffwuX3vd8KFwvtNYZP8wVTTo"
+    },
+    "error_code": 422
+  },
+  {
+    "target_url": "http://127.0.0.1:8000/api/v1/payments/process",
+    "method": "POST",
+    "actual_server_response": "{\"status\":\"payment_approved\",\"transaction_id\":\"trx-5678\",\"amount_processed\":100.0,\"vendor_tenant\":\"ven-123\"}",
+    "request_id": "req-b50c8f8b",
+    "source_component": "api_proxy",
+    "scenario_type": "schema_extra_key",
+    "success_payload": {
+      "amount": 100,
+      "currency": "USD",
+      "card_details": {
+        "card_number": "1234567812345678",
+        "cvv": "123",
+        "expiry": "12/26"
+      },
+      "billing_address": {
+        "street": "test_string",
+        "zip_code": "12345",
+        "iso_country": "US"
+      },
+      "unexpected_injected_vector": "chaos"
+    },
+    "success_headers": {
+      "x-api-key": "secret",
+      "x-vendor-id": "ven-123",
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZnV6emVyX2FnZW50XzAwNyIsInJvbGUiOiJhZG1pbiJ9.UuceJXhdiSBpwb47N1MffwuX3vd8KFwvtNYZP8wVTTo"
+    },
+    "status_code": 201
+  },
+  {
+    "target_url": "http://127.0.0.1:8000/api/v1/payments/process",
+    "method": "POST",
+    "actual_server_response": "{\"detail\":[{\"type\":\"model_attributes_type\",\"loc\":[\"body\",\"card_details\"],\"msg\":\"Input should be a valid dictionary or object to extract fields from\",\"input\":null}]}",
+    "request_id": "req-930e1e0d",
+    "source_component": "api_proxy",
+    "scenario_type": "schema_null_injection",
+    "failed_payload": {
+      "amount": 100,
+      "currency": "USD",
+      "card_details": null,
+      "billing_address": {
+        "street": "test_string",
+        "zip_code": "12345",
+        "iso_country": "US"
+      }
+    },
+    "failed_headers": {
+      "x-api-key": "secret",
+      "x-vendor-id": "ven-123",
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZnV6emVyX2FnZW50XzAwNyIsInJvbGUiOiJhZG1pbiJ9.UuceJXhdiSBpwb47N1MffwuX3vd8KFwvtNYZP8wVTTo"
+    },
+    "error_code": 422
+  },
+  {
+    "target_url": "http://127.0.0.1:8000/api/v0/payments/process",
+    "method": "POST",
+    "actual_server_response": "{\"detail\":\"The route [/api/v0/payments/process] could not be found. Please verify the endpoint version and path spelling.\",\"rejection_reason\":\"Global Boundary Trap\",\"path\":\"/api/v0/payments/process\"}",
+    "request_id": "req-0cca08aa",
+    "source_component": "api_proxy",
+    "scenario_type": "route_regression",
+    "failed_payload": {
+      "amount": 100,
+      "currency": "USD",
+      "card_details": {
+        "card_number": "1234567812345678",
+        "cvv": "123",
+        "expiry": "12/26"
+      },
+      "billing_address": {
+        "street": "test_string",
+        "zip_code": "12345",
+        "iso_country": "US"
+      }
+    },
+    "failed_headers": {
+      "x-api-key": "secret",
+      "x-vendor-id": "ven-123",
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZnV6emVyX2FnZW50XzAwNyIsInJvbGUiOiJhZG1pbiJ9.UuceJXhdiSBpwb47N1MffwuX3vd8KFwvtNYZP8wVTTo"
+    },
+    "error_code": 404
+  },
+  {
+    "target_url": "http://127.0.0.1:8000/api/v1/payments/process",
+    "method": "GET",
+    "actual_server_response": "{\"detail\":\"The [GET] method is not allowed on [/api/v1/payments/process]. Please verify the HTTP verb specified in the API contract.\",\"rejection_reason\":\"Global Boundary Trap\",\"path\":\"/api/v1/payments/process\"}",
+    "request_id": "req-334be0d4",
+    "source_component": "api_proxy",
+    "scenario_type": "route_method_spoof",
+    "failed_payload": null,
+    "failed_headers": {
+      "x-api-key": "secret",
+      "x-vendor-id": "ven-123",
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZnV6emVyX2FnZW50XzAwNyIsInJvbGUiOiJhZG1pbiJ9.UuceJXhdiSBpwb47N1MffwuX3vd8KFwvtNYZP8wVTTo"
+    },
+    "error_code": 405
+  },
+  {
+    "target_url": "http://127.0.0.1:8000/api/v1/payments/process/invalid_path_404",
+    "method": "POST",
+    "actual_server_response": "{\"detail\":\"The route [/api/v1/payments/process/invalid_path_404] could not be found. Please verify the endpoint version and path spelling.\",\"rejection_reason\":\"Global Boundary Trap\",\"path\":\"/api/v1/payments/process/invalid_path_404\"}",
+    "request_id": "req-eda697e1",
+    "source_component": "api_proxy",
+    "scenario_type": "route_invalid_path",
+    "failed_payload": {
+      "amount": 100,
+      "currency": "USD",
+      "card_details": {
+        "card_number": "1234567812345678",
+        "cvv": "123",
+        "expiry": "12/26"
+      },
+      "billing_address": {
+        "street": "test_string",
+        "zip_code": "12345",
+        "iso_country": "US"
+      }
+    },
+    "failed_headers": {
+      "x-api-key": "secret",
+      "x-vendor-id": "ven-123",
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZnV6emVyX2FnZW50XzAwNyIsInJvbGUiOiJhZG1pbiJ9.UuceJXhdiSBpwb47N1MffwuX3vd8KFwvtNYZP8wVTTo"
+    },
+    "error_code": 404
+  },
+  {
+    "target_url": "http://127.0.0.1:8000/api/v1/payments/process",
+    "method": "POST",
+    "actual_server_response": "{\"detail\":\"Not authenticated\",\"rejection_reason\":\"Global Boundary Trap\",\"path\":\"/api/v1/payments/process\"}",
+    "request_id": "req-c9f4b20d",
+    "source_component": "api_proxy",
+    "scenario_type": "auth_missing_token",
+    "failed_payload": {
+      "amount": 100,
+      "currency": "USD",
+      "card_details": {
+        "card_number": "1234567812345678",
+        "cvv": "123",
+        "expiry": "12/26"
+      },
+      "billing_address": {
+        "street": "test_string",
+        "zip_code": "12345",
+        "iso_country": "US"
+      }
+    },
+    "failed_headers": {
+      "x-api-key": "secret",
+      "x-vendor-id": "ven-123"
+    },
+    "error_code": 401
+  },
+  {
+    "target_url": "http://127.0.0.1:8000/api/v1/payments/process",
+    "method": "POST",
+    "actual_server_response": "{\"detail\":\"Authentication failed: Invalid Cryptographic JWT signature. Token rejected.\",\"rejection_reason\":\"Global Boundary Trap\",\"path\":\"/api/v1/payments/process\"}",
+    "request_id": "req-45604e9b",
+    "source_component": "api_proxy",
+    "scenario_type": "auth_malformed_jwt",
+    "failed_payload": {
+      "amount": 100,
+      "currency": "USD",
+      "card_details": {
+        "card_number": "1234567812345678",
+        "cvv": "123",
+        "expiry": "12/26"
+      },
+      "billing_address": {
+        "street": "test_string",
+        "zip_code": "12345",
+        "iso_country": "US"
+      }
+    },
+    "failed_headers": {
+      "x-api-key": "secret",
+      "x-vendor-id": "ven-123",
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI.invalid.token.123"
+    },
+    "error_code": 401
+  },
+  {
+    "target_url": "http://127.0.0.1:8000/api/v1/payments/process",
+    "method": "POST",
+    "actual_server_response": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"header\",\"x-vendor-id\"],\"msg\":\"Field required\",\"input\":null}]}",
+    "request_id": "req-1b0cc0c6",
+    "source_component": "api_proxy",
+    "scenario_type": "auth_missing_tenant",
+    "failed_payload": {
+      "amount": 100,
+      "currency": "USD",
+      "card_details": {
+        "card_number": "1234567812345678",
+        "cvv": "123",
+        "expiry": "12/26"
+      },
+      "billing_address": {
+        "street": "test_string",
+        "zip_code": "12345",
+        "iso_country": "US"
+      }
+    },
+    "failed_headers": {
+      "x-api-key": "secret",
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZnV6emVyX2FnZW50XzAwNyIsInJvbGUiOiJhZG1pbiJ9.UuceJXhdiSBpwb47N1MffwuX3vd8KFwvtNYZP8wVTTo"
+    },
+    "error_code": 422
+  },
+  {
+    "target_url": "http://127.0.0.1:8000/api/v1/ledger/transactions?start_date=2024-01-01T00:00:00Z&end_date=2024-01-31T00:00:00Z&limit=100",
+    "method": "GET",
+    "actual_server_response": "{\"transactions\":[],\"limit\":100}",
+    "request_id": "req-5ddbc00f",
+    "source_component": "api_proxy",
+    "scenario_type": "success_attempt",
+    "success_payload": null,
+    "success_headers": {
+      "x-api-key": "secret",
+      "x-vendor-id": "ven-123",
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZnV6emVyX2FnZW50XzAwNyIsInJvbGUiOiJhZG1pbiJ9.UuceJXhdiSBpwb47N1MffwuX3vd8KFwvtNYZP8wVTTo"
+    },
+    "status_code": 200
+  },
+  {
+    "target_url": "http://127.0.0.1:8000/api/v0/ledger/transactions?start_date=2024-01-01T00:00:00Z&end_date=2024-01-31T00:00:00Z&limit=100",
+    "method": "GET",
+    "actual_server_response": "{\"detail\":\"The route [/api/v0/ledger/transactions] could not be found. Please verify the endpoint version and path spelling.\",\"rejection_reason\":\"Global Boundary Trap\",\"path\":\"/api/v0/ledger/transactions\"}",
+    "request_id": "req-694aa02d",
+    "source_component": "api_proxy",
+    "scenario_type": "route_regression",
+    "failed_payload": null,
+    "failed_headers": {
+      "x-api-key": "secret",
+      "x-vendor-id": "ven-123",
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZnV6emVyX2FnZW50XzAwNyIsInJvbGUiOiJhZG1pbiJ9.UuceJXhdiSBpwb47N1MffwuX3vd8KFwvtNYZP8wVTTo"
+    },
+    "error_code": 404
+  },
+  {
+    "target_url": "http://127.0.0.1:8000/api/v1/ledger/transactions?start_date=2024-01-01T00:00:00Z&end_date=2024-01-31T00:00:00Z&limit=100",
+    "method": "POST",
+    "actual_server_response": "{\"detail\":\"The [POST] method is not allowed on [/api/v1/ledger/transactions]. Please verify the HTTP verb specified in the API contract.\",\"rejection_reason\":\"Global Boundary Trap\",\"path\":\"/api/v1/ledger/transactions\"}",
+    "request_id": "req-7bc22593",
+    "source_component": "api_proxy",
+    "scenario_type": "route_method_spoof",
+    "failed_payload": null,
+    "failed_headers": {
+      "x-api-key": "secret",
+      "x-vendor-id": "ven-123",
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZnV6emVyX2FnZW50XzAwNyIsInJvbGUiOiJhZG1pbiJ9.UuceJXhdiSBpwb47N1MffwuX3vd8KFwvtNYZP8wVTTo"
+    },
+    "error_code": 405
+  },
+  {
+    "target_url": "http://127.0.0.1:8000/api/v1/ledger/transactions?start_date=2024-01-01T00:00:00Z&end_date=2024-01-31T00:00:00Z&limit=100/invalid_path_404",
+    "method": "GET",
+    "actual_server_response": "{\"detail\":[{\"type\":\"int_parsing\",\"loc\":[\"query\",\"limit\"],\"msg\":\"Input should be a valid integer, unable to parse string as an integer\",\"input\":\"100/invalid_path_404\"}]}",
+    "request_id": "req-852f8b80",
+    "source_component": "api_proxy",
+    "scenario_type": "route_invalid_path",
+    "failed_payload": null,
+    "failed_headers": {
+      "x-api-key": "secret",
+      "x-vendor-id": "ven-123",
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZnV6emVyX2FnZW50XzAwNyIsInJvbGUiOiJhZG1pbiJ9.UuceJXhdiSBpwb47N1MffwuX3vd8KFwvtNYZP8wVTTo"
+    },
+    "error_code": 422
+  },
+  {
+    "target_url": "http://127.0.0.1:8000/api/v1/ledger/transactions?start_date=2024-01-01T00:00:00Z&end_date=2024-01-31T00:00:00Z&limit=100",
+    "method": "GET",
+    "actual_server_response": "{\"detail\":\"Not authenticated\",\"rejection_reason\":\"Global Boundary Trap\",\"path\":\"/api/v1/ledger/transactions\"}",
+    "request_id": "req-a1eca4b0",
+    "source_component": "api_proxy",
+    "scenario_type": "auth_missing_token",
+    "failed_payload": null,
+    "failed_headers": {
+      "x-api-key": "secret",
+      "x-vendor-id": "ven-123"
+    },
+    "error_code": 401
+  },
+  {
+    "target_url": "http://127.0.0.1:8000/api/v1/ledger/transactions?start_date=2024-01-01T00:00:00Z&end_date=2024-01-31T00:00:00Z&limit=100",
+    "method": "GET",
+    "actual_server_response": "{\"detail\":\"Authentication failed: Invalid Cryptographic JWT signature. Token rejected.\",\"rejection_reason\":\"Global Boundary Trap\",\"path\":\"/api/v1/ledger/transactions\"}",
+    "request_id": "req-28d96b5c",
+    "source_component": "api_proxy",
+    "scenario_type": "auth_malformed_jwt",
+    "failed_payload": null,
+    "failed_headers": {
+      "x-api-key": "secret",
+      "x-vendor-id": "ven-123",
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI.invalid.token.123"
+    },
+    "error_code": 401
+  },
+  {
+    "target_url": "http://127.0.0.1:8000/api/v1/ledger/transactions?start_date=2024-01-01T00:00:00Z&end_date=2024-01-31T00:00:00Z&limit=100",
+    "method": "GET",
+    "actual_server_response": "{\"transactions\":[],\"limit\":100}",
+    "request_id": "req-d8be2114",
+    "source_component": "api_proxy",
+    "scenario_type": "auth_missing_tenant",
+    "success_payload": null,
+    "success_headers": {
+      "x-api-key": "secret",
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZnV6emVyX2FnZW50XzAwNyIsInJvbGUiOiJhZG1pbiJ9.UuceJXhdiSBpwb47N1MffwuX3vd8KFwvtNYZP8wVTTo"
+    },
+    "status_code": 200
+  },
+  {
+    "target_url": "http://127.0.0.1:8000/api/v1/clients/onboard",
+    "method": "POST",
+    "actual_server_response": "{\"status\":\"client_onboarded\",\"assigned_email\":\"test@example.com\",\"registration_reference\":\"ABCD12345XYZ\",\"jwt_user_extracted\":\"fuzzer_agent_007\"}",
+    "request_id": "req-1f54a0e1",
+    "source_component": "api_proxy",
+    "scenario_type": "success_attempt",
+    "success_payload": {
+      "contact_email": "test@example.com",
+      "company_name": "1234567812345678",
+      "registration_code": "ABCD12345XYZ"
+    },
+    "success_headers": {
+      "x-api-key": "secret",
+      "x-vendor-id": "ven-123",
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZnV6emVyX2FnZW50XzAwNyIsInJvbGUiOiJhZG1pbiJ9.UuceJXhdiSBpwb47N1MffwuX3vd8KFwvtNYZP8wVTTo"
+    },
+    "status_code": 201
+  },
+  {
+    "target_url": "http://127.0.0.1:8000/api/v1/clients/onboard",
+    "method": "POST",
+    "actual_server_response": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"contact_email\"],\"msg\":\"Field required\",\"input\":{\"company_name\":\"1234567812345678\",\"registration_code\":\"ABCD12345XYZ\"}}]}",
+    "request_id": "req-e5b61c6d",
+    "source_component": "api_proxy",
+    "scenario_type": "schema_missing_key",
+    "failed_payload": {
+      "company_name": "1234567812345678",
+      "registration_code": "ABCD12345XYZ"
+    },
+    "failed_headers": {
+      "x-api-key": "secret",
+      "x-vendor-id": "ven-123",
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZnV6emVyX2FnZW50XzAwNyIsInJvbGUiOiJhZG1pbiJ9.UuceJXhdiSBpwb47N1MffwuX3vd8KFwvtNYZP8wVTTo"
+    },
+    "error_code": 422
+  },
+  {
+    "target_url": "http://127.0.0.1:8000/api/v1/clients/onboard",
+    "method": "POST",
+    "actual_server_response": "{\"detail\":[{\"type\":\"string_type\",\"loc\":[\"body\",\"registration_code\"],\"msg\":\"Input should be a valid string\",\"input\":[1,2,3]}]}",
+    "request_id": "req-4da032cb",
+    "source_component": "api_proxy",
+    "scenario_type": "schema_type_coercion",
+    "failed_payload": {
+      "contact_email": "test@example.com",
+      "company_name": "1234567812345678",
+      "registration_code": [
+        1,
+        2,
+        3
+      ]
+    },
+    "failed_headers": {
+      "x-api-key": "secret",
+      "x-vendor-id": "ven-123",
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZnV6emVyX2FnZW50XzAwNyIsInJvbGUiOiJhZG1pbiJ9.UuceJXhdiSBpwb47N1MffwuX3vd8KFwvtNYZP8wVTTo"
+    },
+    "error_code": 422
+  },
+  {
+    "target_url": "http://127.0.0.1:8000/api/v1/clients/onboard",
+    "method": "POST",
+    "actual_server_response": "{\"status\":\"client_onboarded\",\"assigned_email\":\"test@example.com\",\"registration_reference\":\"ABCD12345XYZ\",\"jwt_user_extracted\":\"fuzzer_agent_007\"}",
+    "request_id": "req-275ec545",
+    "source_component": "api_proxy",
+    "scenario_type": "schema_extra_key",
+    "success_payload": {
+      "contact_email": "test@example.com",
+      "company_name": "1234567812345678",
+      "registration_code": "ABCD12345XYZ",
+      "unexpected_injected_vector": "chaos"
+    },
+    "success_headers": {
+      "x-api-key": "secret",
+      "x-vendor-id": "ven-123",
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZnV6emVyX2FnZW50XzAwNyIsInJvbGUiOiJhZG1pbiJ9.UuceJXhdiSBpwb47N1MffwuX3vd8KFwvtNYZP8wVTTo"
+    },
+    "status_code": 201
+  },
+  {
+    "target_url": "http://127.0.0.1:8000/api/v1/clients/onboard",
+    "method": "POST",
+    "actual_server_response": "{\"detail\":[{\"type\":\"string_type\",\"loc\":[\"body\",\"company_name\"],\"msg\":\"Input should be a valid string\",\"input\":null}]}",
+    "request_id": "req-a4d4032d",
+    "source_component": "api_proxy",
+    "scenario_type": "schema_null_injection",
+    "failed_payload": {
+      "contact_email": "test@example.com",
+      "company_name": null,
+      "registration_code": "ABCD12345XYZ"
+    },
+    "failed_headers": {
+      "x-api-key": "secret",
+      "x-vendor-id": "ven-123",
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZnV6emVyX2FnZW50XzAwNyIsInJvbGUiOiJhZG1pbiJ9.UuceJXhdiSBpwb47N1MffwuX3vd8KFwvtNYZP8wVTTo"
+    },
+    "error_code": 422
+  },
+  {
+    "target_url": "http://127.0.0.1:8000/api/v0/clients/onboard",
+    "method": "POST",
+    "actual_server_response": "{\"detail\":\"The route [/api/v0/clients/onboard] could not be found. Please verify the endpoint version and path spelling.\",\"rejection_reason\":\"Global Boundary Trap\",\"path\":\"/api/v0/clients/onboard\"}",
+    "request_id": "req-ec7e3b15",
+    "source_component": "api_proxy",
+    "scenario_type": "route_regression",
+    "failed_payload": {
+      "contact_email": "test@example.com",
+      "company_name": "1234567812345678",
+      "registration_code": "ABCD12345XYZ"
+    },
+    "failed_headers": {
+      "x-api-key": "secret",
+      "x-vendor-id": "ven-123",
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZnV6emVyX2FnZW50XzAwNyIsInJvbGUiOiJhZG1pbiJ9.UuceJXhdiSBpwb47N1MffwuX3vd8KFwvtNYZP8wVTTo"
+    },
+    "error_code": 404
+  },
+  {
+    "target_url": "http://127.0.0.1:8000/api/v1/clients/onboard",
+    "method": "GET",
+    "actual_server_response": "{\"detail\":\"The [GET] method is not allowed on [/api/v1/clients/onboard]. Please verify the HTTP verb specified in the API contract.\",\"rejection_reason\":\"Global Boundary Trap\",\"path\":\"/api/v1/clients/onboard\"}",
+    "request_id": "req-992cb578",
+    "source_component": "api_proxy",
+    "scenario_type": "route_method_spoof",
+    "failed_payload": null,
+    "failed_headers": {
+      "x-api-key": "secret",
+      "x-vendor-id": "ven-123",
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZnV6emVyX2FnZW50XzAwNyIsInJvbGUiOiJhZG1pbiJ9.UuceJXhdiSBpwb47N1MffwuX3vd8KFwvtNYZP8wVTTo"
+    },
+    "error_code": 405
+  },
+  {
+    "target_url": "http://127.0.0.1:8000/api/v1/clients/onboard/invalid_path_404",
+    "method": "POST",
+    "actual_server_response": "{\"detail\":\"The route [/api/v1/clients/onboard/invalid_path_404] could not be found. Please verify the endpoint version and path spelling.\",\"rejection_reason\":\"Global Boundary Trap\",\"path\":\"/api/v1/clients/onboard/invalid_path_404\"}",
+    "request_id": "req-e1c0cd7d",
+    "source_component": "api_proxy",
+    "scenario_type": "route_invalid_path",
+    "failed_payload": {
+      "contact_email": "test@example.com",
+      "company_name": "1234567812345678",
+      "registration_code": "ABCD12345XYZ"
+    },
+    "failed_headers": {
+      "x-api-key": "secret",
+      "x-vendor-id": "ven-123",
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZnV6emVyX2FnZW50XzAwNyIsInJvbGUiOiJhZG1pbiJ9.UuceJXhdiSBpwb47N1MffwuX3vd8KFwvtNYZP8wVTTo"
+    },
+    "error_code": 404
+  },
+  {
+    "target_url": "http://127.0.0.1:8000/api/v1/clients/onboard",
+    "method": "POST",
+    "actual_server_response": "{\"detail\":\"Not authenticated\",\"rejection_reason\":\"Global Boundary Trap\",\"path\":\"/api/v1/clients/onboard\"}",
+    "request_id": "req-17b884f8",
+    "source_component": "api_proxy",
+    "scenario_type": "auth_missing_token",
+    "failed_payload": {
+      "contact_email": "test@example.com",
+      "company_name": "1234567812345678",
+      "registration_code": "ABCD12345XYZ"
+    },
+    "failed_headers": {
+      "x-api-key": "secret",
+      "x-vendor-id": "ven-123"
+    },
+    "error_code": 401
+  },
+  {
+    "target_url": "http://127.0.0.1:8000/api/v1/clients/onboard",
+    "method": "POST",
+    "actual_server_response": "{\"detail\":\"Authentication failed: Invalid Cryptographic JWT signature. Token rejected.\",\"rejection_reason\":\"Global Boundary Trap\",\"path\":\"/api/v1/clients/onboard\"}",
+    "request_id": "req-6d2101f8",
+    "source_component": "api_proxy",
+    "scenario_type": "auth_malformed_jwt",
+    "failed_payload": {
+      "contact_email": "test@example.com",
+      "company_name": "1234567812345678",
+      "registration_code": "ABCD12345XYZ"
+    },
+    "failed_headers": {
+      "x-api-key": "secret",
+      "x-vendor-id": "ven-123",
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI.invalid.token.123"
+    },
+    "error_code": 401
+  },
+  {
+    "target_url": "http://127.0.0.1:8000/api/v1/clients/onboard",
+    "method": "POST",
+    "actual_server_response": "{\"status\":\"client_onboarded\",\"assigned_email\":\"test@example.com\",\"registration_reference\":\"ABCD12345XYZ\",\"jwt_user_extracted\":\"fuzzer_agent_007\"}",
+    "request_id": "req-bc7398d7",
+    "source_component": "api_proxy",
+    "scenario_type": "auth_missing_tenant",
+    "success_payload": {
+      "contact_email": "test@example.com",
+      "company_name": "1234567812345678",
+      "registration_code": "ABCD12345XYZ"
+    },
+    "success_headers": {
+      "x-api-key": "secret",
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZnV6emVyX2FnZW50XzAwNyIsInJvbGUiOiJhZG1pbiJ9.UuceJXhdiSBpwb47N1MffwuX3vd8KFwvtNYZP8wVTTo"
+    },
+    "status_code": 201
+  },
+  {
+    "target_url": "http://127.0.0.1:8000/api/v1/subscriptions/123e4567-e89b-12d3-a456-426614174000/status",
+    "method": "PUT",
+    "actual_server_response": "{\"status\":\"updated\",\"id\":\"123e4567-e89b-12d3-a456-426614174000\"}",
+    "request_id": "req-60836bc2",
+    "source_component": "api_proxy",
+    "scenario_type": "success_attempt",
+    "success_payload": {
+      "status": "ACTIVE"
+    },
+    "success_headers": {
+      "x-api-key": "secret",
+      "x-vendor-id": "ven-123",
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZnV6emVyX2FnZW50XzAwNyIsInJvbGUiOiJhZG1pbiJ9.UuceJXhdiSBpwb47N1MffwuX3vd8KFwvtNYZP8wVTTo"
+    },
+    "status_code": 200
+  },
+  {
+    "target_url": "http://127.0.0.1:8000/api/v1/subscriptions/123e4567-e89b-12d3-a456-426614174000/status",
+    "method": "PUT",
+    "actual_server_response": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"status\"],\"msg\":\"Field required\",\"input\":{}}]}",
+    "request_id": "req-14e9d9b0",
+    "source_component": "api_proxy",
+    "scenario_type": "schema_missing_key",
+    "failed_payload": {},
+    "failed_headers": {
+      "x-api-key": "secret",
+      "x-vendor-id": "ven-123",
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZnV6emVyX2FnZW50XzAwNyIsInJvbGUiOiJhZG1pbiJ9.UuceJXhdiSBpwb47N1MffwuX3vd8KFwvtNYZP8wVTTo"
+    },
+    "error_code": 422
+  },
+  {
+    "target_url": "http://127.0.0.1:8000/api/v1/subscriptions/123e4567-e89b-12d3-a456-426614174000/status",
+    "method": "PUT",
+    "actual_server_response": "{\"detail\":[{\"type\":\"enum\",\"loc\":[\"body\",\"status\"],\"msg\":\"Input should be 'ACTIVE', 'SUSPENDED' or 'CANCELED'\",\"input\":[1,2,3],\"ctx\":{\"expected\":\"'ACTIVE', 'SUSPENDED' or 'CANCELED'\"}}]}",
+    "request_id": "req-59b80118",
+    "source_component": "api_proxy",
+    "scenario_type": "schema_type_coercion",
+    "failed_payload": {
+      "status": [
+        1,
+        2,
+        3
+      ]
+    },
+    "failed_headers": {
+      "x-api-key": "secret",
+      "x-vendor-id": "ven-123",
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZnV6emVyX2FnZW50XzAwNyIsInJvbGUiOiJhZG1pbiJ9.UuceJXhdiSBpwb47N1MffwuX3vd8KFwvtNYZP8wVTTo"
+    },
+    "error_code": 422
+  },
+  {
+    "target_url": "http://127.0.0.1:8000/api/v1/subscriptions/123e4567-e89b-12d3-a456-426614174000/status",
+    "method": "PUT",
+    "actual_server_response": "{\"status\":\"updated\",\"id\":\"123e4567-e89b-12d3-a456-426614174000\"}",
+    "request_id": "req-576b359f",
+    "source_component": "api_proxy",
+    "scenario_type": "schema_extra_key",
+    "success_payload": {
+      "status": "ACTIVE",
+      "unexpected_injected_vector": "chaos"
+    },
+    "success_headers": {
+      "x-api-key": "secret",
+      "x-vendor-id": "ven-123",
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZnV6emVyX2FnZW50XzAwNyIsInJvbGUiOiJhZG1pbiJ9.UuceJXhdiSBpwb47N1MffwuX3vd8KFwvtNYZP8wVTTo"
+    },
+    "status_code": 200
+  },
+  {
+    "target_url": "http://127.0.0.1:8000/api/v1/subscriptions/123e4567-e89b-12d3-a456-426614174000/status",
+    "method": "PUT",
+    "actual_server_response": "{\"detail\":[{\"type\":\"enum\",\"loc\":[\"body\",\"status\"],\"msg\":\"Input should be 'ACTIVE', 'SUSPENDED' or 'CANCELED'\",\"input\":null,\"ctx\":{\"expected\":\"'ACTIVE', 'SUSPENDED' or 'CANCELED'\"}}]}",
+    "request_id": "req-bc70a2c3",
+    "source_component": "api_proxy",
+    "scenario_type": "schema_null_injection",
+    "failed_payload": {
+      "status": null
+    },
+    "failed_headers": {
+      "x-api-key": "secret",
+      "x-vendor-id": "ven-123",
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZnV6emVyX2FnZW50XzAwNyIsInJvbGUiOiJhZG1pbiJ9.UuceJXhdiSBpwb47N1MffwuX3vd8KFwvtNYZP8wVTTo"
+    },
+    "error_code": 422
+  },
+  {
+    "target_url": "http://127.0.0.1:8000/api/v0/subscriptions/123e4567-e89b-12d3-a456-426614174000/status",
+    "method": "PUT",
+    "actual_server_response": "{\"detail\":\"The route [/api/v0/subscriptions/123e4567-e89b-12d3-a456-426614174000/status] could not be found. Please verify the endpoint version and path spelling.\",\"rejection_reason\":\"Global Boundary Trap\",\"path\":\"/api/v0/subscriptions/123e4567-e89b-12d3-a456-426614174000/status\"}",
+    "request_id": "req-144faea3",
+    "source_component": "api_proxy",
+    "scenario_type": "route_regression",
+    "failed_payload": {
+      "status": "ACTIVE"
+    },
+    "failed_headers": {
+      "x-api-key": "secret",
+      "x-vendor-id": "ven-123",
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZnV6emVyX2FnZW50XzAwNyIsInJvbGUiOiJhZG1pbiJ9.UuceJXhdiSBpwb47N1MffwuX3vd8KFwvtNYZP8wVTTo"
+    },
+    "error_code": 404
+  },
+  {
+    "target_url": "http://127.0.0.1:8000/api/v1/subscriptions/123e4567-e89b-12d3-a456-426614174000/status",
+    "method": "GET",
+    "actual_server_response": "{\"detail\":\"The [GET] method is not allowed on [/api/v1/subscriptions/123e4567-e89b-12d3-a456-426614174000/status]. Please verify the HTTP verb specified in the API contract.\",\"rejection_reason\":\"Global Boundary Trap\",\"path\":\"/api/v1/subscriptions/123e4567-e89b-12d3-a456-426614174000/status\"}",
+    "request_id": "req-1eb9abb4",
+    "source_component": "api_proxy",
+    "scenario_type": "route_method_spoof",
+    "failed_payload": null,
+    "failed_headers": {
+      "x-api-key": "secret",
+      "x-vendor-id": "ven-123",
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZnV6emVyX2FnZW50XzAwNyIsInJvbGUiOiJhZG1pbiJ9.UuceJXhdiSBpwb47N1MffwuX3vd8KFwvtNYZP8wVTTo"
+    },
+    "error_code": 405
+  },
+  {
+    "target_url": "http://127.0.0.1:8000/api/v1/subscriptions/123e4567-e89b-12d3-a456-426614174000/status/invalid_path_404",
+    "method": "PUT",
+    "actual_server_response": "{\"detail\":\"The route [/api/v1/subscriptions/123e4567-e89b-12d3-a456-426614174000/status/invalid_path_404] could not be found. Please verify the endpoint version and path spelling.\",\"rejection_reason\":\"Global Boundary Trap\",\"path\":\"/api/v1/subscriptions/123e4567-e89b-12d3-a456-426614174000/status/invalid_path_404\"}",
+    "request_id": "req-6c1a4ac7",
+    "source_component": "api_proxy",
+    "scenario_type": "route_invalid_path",
+    "failed_payload": {
+      "status": "ACTIVE"
+    },
+    "failed_headers": {
+      "x-api-key": "secret",
+      "x-vendor-id": "ven-123",
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZnV6emVyX2FnZW50XzAwNyIsInJvbGUiOiJhZG1pbiJ9.UuceJXhdiSBpwb47N1MffwuX3vd8KFwvtNYZP8wVTTo"
+    },
+    "error_code": 404
+  },
+  {
+    "target_url": "http://127.0.0.1:8000/api/v1/subscriptions/123e4567-e89b-12d3-a456-426614174000/status",
+    "method": "PUT",
+    "actual_server_response": "{\"detail\":\"Not authenticated\",\"rejection_reason\":\"Global Boundary Trap\",\"path\":\"/api/v1/subscriptions/123e4567-e89b-12d3-a456-426614174000/status\"}",
+    "request_id": "req-e29b5c41",
+    "source_component": "api_proxy",
+    "scenario_type": "auth_missing_token",
+    "failed_payload": {
+      "status": "ACTIVE"
+    },
+    "failed_headers": {
+      "x-api-key": "secret",
+      "x-vendor-id": "ven-123"
+    },
+    "error_code": 401
+  },
+  {
+    "target_url": "http://127.0.0.1:8000/api/v1/subscriptions/123e4567-e89b-12d3-a456-426614174000/status",
+    "method": "PUT",
+    "actual_server_response": "{\"detail\":\"Authentication failed: Invalid Cryptographic JWT signature. Token rejected.\",\"rejection_reason\":\"Global Boundary Trap\",\"path\":\"/api/v1/subscriptions/123e4567-e89b-12d3-a456-426614174000/status\"}",
+    "request_id": "req-1d5c9235",
+    "source_component": "api_proxy",
+    "scenario_type": "auth_malformed_jwt",
+    "failed_payload": {
+      "status": "ACTIVE"
+    },
+    "failed_headers": {
+      "x-api-key": "secret",
+      "x-vendor-id": "ven-123",
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI.invalid.token.123"
+    },
+    "error_code": 401
+  },
+  {
+    "target_url": "http://127.0.0.1:8000/api/v1/subscriptions/123e4567-e89b-12d3-a456-426614174000/status",
+    "method": "PUT",
+    "actual_server_response": "{\"status\":\"updated\",\"id\":\"123e4567-e89b-12d3-a456-426614174000\"}",
+    "request_id": "req-50371c8a",
+    "source_component": "api_proxy",
+    "scenario_type": "auth_missing_tenant",
+    "success_payload": {
+      "status": "ACTIVE"
+    },
+    "success_headers": {
+      "x-api-key": "secret",
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZnV6emVyX2FnZW50XzAwNyIsInJvbGUiOiJhZG1pbiJ9.UuceJXhdiSBpwb47N1MffwuX3vd8KFwvtNYZP8wVTTo"
+    },
+    "status_code": 200
+  },
+  {
+    "target_url": "http://127.0.0.1:8000/api/v1/payments/123e4567-e89b-12d3-a456-426614174000",
+    "method": "DELETE",
+    "actual_server_response": "{\"status\":\"refunded\",\"trx_id\":\"123e4567-e89b-12d3-a456-426614174000\"}",
+    "request_id": "req-49ccc3f8",
+    "source_component": "api_proxy",
+    "scenario_type": "success_attempt",
+    "success_payload": null,
+    "success_headers": {
+      "x-api-key": "secret",
+      "x-vendor-id": "ven-123",
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZnV6emVyX2FnZW50XzAwNyIsInJvbGUiOiJhZG1pbiJ9.UuceJXhdiSBpwb47N1MffwuX3vd8KFwvtNYZP8wVTTo"
+    },
+    "status_code": 200
+  },
+  {
+    "target_url": "http://127.0.0.1:8000/api/v0/payments/123e4567-e89b-12d3-a456-426614174000",
+    "method": "DELETE",
+    "actual_server_response": "{\"detail\":\"The route [/api/v0/payments/123e4567-e89b-12d3-a456-426614174000] could not be found. Please verify the endpoint version and path spelling.\",\"rejection_reason\":\"Global Boundary Trap\",\"path\":\"/api/v0/payments/123e4567-e89b-12d3-a456-426614174000\"}",
+    "request_id": "req-e0e5de7b",
+    "source_component": "api_proxy",
+    "scenario_type": "route_regression",
+    "failed_payload": null,
+    "failed_headers": {
+      "x-api-key": "secret",
+      "x-vendor-id": "ven-123",
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZnV6emVyX2FnZW50XzAwNyIsInJvbGUiOiJhZG1pbiJ9.UuceJXhdiSBpwb47N1MffwuX3vd8KFwvtNYZP8wVTTo"
+    },
+    "error_code": 404
+  },
+  {
+    "target_url": "http://127.0.0.1:8000/api/v1/payments/123e4567-e89b-12d3-a456-426614174000",
+    "method": "GET",
+    "actual_server_response": "{\"detail\":\"The [GET] method is not allowed on [/api/v1/payments/123e4567-e89b-12d3-a456-426614174000]. Please verify the HTTP verb specified in the API contract.\",\"rejection_reason\":\"Global Boundary Trap\",\"path\":\"/api/v1/payments/123e4567-e89b-12d3-a456-426614174000\"}",
+    "request_id": "req-3a9098d3",
+    "source_component": "api_proxy",
+    "scenario_type": "route_method_spoof",
+    "failed_payload": null,
+    "failed_headers": {
+      "x-api-key": "secret",
+      "x-vendor-id": "ven-123",
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZnV6emVyX2FnZW50XzAwNyIsInJvbGUiOiJhZG1pbiJ9.UuceJXhdiSBpwb47N1MffwuX3vd8KFwvtNYZP8wVTTo"
+    },
+    "error_code": 405
+  },
+  {
+    "target_url": "http://127.0.0.1:8000/api/v1/payments/123e4567-e89b-12d3-a456-426614174000/invalid_path_404",
+    "method": "DELETE",
+    "actual_server_response": "{\"detail\":\"The route [/api/v1/payments/123e4567-e89b-12d3-a456-426614174000/invalid_path_404] could not be found. Please verify the endpoint version and path spelling.\",\"rejection_reason\":\"Global Boundary Trap\",\"path\":\"/api/v1/payments/123e4567-e89b-12d3-a456-426614174000/invalid_path_404\"}",
+    "request_id": "req-7a092ea2",
+    "source_component": "api_proxy",
+    "scenario_type": "route_invalid_path",
+    "failed_payload": null,
+    "failed_headers": {
+      "x-api-key": "secret",
+      "x-vendor-id": "ven-123",
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZnV6emVyX2FnZW50XzAwNyIsInJvbGUiOiJhZG1pbiJ9.UuceJXhdiSBpwb47N1MffwuX3vd8KFwvtNYZP8wVTTo"
+    },
+    "error_code": 404
+  },
+  {
+    "target_url": "http://127.0.0.1:8000/api/v1/payments/123e4567-e89b-12d3-a456-426614174000",
+    "method": "DELETE",
+    "actual_server_response": "{\"detail\":\"Not authenticated\",\"rejection_reason\":\"Global Boundary Trap\",\"path\":\"/api/v1/payments/123e4567-e89b-12d3-a456-426614174000\"}",
+    "request_id": "req-7f41f7d7",
+    "source_component": "api_proxy",
+    "scenario_type": "auth_missing_token",
+    "failed_payload": null,
+    "failed_headers": {
+      "x-api-key": "secret",
+      "x-vendor-id": "ven-123"
+    },
+    "error_code": 401
+  },
+  {
+    "target_url": "http://127.0.0.1:8000/api/v1/payments/123e4567-e89b-12d3-a456-426614174000",
+    "method": "DELETE",
+    "actual_server_response": "{\"detail\":\"Authentication failed: Invalid Cryptographic JWT signature. Token rejected.\",\"rejection_reason\":\"Global Boundary Trap\",\"path\":\"/api/v1/payments/123e4567-e89b-12d3-a456-426614174000\"}",
+    "request_id": "req-fd210227",
+    "source_component": "api_proxy",
+    "scenario_type": "auth_malformed_jwt",
+    "failed_payload": null,
+    "failed_headers": {
+      "x-api-key": "secret",
+      "x-vendor-id": "ven-123",
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI.invalid.token.123"
+    },
+    "error_code": 401
+  },
+  {
+    "target_url": "http://127.0.0.1:8000/api/v1/payments/123e4567-e89b-12d3-a456-426614174000",
+    "method": "DELETE",
+    "actual_server_response": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"header\",\"x-vendor-id\"],\"msg\":\"Field required\",\"input\":null}]}",
+    "request_id": "req-dc7beb9c",
+    "source_component": "api_proxy",
+    "scenario_type": "auth_missing_tenant",
+    "failed_payload": null,
+    "failed_headers": {
+      "x-api-key": "secret",
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZnV6emVyX2FnZW50XzAwNyIsInJvbGUiOiJhZG1pbiJ9.UuceJXhdiSBpwb47N1MffwuX3vd8KFwvtNYZP8wVTTo"
+    },
+    "error_code": 422
+  }
+]

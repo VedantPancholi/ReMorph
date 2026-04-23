@@ -14,7 +14,7 @@ from sprint4.env.live_support import (
 )
 
 
-def load_phase1_dataset(path: str = "training_dataset.json") -> list[dict[str, Any]]:
+def load_phase1_dataset(path: str = "target_api/training_dataset.json") -> list[dict[str, Any]]:
     """Load the raw Sprint 1 dataset from disk."""
 
     file_path = Path(path)
@@ -79,13 +79,13 @@ def normalize_phase1_record(record: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def normalize_phase1_dataset(path: str = "training_dataset.json") -> list[dict[str, Any]]:
+def normalize_phase1_dataset(path: str = "target_api/training_dataset.json") -> list[dict[str, Any]]:
     """Load and normalize all Sprint 1 dataset rows."""
 
     return [normalize_phase1_record(record) for record in load_phase1_dataset(path)]
 
 
-def summarize_phase1_dataset(path: str = "training_dataset.json") -> dict[str, Any]:
+def summarize_phase1_dataset(path: str = "target_api/training_dataset.json") -> dict[str, Any]:
     """Return a compact summary for offline analysis and replay planning."""
 
     rows = normalize_phase1_dataset(path)
