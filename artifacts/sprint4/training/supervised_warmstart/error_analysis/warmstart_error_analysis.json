@@ -1,0 +1,778 @@
+{
+  "action_confusion": {
+    "abstain": {
+      "abstain": 2
+    },
+    "no_op": {
+      "no_op": 1
+    },
+    "repair_auth": {
+      "repair_payload": 1
+    },
+    "repair_payload": {
+      "repair_payload": 4
+    },
+    "repair_route": {
+      "repair_route": 2
+    }
+  },
+  "analysis_rows": [
+    {
+      "action_confidence": 0.0475,
+      "adaptive_outcome_class": "repair_success",
+      "adaptive_reward": 12.0,
+      "adaptive_success": true,
+      "benchmark_partition": "repairable",
+      "confidence_best_score": 106.86191679056596,
+      "confidence_runner_up_score": 101.78247524888613,
+      "episode_id": "PUT:http://127.0.0.1:8000/api/v1/subscriptions/123e4567-e89b-12d3-a456-426614174000/status",
+      "group_id": "scenario:32e97b943cd6f38b",
+      "matched_example": {
+        "benchmark_partition": "repairable",
+        "episode_id": "PUT:http://127.0.0.1:8000/api/v1/subscriptions/123e4567-e89b-12d3-a456-426614174000/status",
+        "group_id": "scenario:d1e13e9a19f4d88f",
+        "raw_scenario_type": "schema_extra_key",
+        "target_action_type": "no_op"
+      },
+      "matched_target_action": true,
+      "payload_repair_failure": false,
+      "predicted_action": {
+        "action_type": "no_op",
+        "body_patch": null,
+        "header_patch": null,
+        "query_patch": null,
+        "reason": "No policy action was recorded.",
+        "target_method": null,
+        "target_path": null
+      },
+      "predicted_action_type": "no_op",
+      "raw_scenario_type": "schema_extra_key",
+      "repairable_false_abstention": false,
+      "reward_gap_vs_adaptive": 0.0,
+      "scenario_type": "payload_drift",
+      "support_count_for_scenario": 1,
+      "target_action_type": "no_op",
+      "unsafe_auth_action": false,
+      "warmstart_outcome_class": "repair_success",
+      "warmstart_reward": 12.0,
+      "warmstart_success": true,
+      "wrong_route_repair": false
+    },
+    {
+      "action_confidence": 0.014,
+      "adaptive_outcome_class": "repair_success",
+      "adaptive_reward": 12.0,
+      "adaptive_success": true,
+      "benchmark_partition": "repairable",
+      "confidence_best_score": 121.19400101958482,
+      "confidence_runner_up_score": 119.50085383902487,
+      "episode_id": "sprint4-005611c34c29",
+      "group_id": "scenario:40097f1a5fd6b210",
+      "matched_example": {
+        "benchmark_partition": "repairable",
+        "episode_id": "sprint4-f25003323337",
+        "group_id": "scenario:474e8f9dae8722ff",
+        "raw_scenario_type": "route_regression",
+        "target_action_type": "repair_route"
+      },
+      "matched_target_action": false,
+      "payload_repair_failure": false,
+      "predicted_action": {
+        "action_type": "repair_route",
+        "body_patch": null,
+        "header_patch": null,
+        "query_patch": null,
+        "reason": "Deterministic repair applied: route updated to GET /api/v1/ledger/transactions.",
+        "target_method": "GET",
+        "target_path": "/api/v1/ledger/transactions"
+      },
+      "predicted_action_type": "repair_route",
+      "raw_scenario_type": "route_regression",
+      "repairable_false_abstention": false,
+      "reward_gap_vs_adaptive": 22.0,
+      "scenario_type": "route_drift",
+      "support_count_for_scenario": 1,
+      "target_action_type": "repair_route",
+      "unsafe_auth_action": false,
+      "warmstart_outcome_class": "repair_failure",
+      "warmstart_reward": -10.0,
+      "warmstart_success": false,
+      "wrong_route_repair": true
+    },
+    {
+      "action_confidence": 0.017,
+      "adaptive_outcome_class": "repair_success",
+      "adaptive_reward": 12.0,
+      "adaptive_success": true,
+      "benchmark_partition": "repairable",
+      "confidence_best_score": 109.0388183794283,
+      "confidence_runner_up_score": 107.18678811550869,
+      "episode_id": "sprint4-a40f299ef3e6",
+      "group_id": "scenario:4750079b5ca6cb5a",
+      "matched_example": {
+        "benchmark_partition": "repairable",
+        "episode_id": "sprint4-db39a80d522c",
+        "group_id": "scenario:74a4384c95e691df",
+        "raw_scenario_type": "schema_type_coercion",
+        "target_action_type": "repair_payload"
+      },
+      "matched_target_action": true,
+      "payload_repair_failure": false,
+      "predicted_action": {
+        "action_type": "repair_payload",
+        "body_patch": {
+          "status": "ACTIVE"
+        },
+        "header_patch": null,
+        "query_patch": null,
+        "reason": "Deterministic repair applied: payload rebuilt from the normalized request schema.",
+        "target_method": "PUT",
+        "target_path": "/api/v1/subscriptions/{sub_id}/status"
+      },
+      "predicted_action_type": "repair_payload",
+      "raw_scenario_type": "schema_null_injection",
+      "repairable_false_abstention": false,
+      "reward_gap_vs_adaptive": 0.0,
+      "scenario_type": "payload_drift",
+      "support_count_for_scenario": 1,
+      "target_action_type": "repair_payload",
+      "unsafe_auth_action": false,
+      "warmstart_outcome_class": "repair_success",
+      "warmstart_reward": 12.0,
+      "warmstart_success": true,
+      "wrong_route_repair": false
+    },
+    {
+      "action_confidence": 0.0,
+      "adaptive_outcome_class": "repair_success",
+      "adaptive_reward": 12.0,
+      "adaptive_success": true,
+      "benchmark_partition": "repairable",
+      "confidence_best_score": 113.84649842147937,
+      "confidence_runner_up_score": 113.84649842147937,
+      "episode_id": "sprint4-208584149b36",
+      "group_id": "scenario:68f2c3ab40ff6d0f",
+      "matched_example": {
+        "benchmark_partition": "repairable",
+        "episode_id": "sprint4-d877f62ca4f1",
+        "group_id": "scenario:7864995e7354de52",
+        "raw_scenario_type": "schema_missing_key",
+        "target_action_type": "repair_payload"
+      },
+      "matched_target_action": false,
+      "payload_repair_failure": false,
+      "predicted_action": {
+        "action_type": "repair_payload",
+        "body_patch": {
+          "amount": 100,
+          "billing_address": {
+            "iso_country": "US",
+            "street": "test_string",
+            "zip_code": "12345"
+          },
+          "card_details": {
+            "card_number": "1234567812345678",
+            "cvv": "123",
+            "expiry": "12/26"
+          },
+          "currency": "USD"
+        },
+        "header_patch": null,
+        "query_patch": null,
+        "reason": "Deterministic repair applied: payload rebuilt from the normalized request schema.",
+        "target_method": "POST",
+        "target_path": "/api/v1/payments/process"
+      },
+      "predicted_action_type": "repair_payload",
+      "raw_scenario_type": "auth_missing_tenant",
+      "repairable_false_abstention": false,
+      "reward_gap_vs_adaptive": 20.0,
+      "scenario_type": "auth_drift",
+      "support_count_for_scenario": 1,
+      "target_action_type": "repair_auth",
+      "unsafe_auth_action": false,
+      "warmstart_outcome_class": "repair_failure",
+      "warmstart_reward": -8.0,
+      "warmstart_success": false,
+      "wrong_route_repair": false
+    },
+    {
+      "action_confidence": 0.0283,
+      "adaptive_outcome_class": "repair_success",
+      "adaptive_reward": 12.0,
+      "adaptive_success": true,
+      "benchmark_partition": "repairable",
+      "confidence_best_score": 114.16813165161058,
+      "confidence_runner_up_score": 110.94072037385037,
+      "episode_id": "sprint4-60e1cd249a91",
+      "group_id": "scenario:69a7d760ae973274",
+      "matched_example": {
+        "benchmark_partition": "repairable",
+        "episode_id": "sprint4-365b567e4507",
+        "group_id": "scenario:d36f2b56ebec1ebe",
+        "raw_scenario_type": "schema_type_coercion",
+        "target_action_type": "repair_payload"
+      },
+      "matched_target_action": false,
+      "payload_repair_failure": true,
+      "predicted_action": {
+        "action_type": "repair_payload",
+        "body_patch": {
+          "amount": 100,
+          "billing_address": {
+            "iso_country": "US",
+            "street": "test_string",
+            "zip_code": "12345"
+          },
+          "card_details": {
+            "card_number": "1234567812345678",
+            "cvv": "123",
+            "expiry": "12/26"
+          },
+          "currency": "USD"
+        },
+        "header_patch": null,
+        "query_patch": null,
+        "reason": "Deterministic repair applied: payload rebuilt from the normalized request schema.",
+        "target_method": "POST",
+        "target_path": "/api/v1/payments/process"
+      },
+      "predicted_action_type": "repair_payload",
+      "raw_scenario_type": "schema_type_coercion",
+      "repairable_false_abstention": false,
+      "reward_gap_vs_adaptive": 20.0,
+      "scenario_type": "payload_drift",
+      "support_count_for_scenario": 1,
+      "target_action_type": "repair_payload",
+      "unsafe_auth_action": false,
+      "warmstart_outcome_class": "repair_failure",
+      "warmstart_reward": -8.0,
+      "warmstart_success": false,
+      "wrong_route_repair": false
+    },
+    {
+      "action_confidence": 0.0,
+      "adaptive_outcome_class": "correct_abstain",
+      "adaptive_reward": 8.0,
+      "adaptive_success": true,
+      "benchmark_partition": "unrecoverable",
+      "confidence_best_score": 110.019369579257,
+      "confidence_runner_up_score": 110.019369579257,
+      "episode_id": "sprint4-7ec003653243",
+      "group_id": "scenario:a2ae63f850a43007",
+      "matched_example": {
+        "benchmark_partition": "unrecoverable",
+        "episode_id": "sprint4-78ffe1e5a02a",
+        "group_id": "scenario:027a5dad73ec87f8",
+        "raw_scenario_type": "auth_malformed_jwt",
+        "target_action_type": "abstain"
+      },
+      "matched_target_action": true,
+      "payload_repair_failure": false,
+      "predicted_action": {
+        "action_type": "abstain",
+        "body_patch": null,
+        "header_patch": null,
+        "query_patch": null,
+        "reason": "Unsafe to fabricate a repair for an unrecoverable auth scenario.",
+        "target_method": null,
+        "target_path": null
+      },
+      "predicted_action_type": "abstain",
+      "raw_scenario_type": "auth_malformed_jwt",
+      "repairable_false_abstention": false,
+      "reward_gap_vs_adaptive": 0.0,
+      "scenario_type": "auth_drift",
+      "support_count_for_scenario": 1,
+      "target_action_type": "abstain",
+      "unsafe_auth_action": false,
+      "warmstart_outcome_class": "correct_abstain",
+      "warmstart_reward": 8.0,
+      "warmstart_success": true,
+      "wrong_route_repair": false
+    },
+    {
+      "action_confidence": 0.0155,
+      "adaptive_outcome_class": "correct_abstain",
+      "adaptive_reward": 6.0,
+      "adaptive_success": true,
+      "benchmark_partition": "unrecoverable",
+      "confidence_best_score": 106.679595233772,
+      "confidence_runner_up_score": 105.02216613581415,
+      "episode_id": "sprint4-dbee270dbb14",
+      "group_id": "scenario:aec00a0db0e98d8c",
+      "matched_example": {
+        "benchmark_partition": "unrecoverable",
+        "episode_id": "sprint4-d600a354b907",
+        "group_id": "scenario:ddbe558f75441d23",
+        "raw_scenario_type": "auth_missing_token",
+        "target_action_type": "abstain"
+      },
+      "matched_target_action": true,
+      "payload_repair_failure": false,
+      "predicted_action": {
+        "action_type": "abstain",
+        "body_patch": null,
+        "header_patch": null,
+        "query_patch": null,
+        "reason": "Unsafe to fabricate a repair for an unrecoverable auth scenario.",
+        "target_method": null,
+        "target_path": null
+      },
+      "predicted_action_type": "abstain",
+      "raw_scenario_type": "auth_missing_token",
+      "repairable_false_abstention": false,
+      "reward_gap_vs_adaptive": 0.0,
+      "scenario_type": "auth_drift",
+      "support_count_for_scenario": 1,
+      "target_action_type": "abstain",
+      "unsafe_auth_action": false,
+      "warmstart_outcome_class": "correct_abstain",
+      "warmstart_reward": 6.0,
+      "warmstart_success": true,
+      "wrong_route_repair": false
+    },
+    {
+      "action_confidence": 0.0039,
+      "adaptive_outcome_class": "repair_success",
+      "adaptive_reward": 9.0,
+      "adaptive_success": true,
+      "benchmark_partition": "repairable",
+      "confidence_best_score": 104.15716869832754,
+      "confidence_runner_up_score": 103.75170359021936,
+      "episode_id": "sprint4-d96c5e685ba5",
+      "group_id": "scenario:bad47740d3673538",
+      "matched_example": {
+        "benchmark_partition": "repairable",
+        "episode_id": "sprint4-160d3ce7b118",
+        "group_id": "scenario:fcec7a14a84d7914",
+        "raw_scenario_type": "route_method_spoof",
+        "target_action_type": "repair_payload"
+      },
+      "matched_target_action": false,
+      "payload_repair_failure": true,
+      "predicted_action": {
+        "action_type": "repair_payload",
+        "body_patch": {
+          "amount": 100,
+          "billing_address": {
+            "iso_country": "US",
+            "street": "test_string",
+            "zip_code": "12345"
+          },
+          "card_details": {
+            "card_number": "1234567812345678",
+            "cvv": "123",
+            "expiry": "12/26"
+          },
+          "currency": "USD"
+        },
+        "header_patch": null,
+        "query_patch": null,
+        "reason": "Deterministic repair applied: payload rebuilt from the normalized request schema.",
+        "target_method": "POST",
+        "target_path": "/api/v1/payments/process"
+      },
+      "predicted_action_type": "repair_payload",
+      "raw_scenario_type": "route_method_spoof",
+      "repairable_false_abstention": false,
+      "reward_gap_vs_adaptive": 18.0,
+      "scenario_type": "route_drift",
+      "support_count_for_scenario": 1,
+      "target_action_type": "repair_payload",
+      "unsafe_auth_action": false,
+      "warmstart_outcome_class": "repair_failure",
+      "warmstart_reward": -9.0,
+      "warmstart_success": false,
+      "wrong_route_repair": false
+    },
+    {
+      "action_confidence": 0.0028,
+      "adaptive_outcome_class": "repair_success",
+      "adaptive_reward": 12.0,
+      "adaptive_success": true,
+      "benchmark_partition": "repairable",
+      "confidence_best_score": 102.05855640965943,
+      "confidence_runner_up_score": 101.77087433720764,
+      "episode_id": "sprint4-03993b397f83",
+      "group_id": "scenario:ddcbd1ddaaa667bd",
+      "matched_example": {
+        "benchmark_partition": "repairable",
+        "episode_id": "sprint4-d877f62ca4f1",
+        "group_id": "scenario:7864995e7354de52",
+        "raw_scenario_type": "schema_missing_key",
+        "target_action_type": "repair_payload"
+      },
+      "matched_target_action": false,
+      "payload_repair_failure": true,
+      "predicted_action": {
+        "action_type": "repair_payload",
+        "body_patch": {
+          "amount": 100,
+          "billing_address": {
+            "iso_country": "US",
+            "street": "test_string",
+            "zip_code": "12345"
+          },
+          "card_details": {
+            "card_number": "1234567812345678",
+            "cvv": "123",
+            "expiry": "12/26"
+          },
+          "currency": "USD"
+        },
+        "header_patch": null,
+        "query_patch": null,
+        "reason": "Deterministic repair applied: payload rebuilt from the normalized request schema.",
+        "target_method": "POST",
+        "target_path": "/api/v1/payments/process"
+      },
+      "predicted_action_type": "repair_payload",
+      "raw_scenario_type": "schema_missing_key",
+      "repairable_false_abstention": false,
+      "reward_gap_vs_adaptive": 20.0,
+      "scenario_type": "payload_drift",
+      "support_count_for_scenario": 1,
+      "target_action_type": "repair_payload",
+      "unsafe_auth_action": false,
+      "warmstart_outcome_class": "repair_failure",
+      "warmstart_reward": -8.0,
+      "warmstart_success": false,
+      "wrong_route_repair": false
+    },
+    {
+      "action_confidence": 0.1357,
+      "adaptive_outcome_class": "repair_success",
+      "adaptive_reward": 12.0,
+      "adaptive_success": true,
+      "benchmark_partition": "repairable",
+      "confidence_best_score": 142.48158048588016,
+      "confidence_runner_up_score": 123.1446931781763,
+      "episode_id": "sprint4-8b88ceb60293",
+      "group_id": "scenario:ffe9146677b1a6c2",
+      "matched_example": {
+        "benchmark_partition": "repairable",
+        "episode_id": "sprint4-ce838c3a9929",
+        "group_id": "scenario:4d9e6f2a2a5ae29b",
+        "raw_scenario_type": "route_regression",
+        "target_action_type": "repair_route"
+      },
+      "matched_target_action": true,
+      "payload_repair_failure": false,
+      "predicted_action": {
+        "action_type": "repair_route",
+        "body_patch": null,
+        "header_patch": null,
+        "query_patch": null,
+        "reason": "Deterministic repair applied: route updated to POST /api/v1/payments/process.",
+        "target_method": "POST",
+        "target_path": "/api/v1/payments/process"
+      },
+      "predicted_action_type": "repair_route",
+      "raw_scenario_type": "route_invalid_path",
+      "repairable_false_abstention": false,
+      "reward_gap_vs_adaptive": 0.0,
+      "scenario_type": "route_drift",
+      "support_count_for_scenario": 1,
+      "target_action_type": "repair_route",
+      "unsafe_auth_action": false,
+      "warmstart_outcome_class": "repair_success",
+      "warmstart_reward": 12.0,
+      "warmstart_success": true,
+      "wrong_route_repair": false
+    }
+  ],
+  "confidence_distribution": {
+    "low": 10
+  },
+  "largest_reward_gaps": [
+    {
+      "action_confidence": 0.014,
+      "adaptive_outcome_class": "repair_success",
+      "adaptive_reward": 12.0,
+      "adaptive_success": true,
+      "benchmark_partition": "repairable",
+      "confidence_best_score": 121.19400101958482,
+      "confidence_runner_up_score": 119.50085383902487,
+      "episode_id": "sprint4-005611c34c29",
+      "group_id": "scenario:40097f1a5fd6b210",
+      "matched_example": {
+        "benchmark_partition": "repairable",
+        "episode_id": "sprint4-f25003323337",
+        "group_id": "scenario:474e8f9dae8722ff",
+        "raw_scenario_type": "route_regression",
+        "target_action_type": "repair_route"
+      },
+      "matched_target_action": false,
+      "payload_repair_failure": false,
+      "predicted_action": {
+        "action_type": "repair_route",
+        "body_patch": null,
+        "header_patch": null,
+        "query_patch": null,
+        "reason": "Deterministic repair applied: route updated to GET /api/v1/ledger/transactions.",
+        "target_method": "GET",
+        "target_path": "/api/v1/ledger/transactions"
+      },
+      "predicted_action_type": "repair_route",
+      "raw_scenario_type": "route_regression",
+      "repairable_false_abstention": false,
+      "reward_gap_vs_adaptive": 22.0,
+      "scenario_type": "route_drift",
+      "support_count_for_scenario": 1,
+      "target_action_type": "repair_route",
+      "unsafe_auth_action": false,
+      "warmstart_outcome_class": "repair_failure",
+      "warmstart_reward": -10.0,
+      "warmstart_success": false,
+      "wrong_route_repair": true
+    },
+    {
+      "action_confidence": 0.0283,
+      "adaptive_outcome_class": "repair_success",
+      "adaptive_reward": 12.0,
+      "adaptive_success": true,
+      "benchmark_partition": "repairable",
+      "confidence_best_score": 114.16813165161058,
+      "confidence_runner_up_score": 110.94072037385037,
+      "episode_id": "sprint4-60e1cd249a91",
+      "group_id": "scenario:69a7d760ae973274",
+      "matched_example": {
+        "benchmark_partition": "repairable",
+        "episode_id": "sprint4-365b567e4507",
+        "group_id": "scenario:d36f2b56ebec1ebe",
+        "raw_scenario_type": "schema_type_coercion",
+        "target_action_type": "repair_payload"
+      },
+      "matched_target_action": false,
+      "payload_repair_failure": true,
+      "predicted_action": {
+        "action_type": "repair_payload",
+        "body_patch": {
+          "amount": 100,
+          "billing_address": {
+            "iso_country": "US",
+            "street": "test_string",
+            "zip_code": "12345"
+          },
+          "card_details": {
+            "card_number": "1234567812345678",
+            "cvv": "123",
+            "expiry": "12/26"
+          },
+          "currency": "USD"
+        },
+        "header_patch": null,
+        "query_patch": null,
+        "reason": "Deterministic repair applied: payload rebuilt from the normalized request schema.",
+        "target_method": "POST",
+        "target_path": "/api/v1/payments/process"
+      },
+      "predicted_action_type": "repair_payload",
+      "raw_scenario_type": "schema_type_coercion",
+      "repairable_false_abstention": false,
+      "reward_gap_vs_adaptive": 20.0,
+      "scenario_type": "payload_drift",
+      "support_count_for_scenario": 1,
+      "target_action_type": "repair_payload",
+      "unsafe_auth_action": false,
+      "warmstart_outcome_class": "repair_failure",
+      "warmstart_reward": -8.0,
+      "warmstart_success": false,
+      "wrong_route_repair": false
+    },
+    {
+      "action_confidence": 0.0028,
+      "adaptive_outcome_class": "repair_success",
+      "adaptive_reward": 12.0,
+      "adaptive_success": true,
+      "benchmark_partition": "repairable",
+      "confidence_best_score": 102.05855640965943,
+      "confidence_runner_up_score": 101.77087433720764,
+      "episode_id": "sprint4-03993b397f83",
+      "group_id": "scenario:ddcbd1ddaaa667bd",
+      "matched_example": {
+        "benchmark_partition": "repairable",
+        "episode_id": "sprint4-d877f62ca4f1",
+        "group_id": "scenario:7864995e7354de52",
+        "raw_scenario_type": "schema_missing_key",
+        "target_action_type": "repair_payload"
+      },
+      "matched_target_action": false,
+      "payload_repair_failure": true,
+      "predicted_action": {
+        "action_type": "repair_payload",
+        "body_patch": {
+          "amount": 100,
+          "billing_address": {
+            "iso_country": "US",
+            "street": "test_string",
+            "zip_code": "12345"
+          },
+          "card_details": {
+            "card_number": "1234567812345678",
+            "cvv": "123",
+            "expiry": "12/26"
+          },
+          "currency": "USD"
+        },
+        "header_patch": null,
+        "query_patch": null,
+        "reason": "Deterministic repair applied: payload rebuilt from the normalized request schema.",
+        "target_method": "POST",
+        "target_path": "/api/v1/payments/process"
+      },
+      "predicted_action_type": "repair_payload",
+      "raw_scenario_type": "schema_missing_key",
+      "repairable_false_abstention": false,
+      "reward_gap_vs_adaptive": 20.0,
+      "scenario_type": "payload_drift",
+      "support_count_for_scenario": 1,
+      "target_action_type": "repair_payload",
+      "unsafe_auth_action": false,
+      "warmstart_outcome_class": "repair_failure",
+      "warmstart_reward": -8.0,
+      "warmstart_success": false,
+      "wrong_route_repair": false
+    },
+    {
+      "action_confidence": 0.0,
+      "adaptive_outcome_class": "repair_success",
+      "adaptive_reward": 12.0,
+      "adaptive_success": true,
+      "benchmark_partition": "repairable",
+      "confidence_best_score": 113.84649842147937,
+      "confidence_runner_up_score": 113.84649842147937,
+      "episode_id": "sprint4-208584149b36",
+      "group_id": "scenario:68f2c3ab40ff6d0f",
+      "matched_example": {
+        "benchmark_partition": "repairable",
+        "episode_id": "sprint4-d877f62ca4f1",
+        "group_id": "scenario:7864995e7354de52",
+        "raw_scenario_type": "schema_missing_key",
+        "target_action_type": "repair_payload"
+      },
+      "matched_target_action": false,
+      "payload_repair_failure": false,
+      "predicted_action": {
+        "action_type": "repair_payload",
+        "body_patch": {
+          "amount": 100,
+          "billing_address": {
+            "iso_country": "US",
+            "street": "test_string",
+            "zip_code": "12345"
+          },
+          "card_details": {
+            "card_number": "1234567812345678",
+            "cvv": "123",
+            "expiry": "12/26"
+          },
+          "currency": "USD"
+        },
+        "header_patch": null,
+        "query_patch": null,
+        "reason": "Deterministic repair applied: payload rebuilt from the normalized request schema.",
+        "target_method": "POST",
+        "target_path": "/api/v1/payments/process"
+      },
+      "predicted_action_type": "repair_payload",
+      "raw_scenario_type": "auth_missing_tenant",
+      "repairable_false_abstention": false,
+      "reward_gap_vs_adaptive": 20.0,
+      "scenario_type": "auth_drift",
+      "support_count_for_scenario": 1,
+      "target_action_type": "repair_auth",
+      "unsafe_auth_action": false,
+      "warmstart_outcome_class": "repair_failure",
+      "warmstart_reward": -8.0,
+      "warmstart_success": false,
+      "wrong_route_repair": false
+    },
+    {
+      "action_confidence": 0.0039,
+      "adaptive_outcome_class": "repair_success",
+      "adaptive_reward": 9.0,
+      "adaptive_success": true,
+      "benchmark_partition": "repairable",
+      "confidence_best_score": 104.15716869832754,
+      "confidence_runner_up_score": 103.75170359021936,
+      "episode_id": "sprint4-d96c5e685ba5",
+      "group_id": "scenario:bad47740d3673538",
+      "matched_example": {
+        "benchmark_partition": "repairable",
+        "episode_id": "sprint4-160d3ce7b118",
+        "group_id": "scenario:fcec7a14a84d7914",
+        "raw_scenario_type": "route_method_spoof",
+        "target_action_type": "repair_payload"
+      },
+      "matched_target_action": false,
+      "payload_repair_failure": true,
+      "predicted_action": {
+        "action_type": "repair_payload",
+        "body_patch": {
+          "amount": 100,
+          "billing_address": {
+            "iso_country": "US",
+            "street": "test_string",
+            "zip_code": "12345"
+          },
+          "card_details": {
+            "card_number": "1234567812345678",
+            "cvv": "123",
+            "expiry": "12/26"
+          },
+          "currency": "USD"
+        },
+        "header_patch": null,
+        "query_patch": null,
+        "reason": "Deterministic repair applied: payload rebuilt from the normalized request schema.",
+        "target_method": "POST",
+        "target_path": "/api/v1/payments/process"
+      },
+      "predicted_action_type": "repair_payload",
+      "raw_scenario_type": "route_method_spoof",
+      "repairable_false_abstention": false,
+      "reward_gap_vs_adaptive": 18.0,
+      "scenario_type": "route_drift",
+      "support_count_for_scenario": 1,
+      "target_action_type": "repair_payload",
+      "unsafe_auth_action": false,
+      "warmstart_outcome_class": "repair_failure",
+      "warmstart_reward": -9.0,
+      "warmstart_success": false,
+      "wrong_route_repair": false
+    }
+  ],
+  "manifest_id": "c6cc003f9220869e",
+  "missed_by_scenario": {
+    "auth_missing_tenant": 1,
+    "route_method_spoof": 1,
+    "route_regression": 1,
+    "schema_missing_key": 1,
+    "schema_type_coercion": 1
+  },
+  "payload_repair_failures": {
+    "route_method_spoof": 1,
+    "schema_missing_key": 1,
+    "schema_type_coercion": 1
+  },
+  "repairable_false_abstentions": {},
+  "row_count": 10,
+  "scenario_support": {
+    "auth_malformed_jwt": 1,
+    "auth_missing_tenant": 1,
+    "auth_missing_token": 1,
+    "route_invalid_path": 1,
+    "route_method_spoof": 1,
+    "route_regression": 1,
+    "schema_extra_key": 1,
+    "schema_missing_key": 1,
+    "schema_null_injection": 1,
+    "schema_type_coercion": 1
+  },
+  "unsafe_auth_actions": {},
+  "wrong_route_repairs": {
+    "route_regression": 1
+  }
+}

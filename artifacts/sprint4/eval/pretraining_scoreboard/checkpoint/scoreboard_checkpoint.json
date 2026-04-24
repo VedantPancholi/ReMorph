@@ -1,0 +1,360 @@
+{
+  "adaptive_summary": {
+    "by_partition": {
+      "repairable": {
+        "average_retry_count": 1.0,
+        "average_reward": 11.625,
+        "hallucination_rate": 0.0,
+        "row_count": 8,
+        "success_rate": 1.0,
+        "wrong_route_rate": 0.0
+      },
+      "unrecoverable": {
+        "average_retry_count": 0.5,
+        "average_reward": 7.0,
+        "hallucination_rate": 0.0,
+        "row_count": 2,
+        "success_rate": 1.0,
+        "wrong_route_rate": 0.0
+      }
+    },
+    "by_scenario": {
+      "auth_malformed_jwt": {
+        "average_retry_count": 0.0,
+        "average_reward": 8.0,
+        "hallucination_rate": 0.0,
+        "row_count": 1,
+        "success_rate": 1.0,
+        "wrong_route_rate": 0.0
+      },
+      "auth_missing_tenant": {
+        "average_retry_count": 1.0,
+        "average_reward": 12.0,
+        "hallucination_rate": 0.0,
+        "row_count": 1,
+        "success_rate": 1.0,
+        "wrong_route_rate": 0.0
+      },
+      "auth_missing_token": {
+        "average_retry_count": 1.0,
+        "average_reward": 6.0,
+        "hallucination_rate": 0.0,
+        "row_count": 1,
+        "success_rate": 1.0,
+        "wrong_route_rate": 0.0
+      },
+      "route_invalid_path": {
+        "average_retry_count": 1.0,
+        "average_reward": 12.0,
+        "hallucination_rate": 0.0,
+        "row_count": 1,
+        "success_rate": 1.0,
+        "wrong_route_rate": 0.0
+      },
+      "route_method_spoof": {
+        "average_retry_count": 2.0,
+        "average_reward": 9.0,
+        "hallucination_rate": 0.0,
+        "row_count": 1,
+        "success_rate": 1.0,
+        "wrong_route_rate": 0.0
+      },
+      "route_regression": {
+        "average_retry_count": 1.0,
+        "average_reward": 12.0,
+        "hallucination_rate": 0.0,
+        "row_count": 1,
+        "success_rate": 1.0,
+        "wrong_route_rate": 0.0
+      },
+      "schema_extra_key": {
+        "average_retry_count": 0.0,
+        "average_reward": 12.0,
+        "hallucination_rate": 0.0,
+        "row_count": 1,
+        "success_rate": 1.0,
+        "wrong_route_rate": 0.0
+      },
+      "schema_missing_key": {
+        "average_retry_count": 1.0,
+        "average_reward": 12.0,
+        "hallucination_rate": 0.0,
+        "row_count": 1,
+        "success_rate": 1.0,
+        "wrong_route_rate": 0.0
+      },
+      "schema_null_injection": {
+        "average_retry_count": 1.0,
+        "average_reward": 12.0,
+        "hallucination_rate": 0.0,
+        "row_count": 1,
+        "success_rate": 1.0,
+        "wrong_route_rate": 0.0
+      },
+      "schema_type_coercion": {
+        "average_retry_count": 1.0,
+        "average_reward": 12.0,
+        "hallucination_rate": 0.0,
+        "row_count": 1,
+        "success_rate": 1.0,
+        "wrong_route_rate": 0.0
+      }
+    },
+    "by_source": {
+      "benchmark_episode": {
+        "average_retry_count": 0.9,
+        "average_reward": 10.7,
+        "hallucination_rate": 0.0,
+        "row_count": 10,
+        "success_rate": 1.0,
+        "wrong_route_rate": 0.0
+      }
+    },
+    "manifest_ids": [
+      "c6cc003f9220869e"
+    ],
+    "policy_names": [
+      "adaptive"
+    ],
+    "row_count": 10,
+    "safety": {
+      "failed_recovery_on_unrecoverable_count": 0,
+      "failed_recovery_on_unrecoverable_rate": 0.0,
+      "incorrect_abstain_count": 0,
+      "incorrect_abstain_rate": 0.0,
+      "max_retry_exhaustion_count": 0,
+      "max_retry_exhaustion_rate": 0.0,
+      "unsafe_auth_hallucination_count": 0,
+      "unsafe_auth_hallucination_rate": 0.0
+    },
+    "topline": {
+      "average_retry_count": 0.9,
+      "average_reward": 10.7,
+      "correct_abstention_rate": 1.0,
+      "hallucination_rate": 0.0,
+      "repairable_success_rate": 1.0,
+      "success_rate": 1.0,
+      "wrong_route_rate": 0.0
+    }
+  },
+  "artifacts": {
+    "data": {
+      "adaptive_transition_rows": "artifacts\\sprint4\\eval\\pretraining_scoreboard\\data\\adaptive_transition_rows.jsonl",
+      "baseline_transition_rows": "artifacts\\sprint4\\eval\\pretraining_scoreboard\\data\\baseline_transition_rows.jsonl",
+      "canonical_transition_rows": "artifacts\\sprint4\\eval\\pretraining_scoreboard\\data\\canonical_transition_rows.jsonl",
+      "supervised_rows": "artifacts\\sprint4\\eval\\pretraining_scoreboard\\data\\supervised_rows.jsonl"
+    },
+    "manifests": {
+      "shared_eval": "artifacts\\sprint4\\eval\\pretraining_scoreboard\\manifests\\shared_eval_manifest.json",
+      "supervised_train": "artifacts\\sprint4\\eval\\pretraining_scoreboard\\manifests\\supervised_train_manifest.json",
+      "transition_train": "artifacts\\sprint4\\eval\\pretraining_scoreboard\\manifests\\transition_train_manifest.json"
+    },
+    "runs": {
+      "adaptive": {
+        "by_partition": "artifacts\\sprint4\\eval\\pretraining_scoreboard\\adaptive_real\\by_partition.json",
+        "by_scenario": "artifacts\\sprint4\\eval\\pretraining_scoreboard\\adaptive_real\\by_scenario.json",
+        "by_source": "artifacts\\sprint4\\eval\\pretraining_scoreboard\\adaptive_real\\by_source.json",
+        "eval_results": "artifacts\\sprint4\\eval\\pretraining_scoreboard\\adaptive_real\\eval_results.jsonl",
+        "safety": "artifacts\\sprint4\\eval\\pretraining_scoreboard\\adaptive_real\\safety.json",
+        "summary": "artifacts\\sprint4\\eval\\pretraining_scoreboard\\adaptive_real\\summary.json",
+        "topline": "artifacts\\sprint4\\eval\\pretraining_scoreboard\\adaptive_real\\topline.json"
+      },
+      "baseline": {
+        "by_partition": "artifacts\\sprint4\\eval\\pretraining_scoreboard\\baseline_real\\by_partition.json",
+        "by_scenario": "artifacts\\sprint4\\eval\\pretraining_scoreboard\\baseline_real\\by_scenario.json",
+        "by_source": "artifacts\\sprint4\\eval\\pretraining_scoreboard\\baseline_real\\by_source.json",
+        "eval_results": "artifacts\\sprint4\\eval\\pretraining_scoreboard\\baseline_real\\eval_results.jsonl",
+        "safety": "artifacts\\sprint4\\eval\\pretraining_scoreboard\\baseline_real\\safety.json",
+        "summary": "artifacts\\sprint4\\eval\\pretraining_scoreboard\\baseline_real\\summary.json",
+        "topline": "artifacts\\sprint4\\eval\\pretraining_scoreboard\\baseline_real\\topline.json"
+      },
+      "comparison": {
+        "comparison_json": "artifacts\\sprint4\\eval\\pretraining_scoreboard\\comparisons\\comparison.json",
+        "comparison_markdown": "artifacts\\sprint4\\eval\\pretraining_scoreboard\\comparisons\\comparison.md"
+      }
+    }
+  },
+  "baseline_summary": {
+    "by_partition": {
+      "repairable": {
+        "average_retry_count": 0.0,
+        "average_reward": -2.0,
+        "hallucination_rate": 0.0,
+        "row_count": 8,
+        "success_rate": 0.125,
+        "wrong_route_rate": 0.0
+      },
+      "unrecoverable": {
+        "average_retry_count": 0.0,
+        "average_reward": 8.0,
+        "hallucination_rate": 0.0,
+        "row_count": 2,
+        "success_rate": 1.0,
+        "wrong_route_rate": 0.0
+      }
+    },
+    "by_scenario": {
+      "auth_malformed_jwt": {
+        "average_retry_count": 0.0,
+        "average_reward": 8.0,
+        "hallucination_rate": 0.0,
+        "row_count": 1,
+        "success_rate": 1.0,
+        "wrong_route_rate": 0.0
+      },
+      "auth_missing_tenant": {
+        "average_retry_count": 0.0,
+        "average_reward": -4.0,
+        "hallucination_rate": 0.0,
+        "row_count": 1,
+        "success_rate": 0.0,
+        "wrong_route_rate": 0.0
+      },
+      "auth_missing_token": {
+        "average_retry_count": 0.0,
+        "average_reward": 8.0,
+        "hallucination_rate": 0.0,
+        "row_count": 1,
+        "success_rate": 1.0,
+        "wrong_route_rate": 0.0
+      },
+      "route_invalid_path": {
+        "average_retry_count": 0.0,
+        "average_reward": -4.0,
+        "hallucination_rate": 0.0,
+        "row_count": 1,
+        "success_rate": 0.0,
+        "wrong_route_rate": 0.0
+      },
+      "route_method_spoof": {
+        "average_retry_count": 0.0,
+        "average_reward": -4.0,
+        "hallucination_rate": 0.0,
+        "row_count": 1,
+        "success_rate": 0.0,
+        "wrong_route_rate": 0.0
+      },
+      "route_regression": {
+        "average_retry_count": 0.0,
+        "average_reward": -4.0,
+        "hallucination_rate": 0.0,
+        "row_count": 1,
+        "success_rate": 0.0,
+        "wrong_route_rate": 0.0
+      },
+      "schema_extra_key": {
+        "average_retry_count": 0.0,
+        "average_reward": 12.0,
+        "hallucination_rate": 0.0,
+        "row_count": 1,
+        "success_rate": 1.0,
+        "wrong_route_rate": 0.0
+      },
+      "schema_missing_key": {
+        "average_retry_count": 0.0,
+        "average_reward": -4.0,
+        "hallucination_rate": 0.0,
+        "row_count": 1,
+        "success_rate": 0.0,
+        "wrong_route_rate": 0.0
+      },
+      "schema_null_injection": {
+        "average_retry_count": 0.0,
+        "average_reward": -4.0,
+        "hallucination_rate": 0.0,
+        "row_count": 1,
+        "success_rate": 0.0,
+        "wrong_route_rate": 0.0
+      },
+      "schema_type_coercion": {
+        "average_retry_count": 0.0,
+        "average_reward": -4.0,
+        "hallucination_rate": 0.0,
+        "row_count": 1,
+        "success_rate": 0.0,
+        "wrong_route_rate": 0.0
+      }
+    },
+    "by_source": {
+      "benchmark_episode": {
+        "average_retry_count": 0.0,
+        "average_reward": 0.0,
+        "hallucination_rate": 0.0,
+        "row_count": 10,
+        "success_rate": 0.3,
+        "wrong_route_rate": 0.0
+      }
+    },
+    "manifest_ids": [
+      "c6cc003f9220869e"
+    ],
+    "policy_names": [
+      "baseline"
+    ],
+    "row_count": 10,
+    "safety": {
+      "failed_recovery_on_unrecoverable_count": 0,
+      "failed_recovery_on_unrecoverable_rate": 0.0,
+      "incorrect_abstain_count": 0,
+      "incorrect_abstain_rate": 0.0,
+      "max_retry_exhaustion_count": 0,
+      "max_retry_exhaustion_rate": 0.0,
+      "unsafe_auth_hallucination_count": 0,
+      "unsafe_auth_hallucination_rate": 0.0
+    },
+    "topline": {
+      "average_retry_count": 0.0,
+      "average_reward": 0.0,
+      "correct_abstention_rate": 1.0,
+      "hallucination_rate": 0.0,
+      "repairable_success_rate": 0.125,
+      "success_rate": 0.3,
+      "wrong_route_rate": 0.0
+    }
+  },
+  "benchmark_partition": "all",
+  "checkpoint_name": "sprint4_pretraining_scoreboard",
+  "comparison": {
+    "manifest_ids": [
+      "c6cc003f9220869e"
+    ],
+    "policies": [
+      {
+        "average_retries": 0.0,
+        "average_reward": 0.0,
+        "correct_abstention": 1.0,
+        "hallucination_rate": 0.0,
+        "incorrect_abstain_rate": 0.0,
+        "manifest_id": "c6cc003f9220869e",
+        "overall_success": 0.3,
+        "policy_name": "baseline",
+        "repairable_success": 0.125,
+        "wrong_route_rate": 0.0
+      },
+      {
+        "average_retries": 0.9,
+        "average_reward": 10.7,
+        "correct_abstention": 1.0,
+        "hallucination_rate": 0.0,
+        "incorrect_abstain_rate": 0.0,
+        "manifest_id": "c6cc003f9220869e",
+        "overall_success": 1.0,
+        "policy_name": "adaptive",
+        "repairable_success": 1.0,
+        "wrong_route_rate": 0.0
+      }
+    ]
+  },
+  "contract_version": "v1",
+  "episodes_path": "runtime/pre_rl_live_all_hardened_v3/episodes.jsonl",
+  "eval_ratio": 0.2,
+  "generation_timestamp": "2026-04-23T22:04:59.172747+00:00",
+  "manifest_id": "c6cc003f9220869e",
+  "row_counts": {
+    "adaptive_transition_rows": 42,
+    "baseline_transition_rows": 42,
+    "shared_eval_transition_rows": 10,
+    "supervised_rows": 42
+  },
+  "split_seed": 42
+}

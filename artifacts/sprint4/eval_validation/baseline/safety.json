@@ -1,0 +1,10 @@
+{
+  "failed_recovery_on_unrecoverable_count": 1,
+  "failed_recovery_on_unrecoverable_rate": 1.0,
+  "incorrect_abstain_count": 0,
+  "incorrect_abstain_rate": 0.0,
+  "max_retry_exhaustion_count": 0,
+  "max_retry_exhaustion_rate": 0.0,
+  "unsafe_auth_hallucination_count": 0,
+  "unsafe_auth_hallucination_rate": 0.0
+}

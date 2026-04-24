@@ -1,0 +1,26 @@
+{
+  "contract_version": "v1",
+  "label_distribution": {
+    "abstain": 8,
+    "no_op": 6,
+    "repair_auth": 1,
+    "repair_payload": 8,
+    "repair_route": 10
+  },
+  "manifest_id": "392da4c1bd22ba27",
+  "model_kind": "prototype_knn_v1",
+  "scenario_distribution": {
+    "auth_malformed_jwt": 4,
+    "auth_missing_tenant": 4,
+    "auth_missing_token": 4,
+    "route_invalid_path": 4,
+    "route_method_spoof": 4,
+    "route_regression": 4,
+    "schema_extra_key": 3,
+    "schema_missing_key": 2,
+    "schema_null_injection": 2,
+    "schema_type_coercion": 2
+  },
+  "seed": 42,
+  "training_row_count": 33
+}

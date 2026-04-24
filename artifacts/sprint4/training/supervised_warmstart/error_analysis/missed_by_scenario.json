@@ -1,0 +1,7 @@
+{
+  "auth_missing_tenant": 1,
+  "route_method_spoof": 1,
+  "route_regression": 1,
+  "schema_missing_key": 1,
+  "schema_type_coercion": 1
+}

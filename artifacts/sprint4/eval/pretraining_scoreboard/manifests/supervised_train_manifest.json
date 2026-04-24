@@ -1,0 +1,298 @@
+{
+  "contract_version": "v1",
+  "counts_by_partition": {
+    "repairable": 25,
+    "unrecoverable": 8
+  },
+  "counts_by_scenario": {
+    "auth_malformed_jwt": 4,
+    "auth_missing_tenant": 4,
+    "auth_missing_token": 4,
+    "route_invalid_path": 4,
+    "route_method_spoof": 4,
+    "route_regression": 4,
+    "schema_extra_key": 3,
+    "schema_missing_key": 2,
+    "schema_null_injection": 2,
+    "schema_type_coercion": 2
+  },
+  "counts_by_source": {
+    "benchmark_episode": 33
+  },
+  "counts_by_split": {
+    "eval": 0,
+    "train": 33
+  },
+  "eval_ratio": 0.2,
+  "generation_timestamp": "2026-04-23T22:04:59.036727+00:00",
+  "manifest_id": "392da4c1bd22ba27",
+  "manifest_kind": "supervised_train",
+  "row_descriptors": [
+    {
+      "benchmark_partition": "repairable",
+      "episode_id": "sprint4-d877f62ca4f1",
+      "group_id": "scenario:7864995e7354de52",
+      "raw_scenario_type": "schema_missing_key",
+      "source_name": "benchmark_episode",
+      "source_record_id": "sprint4-d877f62ca4f1"
+    },
+    {
+      "benchmark_partition": "repairable",
+      "episode_id": "sprint4-365b567e4507",
+      "group_id": "scenario:d36f2b56ebec1ebe",
+      "raw_scenario_type": "schema_type_coercion",
+      "source_name": "benchmark_episode",
+      "source_record_id": "sprint4-365b567e4507"
+    },
+    {
+      "benchmark_partition": "repairable",
+      "episode_id": "POST:http://127.0.0.1:8000/api/v1/payments/process",
+      "group_id": "scenario:028a8e8bb4be3657",
+      "raw_scenario_type": "schema_extra_key",
+      "source_name": "benchmark_episode",
+      "source_record_id": "POST:http://127.0.0.1:8000/api/v1/payments/process"
+    },
+    {
+      "benchmark_partition": "repairable",
+      "episode_id": "sprint4-a9866e754d5f",
+      "group_id": "scenario:37a6365ae339be78",
+      "raw_scenario_type": "schema_null_injection",
+      "source_name": "benchmark_episode",
+      "source_record_id": "sprint4-a9866e754d5f"
+    },
+    {
+      "benchmark_partition": "repairable",
+      "episode_id": "sprint4-ce838c3a9929",
+      "group_id": "scenario:4d9e6f2a2a5ae29b",
+      "raw_scenario_type": "route_regression",
+      "source_name": "benchmark_episode",
+      "source_record_id": "sprint4-ce838c3a9929"
+    },
+    {
+      "benchmark_partition": "repairable",
+      "episode_id": "sprint4-160d3ce7b118",
+      "group_id": "scenario:fcec7a14a84d7914",
+      "raw_scenario_type": "route_method_spoof",
+      "source_name": "benchmark_episode",
+      "source_record_id": "sprint4-160d3ce7b118"
+    },
+    {
+      "benchmark_partition": "unrecoverable",
+      "episode_id": "sprint4-d600a354b907",
+      "group_id": "scenario:ddbe558f75441d23",
+      "raw_scenario_type": "auth_missing_token",
+      "source_name": "benchmark_episode",
+      "source_record_id": "sprint4-d600a354b907"
+    },
+    {
+      "benchmark_partition": "unrecoverable",
+      "episode_id": "sprint4-78ffe1e5a02a",
+      "group_id": "scenario:027a5dad73ec87f8",
+      "raw_scenario_type": "auth_malformed_jwt",
+      "source_name": "benchmark_episode",
+      "source_record_id": "sprint4-78ffe1e5a02a"
+    },
+    {
+      "benchmark_partition": "repairable",
+      "episode_id": "sprint4-f25003323337",
+      "group_id": "scenario:474e8f9dae8722ff",
+      "raw_scenario_type": "route_regression",
+      "source_name": "benchmark_episode",
+      "source_record_id": "sprint4-f25003323337"
+    },
+    {
+      "benchmark_partition": "repairable",
+      "episode_id": "sprint4-1787dd1f37f9",
+      "group_id": "scenario:1e9fe3e11489ed0f",
+      "raw_scenario_type": "route_method_spoof",
+      "source_name": "benchmark_episode",
+      "source_record_id": "sprint4-1787dd1f37f9"
+    },
+    {
+      "benchmark_partition": "repairable",
+      "episode_id": "sprint4-f117ebaab49c",
+      "group_id": "scenario:68f88a07de5de767",
+      "raw_scenario_type": "route_invalid_path",
+      "source_name": "benchmark_episode",
+      "source_record_id": "sprint4-f117ebaab49c"
+    },
+    {
+      "benchmark_partition": "unrecoverable",
+      "episode_id": "sprint4-a038b99d07b8",
+      "group_id": "scenario:697bf5f2f870cb85",
+      "raw_scenario_type": "auth_malformed_jwt",
+      "source_name": "benchmark_episode",
+      "source_record_id": "sprint4-a038b99d07b8"
+    },
+    {
+      "benchmark_partition": "repairable",
+      "episode_id": "GET:http://127.0.0.1:8000/api/v1/ledger/transactions?start_date=2024-01-01T00:00:00Z&end_date=2024-01-31T00:00:00Z&limit=100",
+      "group_id": "scenario:6b62aeae53919967",
+      "raw_scenario_type": "auth_missing_tenant",
+      "source_name": "benchmark_episode",
+      "source_record_id": "GET:http://127.0.0.1:8000/api/v1/ledger/transactions?start_date=2024-01-01T00:00:00Z&end_date=2024-01-31T00:00:00Z&limit=100"
+    },
+    {
+      "benchmark_partition": "repairable",
+      "episode_id": "sprint4-cb8db4792064",
+      "group_id": "scenario:1d4ebe7d0b3b45d8",
+      "raw_scenario_type": "schema_missing_key",
+      "source_name": "benchmark_episode",
+      "source_record_id": "sprint4-cb8db4792064"
+    },
+    {
+      "benchmark_partition": "repairable",
+      "episode_id": "POST:http://127.0.0.1:8000/api/v1/clients/onboard",
+      "group_id": "scenario:2fa6db6434e535f0",
+      "raw_scenario_type": "schema_extra_key",
+      "source_name": "benchmark_episode",
+      "source_record_id": "POST:http://127.0.0.1:8000/api/v1/clients/onboard"
+    },
+    {
+      "benchmark_partition": "repairable",
+      "episode_id": "sprint4-c5006c57fadf",
+      "group_id": "scenario:da3409a6f159e30b",
+      "raw_scenario_type": "schema_null_injection",
+      "source_name": "benchmark_episode",
+      "source_record_id": "sprint4-c5006c57fadf"
+    },
+    {
+      "benchmark_partition": "repairable",
+      "episode_id": "sprint4-8333ef99dd78",
+      "group_id": "scenario:8ee076f20c018779",
+      "raw_scenario_type": "route_regression",
+      "source_name": "benchmark_episode",
+      "source_record_id": "sprint4-8333ef99dd78"
+    },
+    {
+      "benchmark_partition": "repairable",
+      "episode_id": "sprint4-d6f19e7d7066",
+      "group_id": "scenario:d4aee71f030b59c8",
+      "raw_scenario_type": "route_invalid_path",
+      "source_name": "benchmark_episode",
+      "source_record_id": "sprint4-d6f19e7d7066"
+    },
+    {
+      "benchmark_partition": "unrecoverable",
+      "episode_id": "sprint4-ec3420493139",
+      "group_id": "scenario:ebe426e57f9a209b",
+      "raw_scenario_type": "auth_missing_token",
+      "source_name": "benchmark_episode",
+      "source_record_id": "sprint4-ec3420493139"
+    },
+    {
+      "benchmark_partition": "unrecoverable",
+      "episode_id": "sprint4-a182da61b23d",
+      "group_id": "scenario:ea3556d849eeb863",
+      "raw_scenario_type": "auth_malformed_jwt",
+      "source_name": "benchmark_episode",
+      "source_record_id": "sprint4-a182da61b23d"
+    },
+    {
+      "benchmark_partition": "repairable",
+      "episode_id": "POST:http://127.0.0.1:8000/api/v1/clients/onboard",
+      "group_id": "scenario:2fa6db6434e535f0",
+      "raw_scenario_type": "auth_missing_tenant",
+      "source_name": "benchmark_episode",
+      "source_record_id": "POST:http://127.0.0.1:8000/api/v1/clients/onboard"
+    },
+    {
+      "benchmark_partition": "repairable",
+      "episode_id": "sprint4-db39a80d522c",
+      "group_id": "scenario:74a4384c95e691df",
+      "raw_scenario_type": "schema_type_coercion",
+      "source_name": "benchmark_episode",
+      "source_record_id": "sprint4-db39a80d522c"
+    },
+    {
+      "benchmark_partition": "repairable",
+      "episode_id": "PUT:http://127.0.0.1:8000/api/v1/subscriptions/123e4567-e89b-12d3-a456-426614174000/status",
+      "group_id": "scenario:d1e13e9a19f4d88f",
+      "raw_scenario_type": "schema_extra_key",
+      "source_name": "benchmark_episode",
+      "source_record_id": "PUT:http://127.0.0.1:8000/api/v1/subscriptions/123e4567-e89b-12d3-a456-426614174000/status"
+    },
+    {
+      "benchmark_partition": "repairable",
+      "episode_id": "sprint4-a189e5c32d22",
+      "group_id": "scenario:b1202355ee398679",
+      "raw_scenario_type": "route_regression",
+      "source_name": "benchmark_episode",
+      "source_record_id": "sprint4-a189e5c32d22"
+    },
+    {
+      "benchmark_partition": "repairable",
+      "episode_id": "sprint4-b8a8ac212a32",
+      "group_id": "scenario:77ac52eb4dce3492",
+      "raw_scenario_type": "route_method_spoof",
+      "source_name": "benchmark_episode",
+      "source_record_id": "sprint4-b8a8ac212a32"
+    },
+    {
+      "benchmark_partition": "repairable",
+      "episode_id": "sprint4-e2db2a72966d",
+      "group_id": "scenario:e4a07b7bc9f0c336",
+      "raw_scenario_type": "route_invalid_path",
+      "source_name": "benchmark_episode",
+      "source_record_id": "sprint4-e2db2a72966d"
+    },
+    {
+      "benchmark_partition": "unrecoverable",
+      "episode_id": "sprint4-f9820b7ce29f",
+      "group_id": "scenario:abd6a6a983a64b41",
+      "raw_scenario_type": "auth_missing_token",
+      "source_name": "benchmark_episode",
+      "source_record_id": "sprint4-f9820b7ce29f"
+    },
+    {
+      "benchmark_partition": "repairable",
+      "episode_id": "PUT:http://127.0.0.1:8000/api/v1/subscriptions/123e4567-e89b-12d3-a456-426614174000/status",
+      "group_id": "scenario:d1e13e9a19f4d88f",
+      "raw_scenario_type": "auth_missing_tenant",
+      "source_name": "benchmark_episode",
+      "source_record_id": "PUT:http://127.0.0.1:8000/api/v1/subscriptions/123e4567-e89b-12d3-a456-426614174000/status"
+    },
+    {
+      "benchmark_partition": "repairable",
+      "episode_id": "sprint4-efef468b8eb1",
+      "group_id": "scenario:7b730c428413e5fc",
+      "raw_scenario_type": "route_method_spoof",
+      "source_name": "benchmark_episode",
+      "source_record_id": "sprint4-efef468b8eb1"
+    },
+    {
+      "benchmark_partition": "repairable",
+      "episode_id": "sprint4-9078e37a3d04",
+      "group_id": "scenario:3acb3148fd70d274",
+      "raw_scenario_type": "route_invalid_path",
+      "source_name": "benchmark_episode",
+      "source_record_id": "sprint4-9078e37a3d04"
+    },
+    {
+      "benchmark_partition": "unrecoverable",
+      "episode_id": "sprint4-8d1420d5ec51",
+      "group_id": "scenario:cb6f885e8c718e10",
+      "raw_scenario_type": "auth_missing_token",
+      "source_name": "benchmark_episode",
+      "source_record_id": "sprint4-8d1420d5ec51"
+    },
+    {
+      "benchmark_partition": "unrecoverable",
+      "episode_id": "sprint4-ba38326a6421",
+      "group_id": "scenario:3f65b273c3a93e34",
+      "raw_scenario_type": "auth_malformed_jwt",
+      "source_name": "benchmark_episode",
+      "source_record_id": "sprint4-ba38326a6421"
+    },
+    {
+      "benchmark_partition": "repairable",
+      "episode_id": "sprint4-bd4f24435a1c",
+      "group_id": "scenario:cc878c7d46ae6e89",
+      "raw_scenario_type": "auth_missing_tenant",
+      "source_name": "benchmark_episode",
+      "source_record_id": "sprint4-bd4f24435a1c"
+    }
+  ],
+  "split_seed": 42,
+  "total_rows": 33
+}

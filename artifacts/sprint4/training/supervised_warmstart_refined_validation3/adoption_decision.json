@@ -1,0 +1,12 @@
+{
+  "deltas": {
+    "average_reward": -8.4,
+    "correct_abstention_rate": -1.0,
+    "hallucination_rate": 0.0,
+    "incorrect_abstain_rate": 0.0,
+    "success_rate": -0.4
+  },
+  "promote_candidate": false,
+  "reason": "Candidate is not promoted because it does not beat the frozen warm-start checkpoint on the shared eval contract.",
+  "recommended_policy": "warmstart"
+}

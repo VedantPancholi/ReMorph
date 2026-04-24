@@ -1,0 +1,9 @@
+{
+  "average_retry_count": 0.0,
+  "average_reward": 11.5,
+  "correct_abstention_rate": 1.0,
+  "hallucination_rate": 0.0,
+  "repairable_success_rate": 1.0,
+  "success_rate": 1.0,
+  "wrong_route_rate": 0.0
+}

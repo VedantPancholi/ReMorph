@@ -382,3 +382,77 @@ Sprint 2 before full Sprint 4 implementation.
 - `docs/context/sachin-training-handoff.md`
 - `Dockerfile`
 - `.dockerignore`
+
+## 2026-04-24 - Sprint 4 Pre-Training Scoreboard Protocol
+
+### Goal
+
+Freeze the first repo-native baseline-vs-adaptive scoreboard on a shared eval
+manifest before any supervised warm-start or RL work begins.
+
+### What Changed
+
+- improved grouped split logic so shared eval grouping follows the failed
+  scenario fingerprint instead of policy-specific request ids
+- added a scoreboard freeze protocol that builds canonical transition rows,
+  persists manifests, runs baseline and adaptive on the same eval set, and
+  writes comparison artifacts
+- added failure-analysis outputs to surface the strongest slices, weakest
+  slices, safety behavior, and training focus candidates
+- updated the Sprint 4 runbook and training plan so the docs match the new
+  pre-training checkpoint workflow
+
+### Outcome
+
+Sprint 4 now has a reproducible path to freeze one official pre-training
+checkpoint from real benchmark data, which gives the project a trustworthy
+baseline before any learned policy is introduced.
+
+## 2026-04-24 - Sprint 4 Supervised Warm-Start
+
+### Goal
+
+Train the first learned policy on canonical supervised rows and evaluate it on
+the same frozen shared eval manifest used by baseline and adaptive.
+
+### What Changed
+
+- added a small prototype-based supervised warm-start trainer and offline replay evaluator
+- added a training CLI that reads the frozen supervised train manifest and shared eval manifest
+- fixed a leakage bug where supervised rows were previously grouped by episode id
+  instead of scenario fingerprint
+- froze the first learned-policy checkpoint and comparison artifacts under
+  `artifacts/sprint4/training/supervised_warmstart/`
+- updated the Sprint 4 docs with the current manifest ids and scoreboard results
+
+### Outcome
+
+The first learned policy now sits between baseline and adaptive on the frozen
+eval set: it beats baseline, preserves clean abstention on unrecoverable auth,
+and exposes a clear repairable-slice gap that can guide future refinement.
+
+## 2026-04-24 - Sprint 4 Error Analysis And Targeted Refinement
+
+### Goal
+
+Turn the warm-start gap into something actionable without pretending the next
+heuristic is already better than the current checkpoint.
+
+### What Changed
+
+- added warm-start vs adaptive error analysis with missed-scenario counts,
+  action confusion, reward gaps, support counts, and lightweight confidence
+- added a deterministic refinement pipeline that reweights examples toward the
+  weak repairable slices identified by the analysis
+- limited top-k voting to focus scenarios so the refinement logic does not
+  blindly perturb every prediction path
+- added an adoption decision artifact that compares a refinement candidate
+  against the frozen warm-start checkpoint on the shared eval manifest and
+  refuses promotion if safety or top-line quality regresses
+
+### Outcome
+
+The refinement loop is now real and runnable, but the first heuristic candidate
+is not promoted. That is the correct systems result: the repo gained a
+reproducible refinement protocol without silently replacing the better learned
+checkpoint.

@@ -34,8 +34,10 @@ def test_phase1_dataset_adapter_normalizes_records(tmp_path) -> None:
     assert row["scenario_type"] == "payload_drift"
     assert row["raw_scenario_type"] == "schema_missing_key"
     assert row["response"]["failure_signals"]["missing_fields"] == ["currency"]
+    assert row["metadata"]["benchmark_partition"] == "repairable"
 
     summary = summarize_phase1_dataset(str(dataset_path))
     assert summary["sample_count"] == 1
     assert summary["failure_count"] == 1
     assert summary["scenario_distribution"] == {"payload_drift": 1}
+    assert summary["benchmark_partition_distribution"] == {"repairable": 1}

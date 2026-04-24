@@ -1,0 +1,10 @@
+{
+  "benchmark_episode": {
+    "average_retry_count": 0.9,
+    "average_reward": 10.7,
+    "hallucination_rate": 0.0,
+    "row_count": 10,
+    "success_rate": 1.0,
+    "wrong_route_rate": 0.0
+  }
+}

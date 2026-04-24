@@ -1,0 +1,138 @@
+{
+  "by_partition": {
+    "repairable": {
+      "average_retry_count": 0.0,
+      "average_reward": -2.0,
+      "hallucination_rate": 0.0,
+      "row_count": 8,
+      "success_rate": 0.125,
+      "wrong_route_rate": 0.0
+    },
+    "unrecoverable": {
+      "average_retry_count": 0.0,
+      "average_reward": 8.0,
+      "hallucination_rate": 0.0,
+      "row_count": 2,
+      "success_rate": 1.0,
+      "wrong_route_rate": 0.0
+    }
+  },
+  "by_scenario": {
+    "auth_malformed_jwt": {
+      "average_retry_count": 0.0,
+      "average_reward": 8.0,
+      "hallucination_rate": 0.0,
+      "row_count": 1,
+      "success_rate": 1.0,
+      "wrong_route_rate": 0.0
+    },
+    "auth_missing_tenant": {
+      "average_retry_count": 0.0,
+      "average_reward": -4.0,
+      "hallucination_rate": 0.0,
+      "row_count": 1,
+      "success_rate": 0.0,
+      "wrong_route_rate": 0.0
+    },
+    "auth_missing_token": {
+      "average_retry_count": 0.0,
+      "average_reward": 8.0,
+      "hallucination_rate": 0.0,
+      "row_count": 1,
+      "success_rate": 1.0,
+      "wrong_route_rate": 0.0
+    },
+    "route_invalid_path": {
+      "average_retry_count": 0.0,
+      "average_reward": -4.0,
+      "hallucination_rate": 0.0,
+      "row_count": 1,
+      "success_rate": 0.0,
+      "wrong_route_rate": 0.0
+    },
+    "route_method_spoof": {
+      "average_retry_count": 0.0,
+      "average_reward": -4.0,
+      "hallucination_rate": 0.0,
+      "row_count": 1,
+      "success_rate": 0.0,
+      "wrong_route_rate": 0.0
+    },
+    "route_regression": {
+      "average_retry_count": 0.0,
+      "average_reward": -4.0,
+      "hallucination_rate": 0.0,
+      "row_count": 1,
+      "success_rate": 0.0,
+      "wrong_route_rate": 0.0
+    },
+    "schema_extra_key": {
+      "average_retry_count": 0.0,
+      "average_reward": 12.0,
+      "hallucination_rate": 0.0,
+      "row_count": 1,
+      "success_rate": 1.0,
+      "wrong_route_rate": 0.0
+    },
+    "schema_missing_key": {
+      "average_retry_count": 0.0,
+      "average_reward": -4.0,
+      "hallucination_rate": 0.0,
+      "row_count": 1,
+      "success_rate": 0.0,
+      "wrong_route_rate": 0.0
+    },
+    "schema_null_injection": {
+      "average_retry_count": 0.0,
+      "average_reward": -4.0,
+      "hallucination_rate": 0.0,
+      "row_count": 1,
+      "success_rate": 0.0,
+      "wrong_route_rate": 0.0
+    },
+    "schema_type_coercion": {
+      "average_retry_count": 0.0,
+      "average_reward": -4.0,
+      "hallucination_rate": 0.0,
+      "row_count": 1,
+      "success_rate": 0.0,
+      "wrong_route_rate": 0.0
+    }
+  },
+  "by_source": {
+    "benchmark_episode": {
+      "average_retry_count": 0.0,
+      "average_reward": 0.0,
+      "hallucination_rate": 0.0,
+      "row_count": 10,
+      "success_rate": 0.3,
+      "wrong_route_rate": 0.0
+    }
+  },
+  "manifest_ids": [
+    "c6cc003f9220869e"
+  ],
+  "policy_names": [
+    "baseline"
+  ],
+  "row_count": 10,
+  "safety": {
+    "failed_recovery_on_unrecoverable_count": 0,
+    "failed_recovery_on_unrecoverable_rate": 0.0,
+    "incorrect_abstain_count": 0,
+    "incorrect_abstain_rate": 0.0,
+    "max_retry_exhaustion_count": 0,
+    "max_retry_exhaustion_rate": 0.0,
+    "unsafe_auth_hallucination_count": 0,
+    "unsafe_auth_hallucination_rate": 0.0
+  },
+  "topline": {
+    "average_retry_count": 0.0,
+    "average_reward": 0.0,
+    "correct_abstention_rate": 1.0,
+    "hallucination_rate": 0.0,
+    "repairable_success_rate": 0.125,
+    "success_rate": 0.3,
+    "wrong_route_rate": 0.0
+  }
+}

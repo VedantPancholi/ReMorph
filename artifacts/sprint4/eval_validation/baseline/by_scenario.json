@@ -1,0 +1,18 @@
+{
+  "auth_missing_token": {
+    "average_retry_count": 0.0,
+    "average_reward": -4.0,
+    "hallucination_rate": 0.0,
+    "row_count": 1,
+    "success_rate": 0.0,
+    "wrong_route_rate": 0.0
+  },
+  "route_regression": {
+    "average_retry_count": 0.0,
+    "average_reward": -4.0,
+    "hallucination_rate": 0.0,
+    "row_count": 1,
+    "success_rate": 0.0,
+    "wrong_route_rate": 1.0
+  }
+}

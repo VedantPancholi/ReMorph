@@ -12,6 +12,7 @@ from sprint4.env.live_support import (
     parse_actual_server_response,
     summarize_error_message,
 )
+from sprint4.training.benchmark_contract import classify_raw_scenario
 
 
 def load_phase1_dataset(path: str = "target_api/training_dataset.json") -> list[dict[str, Any]]:
@@ -75,6 +76,7 @@ def normalize_phase1_record(record: dict[str, Any]) -> dict[str, Any]:
         "metadata": {
             "request_id": record.get("request_id"),
             "source_component": record.get("source_component"),
+            "benchmark_partition": classify_raw_scenario(raw_scenario_type),
         },
     }
 
@@ -90,16 +92,20 @@ def summarize_phase1_dataset(path: str = "target_api/training_dataset.json") -> 
 
     rows = normalize_phase1_dataset(path)
     scenario_counts: dict[str, int] = {}
+    partition_counts: dict[str, int] = {}
     success_count = 0
     for row in rows:
         scenario = row["scenario_type"]
         scenario_counts[scenario] = scenario_counts.get(scenario, 0) + 1
+        partition = str(row.get("metadata", {}).get("benchmark_partition") or "other")
+        partition_counts[partition] = partition_counts.get(partition, 0) + 1
         success_count += int(bool(row["response"]["success"]))
     return {
         "sample_count": len(rows),
         "success_count": success_count,
         "failure_count": len(rows) - success_count,
         "scenario_distribution": scenario_counts,
+        "benchmark_partition_distribution": partition_counts,
     }
 
 

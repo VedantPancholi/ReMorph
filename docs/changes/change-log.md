@@ -1,5 +1,46 @@
 # Change Log
 
+## 2026-04-24
+
+### Sprint 4 Pre-Training Scoreboard Freeze
+
+- aligned grouped split logic around canonical scenario fingerprints so the same
+  underlying benchmark case stays shared across baseline and adaptive runs even
+  when request ids differ
+- added the repo-native scoreboard freeze protocol under
+  `sprint4/eval/scoreboard_protocol.py`
+- added `scripts/freeze_sprint4_scoreboard.py` to build canonical manifests,
+  run baseline/adaptive on the same shared eval manifest, and persist official
+  checkpoint artifacts
+- added failure-analysis outputs so training focus can be chosen from the frozen
+  scoreboard rather than guessed
+- refreshed Sprint 4 docs so the runbook and training plan reflect the new
+  pre-training checkpoint flow
+
+### Sprint 4 Supervised Warm-Start
+
+- added `sprint4/training/supervised_warmstart.py` as the first learned-policy
+  training and offline replay evaluation path
+- added `scripts/train_sprint4_supervised.py` to train from the frozen
+  supervised train manifest and evaluate on the frozen shared eval manifest
+- fixed a warm-start leakage issue by carrying scenario-fingerprint group ids
+  onto supervised rows before manifest creation
+- froze the first learned-policy checkpoint under
+  `artifacts/sprint4/training/supervised_warmstart/`
+- documented the current warm-start checkpoint and scoreboard deltas in Sprint 4 docs
+
+### Sprint 4 Error Analysis And Targeted Refinement
+
+- added warm-start vs adaptive error-analysis artifacts with scenario misses,
+  action confusion, support counts, confidence, and reward-gap reporting
+- added `sprint4/training/targeted_refinement.py` and
+  `scripts/refine_sprint4_warmstart.py` to build and evaluate refinement
+  candidates on the same frozen shared eval manifest
+- added an explicit adoption gate so refinement candidates are only promoted if
+  they improve over the frozen warm-start checkpoint without regressing safety
+- kept docs honest by recording that the first heuristic refinement candidate
+  is not promoted and the recommended learned policy remains `warmstart`
+
 ## 2026-04-22
 
 ### Bootstrap Baseline

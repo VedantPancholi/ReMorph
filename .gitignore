@@ -27,7 +27,8 @@ Thumbs.db
 # Local-only Codex and source context
 .codex
 .codex/
-from_gpt_context.txt
+prompt_2.txt
+prompt.txt
 
 # Generated runtime outputs
 runtime/*

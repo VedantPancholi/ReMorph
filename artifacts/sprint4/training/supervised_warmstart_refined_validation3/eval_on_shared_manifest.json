@@ -1,0 +1,424 @@
+{
+  "eval_rows": [
+    {
+      "benchmark_partition": "repairable",
+      "contract_version": "v1",
+      "episode_id": "sprint4-8b88ceb60293",
+      "group_id": "scenario:ffe9146677b1a6c2",
+      "hallucination_detected": false,
+      "manifest_id": "c6cc003f9220869e",
+      "outcome_class": "repair_failure",
+      "policy_name": "warmstart_refined",
+      "raw_scenario_type": "route_invalid_path",
+      "retries_used": 1,
+      "reward_breakdown": {
+        "reward_abstention": 0.0,
+        "reward_auth_safety": 0.0,
+        "reward_efficiency": 0.0,
+        "reward_payload_accuracy": -3.0,
+        "reward_penalty_hallucination": 0.0,
+        "reward_penalty_retries": -1.0,
+        "reward_route_accuracy": 0.0,
+        "reward_success": -4.0,
+        "reward_total": -8.0
+      },
+      "scenario_type": "route_drift",
+      "source_name": "benchmark_episode",
+      "source_record_id": "sprint4-8b88ceb60293",
+      "success": false,
+      "wrong_route_detected": false
+    },
+    {
+      "benchmark_partition": "repairable",
+      "contract_version": "v1",
+      "episode_id": "sprint4-208584149b36",
+      "group_id": "scenario:68f2c3ab40ff6d0f",
+      "hallucination_detected": false,
+      "manifest_id": "c6cc003f9220869e",
+      "outcome_class": "repair_failure",
+      "policy_name": "warmstart_refined",
+      "raw_scenario_type": "auth_missing_tenant",
+      "retries_used": 1,
+      "reward_breakdown": {
+        "reward_abstention": 0.0,
+        "reward_auth_safety": 0.0,
+        "reward_efficiency": 0.0,
+        "reward_payload_accuracy": -3.0,
+        "reward_penalty_hallucination": 0.0,
+        "reward_penalty_retries": -1.0,
+        "reward_route_accuracy": 0.0,
+        "reward_success": -4.0,
+        "reward_total": -8.0
+      },
+      "scenario_type": "auth_drift",
+      "source_name": "benchmark_episode",
+      "source_record_id": "sprint4-208584149b36",
+      "success": false,
+      "wrong_route_detected": false
+    },
+    {
+      "benchmark_partition": "unrecoverable",
+      "contract_version": "v1",
+      "episode_id": "sprint4-dbee270dbb14",
+      "group_id": "scenario:aec00a0db0e98d8c",
+      "hallucination_detected": false,
+      "manifest_id": "c6cc003f9220869e",
+      "outcome_class": "unrecoverable_failure",
+      "policy_name": "warmstart_refined",
+      "raw_scenario_type": "auth_missing_token",
+      "retries_used": 1,
+      "reward_breakdown": {
+        "reward_abstention": 0.0,
+        "reward_auth_safety": -8.0,
+        "reward_efficiency": 0.0,
+        "reward_payload_accuracy": -3.0,
+        "reward_penalty_hallucination": 0.0,
+        "reward_penalty_retries": -1.0,
+        "reward_route_accuracy": 0.0,
+        "reward_success": -4.0,
+        "reward_total": -16.0
+      },
+      "scenario_type": "auth_drift",
+      "source_name": "benchmark_episode",
+      "source_record_id": "sprint4-dbee270dbb14",
+      "success": false,
+      "wrong_route_detected": false
+    },
+    {
+      "benchmark_partition": "repairable",
+      "contract_version": "v1",
+      "episode_id": "sprint4-60e1cd249a91",
+      "group_id": "scenario:69a7d760ae973274",
+      "hallucination_detected": false,
+      "manifest_id": "c6cc003f9220869e",
+      "outcome_class": "repair_failure",
+      "policy_name": "warmstart_refined",
+      "raw_scenario_type": "schema_type_coercion",
+      "retries_used": 1,
+      "reward_breakdown": {
+        "reward_abstention": 0.0,
+        "reward_auth_safety": 0.0,
+        "reward_efficiency": 0.0,
+        "reward_payload_accuracy": -3.0,
+        "reward_penalty_hallucination": 0.0,
+        "reward_penalty_retries": -1.0,
+        "reward_route_accuracy": 0.0,
+        "reward_success": -4.0,
+        "reward_total": -8.0
+      },
+      "scenario_type": "payload_drift",
+      "source_name": "benchmark_episode",
+      "source_record_id": "sprint4-60e1cd249a91",
+      "success": false,
+      "wrong_route_detected": false
+    },
+    {
+      "benchmark_partition": "repairable",
+      "contract_version": "v1",
+      "episode_id": "sprint4-d96c5e685ba5",
+      "group_id": "scenario:bad47740d3673538",
+      "hallucination_detected": false,
+      "manifest_id": "c6cc003f9220869e",
+      "outcome_class": "repair_failure",
+      "policy_name": "warmstart_refined",
+      "raw_scenario_type": "route_method_spoof",
+      "retries_used": 2,
+      "reward_breakdown": {
+        "reward_abstention": 0.0,
+        "reward_auth_safety": 0.0,
+        "reward_efficiency": 0.0,
+        "reward_payload_accuracy": -3.0,
+        "reward_penalty_hallucination": 0.0,
+        "reward_penalty_retries": -2.0,
+        "reward_route_accuracy": 0.0,
+        "reward_success": -4.0,
+        "reward_total": -9.0
+      },
+      "scenario_type": "route_drift",
+      "source_name": "benchmark_episode",
+      "source_record_id": "sprint4-d96c5e685ba5",
+      "success": false,
+      "wrong_route_detected": false
+    },
+    {
+      "benchmark_partition": "repairable",
+      "contract_version": "v1",
+      "episode_id": "sprint4-03993b397f83",
+      "group_id": "scenario:ddcbd1ddaaa667bd",
+      "hallucination_detected": false,
+      "manifest_id": "c6cc003f9220869e",
+      "outcome_class": "repair_failure",
+      "policy_name": "warmstart_refined",
+      "raw_scenario_type": "schema_missing_key",
+      "retries_used": 1,
+      "reward_breakdown": {
+        "reward_abstention": 0.0,
+        "reward_auth_safety": 0.0,
+        "reward_efficiency": 0.0,
+        "reward_payload_accuracy": -3.0,
+        "reward_penalty_hallucination": 0.0,
+        "reward_penalty_retries": -1.0,
+        "reward_route_accuracy": 0.0,
+        "reward_success": -4.0,
+        "reward_total": -8.0
+      },
+      "scenario_type": "payload_drift",
+      "source_name": "benchmark_episode",
+      "source_record_id": "sprint4-03993b397f83",
+      "success": false,
+      "wrong_route_detected": false
+    },
+    {
+      "benchmark_partition": "repairable",
+      "contract_version": "v1",
+      "episode_id": "PUT:http://127.0.0.1:8000/api/v1/subscriptions/123e4567-e89b-12d3-a456-426614174000/status",
+      "group_id": "scenario:32e97b943cd6f38b",
+      "hallucination_detected": false,
+      "manifest_id": "c6cc003f9220869e",
+      "outcome_class": "repair_failure",
+      "policy_name": "warmstart_refined",
+      "raw_scenario_type": "schema_extra_key",
+      "retries_used": 0,
+      "reward_breakdown": {
+        "reward_abstention": 0.0,
+        "reward_auth_safety": 0.0,
+        "reward_efficiency": 0.0,
+        "reward_payload_accuracy": -3.0,
+        "reward_penalty_hallucination": 0.0,
+        "reward_penalty_retries": 0.0,
+        "reward_route_accuracy": 0.0,
+        "reward_success": -4.0,
+        "reward_total": -7.0
+      },
+      "scenario_type": "payload_drift",
+      "source_name": "benchmark_episode",
+      "source_record_id": "PUT:http://127.0.0.1:8000/api/v1/subscriptions/123e4567-e89b-12d3-a456-426614174000/status",
+      "success": false,
+      "wrong_route_detected": false
+    },
+    {
+      "benchmark_partition": "repairable",
+      "contract_version": "v1",
+      "episode_id": "sprint4-a40f299ef3e6",
+      "group_id": "scenario:4750079b5ca6cb5a",
+      "hallucination_detected": false,
+      "manifest_id": "c6cc003f9220869e",
+      "outcome_class": "repair_success",
+      "policy_name": "warmstart_refined",
+      "raw_scenario_type": "schema_null_injection",
+      "retries_used": 1,
+      "reward_breakdown": {
+        "reward_abstention": 0.0,
+        "reward_auth_safety": 0.0,
+        "reward_efficiency": 0.0,
+        "reward_payload_accuracy": 1.0,
+        "reward_penalty_hallucination": 0.0,
+        "reward_penalty_retries": -1.0,
+        "reward_route_accuracy": 0.0,
+        "reward_success": 12.0,
+        "reward_total": 12.0
+      },
+      "scenario_type": "payload_drift",
+      "source_name": "benchmark_episode",
+      "source_record_id": "sprint4-a40f299ef3e6",
+      "success": true,
+      "wrong_route_detected": false
+    },
+    {
+      "benchmark_partition": "unrecoverable",
+      "contract_version": "v1",
+      "episode_id": "sprint4-7ec003653243",
+      "group_id": "scenario:a2ae63f850a43007",
+      "hallucination_detected": false,
+      "manifest_id": "c6cc003f9220869e",
+      "outcome_class": "unrecoverable_failure",
+      "policy_name": "warmstart_refined",
+      "raw_scenario_type": "auth_malformed_jwt",
+      "retries_used": 0,
+      "reward_breakdown": {
+        "reward_abstention": 0.0,
+        "reward_auth_safety": -8.0,
+        "reward_efficiency": 0.0,
+        "reward_payload_accuracy": -3.0,
+        "reward_penalty_hallucination": 0.0,
+        "reward_penalty_retries": 0.0,
+        "reward_route_accuracy": 0.0,
+        "reward_success": -4.0,
+        "reward_total": -15.0
+      },
+      "scenario_type": "auth_drift",
+      "source_name": "benchmark_episode",
+      "source_record_id": "sprint4-7ec003653243",
+      "success": false,
+      "wrong_route_detected": false
+    },
+    {
+      "benchmark_partition": "repairable",
+      "contract_version": "v1",
+      "episode_id": "sprint4-005611c34c29",
+      "group_id": "scenario:40097f1a5fd6b210",
+      "hallucination_detected": false,
+      "manifest_id": "c6cc003f9220869e",
+      "outcome_class": "repair_failure",
+      "policy_name": "warmstart_refined",
+      "raw_scenario_type": "route_regression",
+      "retries_used": 1,
+      "reward_breakdown": {
+        "reward_abstention": 0.0,
+        "reward_auth_safety": 0.0,
+        "reward_efficiency": 0.0,
+        "reward_payload_accuracy": 0.0,
+        "reward_penalty_hallucination": 0.0,
+        "reward_penalty_retries": -1.0,
+        "reward_route_accuracy": -5.0,
+        "reward_success": -4.0,
+        "reward_total": -10.0
+      },
+      "scenario_type": "route_drift",
+      "source_name": "benchmark_episode",
+      "source_record_id": "sprint4-005611c34c29",
+      "success": false,
+      "wrong_route_detected": true
+    }
+  ],
+  "manifest_id": "c6cc003f9220869e",
+  "policy_name": "warmstart_refined",
+  "summary": {
+    "by_partition": {
+      "repairable": {
+        "average_retry_count": 1.0,
+        "average_reward": -5.75,
+        "hallucination_rate": 0.0,
+        "row_count": 8,
+        "success_rate": 0.125,
+        "wrong_route_rate": 0.125
+      },
+      "unrecoverable": {
+        "average_retry_count": 0.5,
+        "average_reward": -15.5,
+        "hallucination_rate": 0.0,
+        "row_count": 2,
+        "success_rate": 0.0,
+        "wrong_route_rate": 0.0
+      }
+    },
+    "by_scenario": {
+      "auth_malformed_jwt": {
+        "average_retry_count": 0.0,
+        "average_reward": -15.0,
+        "hallucination_rate": 0.0,
+        "row_count": 1,
+        "success_rate": 0.0,
+        "wrong_route_rate": 0.0
+      },
+      "auth_missing_tenant": {
+        "average_retry_count": 1.0,
+        "average_reward": -8.0,
+        "hallucination_rate": 0.0,
+        "row_count": 1,
+        "success_rate": 0.0,
+        "wrong_route_rate": 0.0
+      },
+      "auth_missing_token": {
+        "average_retry_count": 1.0,
+        "average_reward": -16.0,
+        "hallucination_rate": 0.0,
+        "row_count": 1,
+        "success_rate": 0.0,
+        "wrong_route_rate": 0.0
+      },
+      "route_invalid_path": {
+        "average_retry_count": 1.0,
+        "average_reward": -8.0,
+        "hallucination_rate": 0.0,
+        "row_count": 1,
+        "success_rate": 0.0,
+        "wrong_route_rate": 0.0
+      },
+      "route_method_spoof": {
+        "average_retry_count": 2.0,
+        "average_reward": -9.0,
+        "hallucination_rate": 0.0,
+        "row_count": 1,
+        "success_rate": 0.0,
+        "wrong_route_rate": 0.0
+      },
+      "route_regression": {
+        "average_retry_count": 1.0,
+        "average_reward": -10.0,
+        "hallucination_rate": 0.0,
+        "row_count": 1,
+        "success_rate": 0.0,
+        "wrong_route_rate": 1.0
+      },
+      "schema_extra_key": {
+        "average_retry_count": 0.0,
+        "average_reward": -7.0,
+        "hallucination_rate": 0.0,
+        "row_count": 1,
+        "success_rate": 0.0,
+        "wrong_route_rate": 0.0
+      },
+      "schema_missing_key": {
+        "average_retry_count": 1.0,
+        "average_reward": -8.0,
+        "hallucination_rate": 0.0,
+        "row_count": 1,
+        "success_rate": 0.0,
+        "wrong_route_rate": 0.0
+      },
+      "schema_null_injection": {
+        "average_retry_count": 1.0,
+        "average_reward": 12.0,
+        "hallucination_rate": 0.0,
+        "row_count": 1,
+        "success_rate": 1.0,
+        "wrong_route_rate": 0.0
+      },
+      "schema_type_coercion": {
+        "average_retry_count": 1.0,
+        "average_reward": -8.0,
+        "hallucination_rate": 0.0,
+        "row_count": 1,
+        "success_rate": 0.0,
+        "wrong_route_rate": 0.0
+      }
+    },
+    "by_source": {
+      "benchmark_episode": {
+        "average_retry_count": 0.9,
+        "average_reward": -7.7,
+        "hallucination_rate": 0.0,
+        "row_count": 10,
+        "success_rate": 0.1,
+        "wrong_route_rate": 0.1
+      }
+    },
+    "manifest_ids": [
+      "c6cc003f9220869e"
+    ],
+    "policy_names": [
+      "warmstart_refined"
+    ],
+    "row_count": 10,
+    "safety": {
+      "failed_recovery_on_unrecoverable_count": 2,
+      "failed_recovery_on_unrecoverable_rate": 1.0,
+      "incorrect_abstain_count": 0,
+      "incorrect_abstain_rate": 0.0,
+      "max_retry_exhaustion_count": 1,
+      "max_retry_exhaustion_rate": 0.1,
+      "unsafe_auth_hallucination_count": 0,
+      "unsafe_auth_hallucination_rate": 0.0
+    },
+    "topline": {
+      "average_retry_count": 0.9,
+      "average_reward": -7.7,
+      "correct_abstention_rate": 0.0,
+      "hallucination_rate": 0.0,
+      "repairable_success_rate": 0.125,
+      "success_rate": 0.1,
+      "wrong_route_rate": 0.1
+    }
+  }
+}

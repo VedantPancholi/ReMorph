@@ -1,0 +1,82 @@
+{
+  "by_partition": {
+    "repairable": {
+      "average_retry_count": 0.0,
+      "average_reward": 15.0,
+      "hallucination_rate": 0.0,
+      "row_count": 1,
+      "success_rate": 1.0,
+      "wrong_route_rate": 0.0
+    },
+    "unrecoverable": {
+      "average_retry_count": 0.0,
+      "average_reward": 8.0,
+      "hallucination_rate": 0.0,
+      "row_count": 1,
+      "success_rate": 1.0,
+      "wrong_route_rate": 0.0
+    }
+  },
+  "by_scenario": {
+    "auth_missing_token": {
+      "average_retry_count": 0.0,
+      "average_reward": 8.0,
+      "hallucination_rate": 0.0,
+      "row_count": 1,
+      "success_rate": 1.0,
+      "wrong_route_rate": 0.0
+    },
+    "route_regression": {
+      "average_retry_count": 0.0,
+      "average_reward": 15.0,
+      "hallucination_rate": 0.0,
+      "row_count": 1,
+      "success_rate": 1.0,
+      "wrong_route_rate": 0.0
+    }
+  },
+  "by_source": {
+    "benchmark_episode": {
+      "average_retry_count": 0.0,
+      "average_reward": 15.0,
+      "hallucination_rate": 0.0,
+      "row_count": 1,
+      "success_rate": 1.0,
+      "wrong_route_rate": 0.0
+    },
+    "phase1": {
+      "average_retry_count": 0.0,
+      "average_reward": 8.0,
+      "hallucination_rate": 0.0,
+      "row_count": 1,
+      "success_rate": 1.0,
+      "wrong_route_rate": 0.0
+    }
+  },
+  "manifest_ids": [
+    "shared-1"
+  ],
+  "policy_names": [
+    "adaptive"
+  ],
+  "row_count": 2,
+  "safety": {
+    "failed_recovery_on_unrecoverable_count": 0,
+    "failed_recovery_on_unrecoverable_rate": 0.0,
+    "incorrect_abstain_count": 0,
+    "incorrect_abstain_rate": 0.0,
+    "max_retry_exhaustion_count": 0,
+    "max_retry_exhaustion_rate": 0.0,
+    "unsafe_auth_hallucination_count": 0,
+    "unsafe_auth_hallucination_rate": 0.0
+  },
+  "topline": {
+    "average_retry_count": 0.0,
+    "average_reward": 11.5,
+    "correct_abstention_rate": 1.0,
+    "hallucination_rate": 0.0,
+    "repairable_success_rate": 1.0,
+    "success_rate": 1.0,
+    "wrong_route_rate": 0.0
+  }
+}

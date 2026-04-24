@@ -26,6 +26,12 @@ def main() -> None:
     )
     parser.add_argument("--agent-type", default="adaptive")
     parser.add_argument("--include-failed", action="store_true")
+    parser.add_argument(
+        "--benchmark-partition",
+        choices=["repairable", "unrecoverable", "all"],
+        default="repairable",
+        help="Frozen RL benchmark slice to export.",
+    )
     parser.add_argument("--eval-ratio", type=float, default=0.2)
     parser.add_argument("--seed", type=int, default=42)
     args = parser.parse_args()
@@ -35,6 +41,7 @@ def main() -> None:
         output_dir=args.output_dir,
         agent_type=args.agent_type,
         include_failed=args.include_failed,
+        benchmark_partition=args.benchmark_partition,
         eval_ratio=args.eval_ratio,
         seed=args.seed,
     )

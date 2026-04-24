@@ -1,0 +1,82 @@
+{
+  "auth_malformed_jwt": {
+    "average_retry_count": 0.0,
+    "average_reward": 8.0,
+    "hallucination_rate": 0.0,
+    "row_count": 1,
+    "success_rate": 1.0,
+    "wrong_route_rate": 0.0
+  },
+  "auth_missing_tenant": {
+    "average_retry_count": 0.0,
+    "average_reward": -4.0,
+    "hallucination_rate": 0.0,
+    "row_count": 1,
+    "success_rate": 0.0,
+    "wrong_route_rate": 0.0
+  },
+  "auth_missing_token": {
+    "average_retry_count": 0.0,
+    "average_reward": 8.0,
+    "hallucination_rate": 0.0,
+    "row_count": 1,
+    "success_rate": 1.0,
+    "wrong_route_rate": 0.0
+  },
+  "route_invalid_path": {
+    "average_retry_count": 0.0,
+    "average_reward": -4.0,
+    "hallucination_rate": 0.0,
+    "row_count": 1,
+    "success_rate": 0.0,
+    "wrong_route_rate": 0.0
+  },
+  "route_method_spoof": {
+    "average_retry_count": 0.0,
+    "average_reward": -4.0,
+    "hallucination_rate": 0.0,
+    "row_count": 1,
+    "success_rate": 0.0,
+    "wrong_route_rate": 0.0
+  },
+  "route_regression": {
+    "average_retry_count": 0.0,
+    "average_reward": -4.0,
+    "hallucination_rate": 0.0,
+    "row_count": 1,
+    "success_rate": 0.0,
+    "wrong_route_rate": 0.0
+  },
+  "schema_extra_key": {
+    "average_retry_count": 0.0,
+    "average_reward": 12.0,
+    "hallucination_rate": 0.0,
+    "row_count": 1,
+    "success_rate": 1.0,
+    "wrong_route_rate": 0.0
+  },
+  "schema_missing_key": {
+    "average_retry_count": 0.0,
+    "average_reward": -4.0,
+    "hallucination_rate": 0.0,
+    "row_count": 1,
+    "success_rate": 0.0,
+    "wrong_route_rate": 0.0
+  },
+  "schema_null_injection": {
+    "average_retry_count": 0.0,
+    "average_reward": -4.0,
+    "hallucination_rate": 0.0,
+    "row_count": 1,
+    "success_rate": 0.0,
+    "wrong_route_rate": 0.0
+  },
+  "schema_type_coercion": {
+    "average_retry_count": 0.0,
+    "average_reward": -4.0,
+    "hallucination_rate": 0.0,
+    "row_count": 1,
+    "success_rate": 0.0,
+    "wrong_route_rate": 0.0
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "abstain": {
+    "abstain": 2
+  },
+  "no_op": {
+    "no_op": 1
+  },
+  "repair_auth": {
+    "repair_payload": 1
+  },
+  "repair_payload": {
+    "repair_payload": 4
+  },
+  "repair_route": {
+    "repair_route": 2
+  }
+}

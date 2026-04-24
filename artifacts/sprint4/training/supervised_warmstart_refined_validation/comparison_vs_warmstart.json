@@ -1,0 +1,55 @@
+{
+  "manifest_ids": [
+    "c6cc003f9220869e"
+  ],
+  "policies": [
+    {
+      "average_retries": 0.0,
+      "average_reward": 0.0,
+      "correct_abstention": 1.0,
+      "hallucination_rate": 0.0,
+      "incorrect_abstain_rate": 0.0,
+      "manifest_id": "c6cc003f9220869e",
+      "overall_success": 0.3,
+      "policy_name": "baseline",
+      "repairable_success": 0.125,
+      "wrong_route_rate": 0.0
+    },
+    {
+      "average_retries": 0.9,
+      "average_reward": 10.7,
+      "correct_abstention": 1.0,
+      "hallucination_rate": 0.0,
+      "incorrect_abstain_rate": 0.0,
+      "manifest_id": "c6cc003f9220869e",
+      "overall_success": 1.0,
+      "policy_name": "adaptive",
+      "repairable_success": 1.0,
+      "wrong_route_rate": 0.0
+    },
+    {
+      "average_retries": 0.9,
+      "average_reward": 0.7,
+      "correct_abstention": 1.0,
+      "hallucination_rate": 0.0,
+      "incorrect_abstain_rate": 0.0,
+      "manifest_id": "c6cc003f9220869e",
+      "overall_success": 0.5,
+      "policy_name": "warmstart",
+      "repairable_success": 0.375,
+      "wrong_route_rate": 0.1
+    },
+    {
+      "average_retries": 0.9,
+      "average_reward": -9.5,
+      "correct_abstention": 0.0,
+      "hallucination_rate": 0.0,
+      "incorrect_abstain_rate": 0.0,
+      "manifest_id": "c6cc003f9220869e",
+      "overall_success": 0.0,
+      "policy_name": "warmstart_refined",
+      "repairable_success": 0.0,
+      "wrong_route_rate": 0.0
+    }
+  ]
+}
