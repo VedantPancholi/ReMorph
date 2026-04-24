@@ -329,7 +329,13 @@ def generate_training_dataset(
             if row["success"]
         ]
 
-    train_rows, eval_rows = split_samples(supervised_rows, eval_ratio=eval_ratio, seed=seed)
+    grpo_samples = to_grpo_samples(
+        filtered,
+        agent_type=agent_type,
+        include_failed=include_failed,
+        benchmark_partition=benchmark_partition,
+    )
+    train_rows, eval_rows = split_samples(grpo_samples, eval_ratio=eval_ratio, seed=seed)
 
     output = Path(output_dir)
     output.mkdir(parents=True, exist_ok=True)
@@ -348,7 +354,7 @@ def generate_training_dataset(
         "generation_timestamp": datetime.now(UTC).isoformat(),
         "eval_ratio": eval_ratio,
         "seed": seed,
-        "sample_count": len(supervised_rows),
+        "sample_count": len(grpo_samples),
         "train_sample_count": len(train_rows),
         "eval_sample_count": len(eval_rows),
         "transition_sample_count": len(transition_rows),
