@@ -89,8 +89,10 @@ The repository now contains an end-to-end Sprint 2 plus Sprint 4 baseline:
 - RL-facing policy adaptation and episode dataset export are implemented
 - trained-vs-untrained comparison reporting is implemented
 - a clean final evidence package exists under `runtime/sprint4_final_clean/`
-- an optional TRL-style training scaffold and reward-curve export path now exist
-  for later learned-policy work
+- a larger-scale episode generation, TRL sample formatting, training, and
+  evaluation pipeline now exists under `runtime/training_large/`
+- the training path now exports reward curves, trained policy summaries, and
+  trained policy evaluation artifacts
 
 ## What Has Been Validated
 
@@ -104,6 +106,14 @@ level:
 - comparison reports are generated for baseline, adaptive, and trained-policy
   placeholders
 - clean package artifacts exist for both repairable and unrecoverable slices
+- large simulated training runs can now generate 1000+ episodes across
+  repairable and unrecoverable slices
+- the larger training pipeline has already been run end to end on:
+  - `1000` generated episodes
+  - `800` repairable cases
+  - `200` unrecoverable auth cases
+- the current trained policy is valid and safe, but still slightly below the
+  deterministic adaptive policy on average reward for the large eval slice
 
 ## Known Constraints
 
@@ -113,8 +123,11 @@ level:
   `requirements/training.txt`.
 - In this workspace, `.venv/bin/pytest` may have a stale shebang, so
   `.venv/bin/python -m pytest` is the reliable test entrypoint.
-- If reward-curve export raises `ModuleNotFoundError: matplotlib`, install the
-  training extras before rerunning the TRL command.
+- In this workspace, `.venv/bin/pip` may also have a stale shebang, so
+  `.venv/bin/python -m pip` is the reliable installer entrypoint.
+- Large training comparison on TRL prompt datasets is now supported directly,
+  but it should be read honestly: the current trained policy matches adaptive
+  on success and safe abstention while slightly underperforming on reward.
 
 ## What Is Still Optional
 
@@ -122,6 +135,7 @@ The main architecture is in place. The remaining work is refinement, not
 missing infrastructure:
 
 - stronger learned-policy training beyond the current scaffold
+- learned-policy improvement beyond the current structured-policy fallback
 - real live-mode artifact generation when local socket binding is available
 - larger-scale benchmark coverage and packaging polish
 - productization around the `ReMorphClient` wrapper and external integrations
@@ -136,4 +150,5 @@ The intended runtime flow is now:
 4. Sprint 4 retries the healed request or safely abstains if recovery is unsafe.
 5. Reward logic records detailed success, retry, abstention, and penalty
    components.
-6. Episode logs are exported into RL-facing transitions and comparison reports.
+6. Episode logs are exported into RL-facing transitions, TRL prompt rows,
+   training metrics, and comparison reports.

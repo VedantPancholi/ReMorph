@@ -38,6 +38,11 @@ This layer sits on top of the existing Sprint 4 runtime without replacing the Sp
 6. Optional TRL / policy training
    Training remains optional. The RL-facing dataset is designed so TRL or another policy learner can consume the exported transitions without making training dependencies mandatory for normal tests.
 
+7. Large prompt-based training path
+   `sprint4/training/trl_sample_formatter.py` can convert benchmark episodes into
+   compact prompt and strict-JSON target rows for the larger policy-learning
+   pipeline.
+
 ## Current Status
 
 This layer is now implemented end to end in the repo:
@@ -47,11 +52,22 @@ This layer is now implemented end to end in the repo:
 - RL-facing train and eval datasets are exported from `episodes.jsonl`
 - baseline vs adaptive vs trained-policy-placeholder comparison reports are generated
 - clean benchmark evidence is packaged under `runtime/sprint4_final_clean/package/`
+- a larger generated training run exists under `runtime/training_large/`
+- reward-curve, trained-policy summary, and trained-policy evaluation artifacts
+  are now produced for the larger prompt-based pipeline
 
 The clean package demonstrates both:
 
 - repairable drift, where adaptive repair beats baseline
 - unrecoverable auth, where adaptive abstains safely instead of inventing credentials
+
+The larger training run currently demonstrates:
+
+- `1000` generated episodes
+- `800` repairable cases
+- `200` unrecoverable cases
+- trained policy is valid and safe, but still slightly below adaptive rules on
+  average reward
 
 ## Safety Behavior
 
@@ -73,7 +89,7 @@ This lets offline training and evaluation distinguish:
 
 - `baseline`
 - `adaptive_rules`
-- `trained_policy_placeholder`
+- `trained_policy`
 
 using shared metrics:
 
@@ -84,22 +100,40 @@ using shared metrics:
 - `unrecoverable_safety_rate`
 - `safe_abstention_accuracy`
 
+For the larger training evaluator, `sprint4/evaluation/evaluate_trained_policy.py`
+also reports:
+
+- `correct_action_rate`
+- `endpoint_accuracy`
+- `hallucination_on_unrecoverable_rate`
+- `invalid_json_rate`
+
 ## Optional Training Notes
 
 The optional training path currently uses:
 
+- `scripts/generate_training_episodes.py`
+- `sprint4/training/trl_sample_formatter.py`
 - `sprint4/training/trl_train_grpo.py`
+- `sprint4/evaluation/evaluate_trained_policy.py`
 - `sprint4/evaluation/reward_curve.py`
 
 Expected outputs include:
 
+- `episode_generation_summary.json`
+- `trl_dataset_summary.json`
 - `training_metrics.json`
 - `reward_curve.json`
 - `reward_curve.png`
 - `trained_policy_summary.json`
+- `trained_policy_eval.json`
+- `trained_policy_eval.md`
 
 If reward-curve export fails with `ModuleNotFoundError: matplotlib`, install the
 training extras from `requirements/training.txt` and rerun the training command.
+
+If `scripts/generate_training_episodes.py` is run directly, it now bootstraps
+the repo root on `sys.path` so the `sprint4` imports resolve correctly.
 
 ## Minimal Run Sequence
 
@@ -108,3 +142,17 @@ training extras from `requirements/training.txt` and rerun the training command.
 3. Generate comparison reports with `sprint4.evaluation.compare_trained_vs_untrained`.
 4. Optionally run `sprint4.training.trl_train_grpo` and regenerate comparison with
    `--trained-policy-summary-path`.
+
+## Large Run Sequence
+
+1. Generate many episodes with `scripts/generate_training_episodes.py`.
+2. Format prompt and target rows with `sprint4.training.trl_sample_formatter`.
+3. Run `sprint4.training.trl_train_grpo`.
+4. Evaluate with `sprint4.evaluation.evaluate_trained_policy`.
+5. Compare with `sprint4.evaluation.compare_trained_vs_untrained`.
+
+Current honest takeaway:
+
+- the pipeline is working end to end
+- safe abstention is preserved
+- the current learned policy does not yet beat adaptive rules on reward

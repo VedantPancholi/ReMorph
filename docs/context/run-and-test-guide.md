@@ -15,12 +15,14 @@ cp .env.example .env
 Training/OpenEnv extras:
 
 ```bash
-.venv/bin/pip install -r requirements/training.txt
+.venv/bin/python -m pip install -r requirements/training.txt
 ```
 
 Important:
 
 - Prefer `.venv/bin/python -m pytest` over `.venv/bin/pytest` in this workspace.
+- Prefer `.venv/bin/python -m pip` over `.venv/bin/pip` in this workspace if
+  the pip launcher has a stale shebang.
 - Reward-curve export requires `matplotlib`, which is included in
   `requirements/training.txt`.
 - TRL-style training is optional and is not required for the normal Sprint 4
@@ -253,6 +255,99 @@ If the training command fails with `ModuleNotFoundError: matplotlib`, install:
 
 If your environment blocks package downloads, the benchmark, dataset, and
 comparison pipeline still works without the optional reward-curve and TRL step.
+
+## Large Training Pipeline
+
+Generate many adaptive episodes across repairable and unrecoverable benchmark
+scenarios:
+
+```bash
+.venv/bin/python scripts/generate_training_episodes.py \
+  --episodes 1000 \
+  --output runtime/training_large/episodes.jsonl \
+  --cache-mode disable \
+  --include-repairable \
+  --include-unrecoverable \
+  --seed 42 \
+  --backend simulated \
+  --env-mode local
+```
+
+This writes:
+
+- `runtime/training_large/episodes.jsonl`
+- `runtime/training_large/episode_generation_summary.json`
+
+Format TRL-ready prompt rows:
+
+```bash
+.venv/bin/python -m sprint4.training.trl_sample_formatter \
+  --episodes-path runtime/training_large/episodes.jsonl \
+  --output-dir runtime/training_large/trl_dataset \
+  --eval-ratio 0.2 \
+  --seed 42
+```
+
+This writes:
+
+- `train_prompts.jsonl`
+- `eval_prompts.jsonl`
+- `trl_dataset_summary.json`
+
+Run the larger HF TRL-compatible structured policy training flow:
+
+```bash
+.venv/bin/python -m sprint4.training.trl_train_grpo \
+  --train-path runtime/training_large/trl_dataset/train_prompts.jsonl \
+  --eval-path runtime/training_large/trl_dataset/eval_prompts.jsonl \
+  --output-dir runtime/training_large/trl_training \
+  --model-name sshleifer/tiny-gpt2 \
+  --max-steps 50 \
+  --batch-size 2 \
+  --learning-rate 5e-5
+```
+
+This writes:
+
+- `trained_policy_model.json`
+- `training_metrics.json`
+- `reward_curve.json`
+- `reward_curve.png`
+- `warnings.json`
+- `trained_policy_summary.json`
+- `trained_policy_eval.json`
+- `trained_policy_eval.md`
+
+Generate the honest large-run comparison:
+
+```bash
+.venv/bin/python -m sprint4.evaluation.compare_trained_vs_untrained \
+  --input-dir runtime/training_large/trl_dataset \
+  --output-dir runtime/training_large/comparison \
+  --trained-policy-summary-path runtime/training_large/trl_training/trained_policy_summary.json
+```
+
+Important:
+
+- `compare_trained_vs_untrained` now supports TRL prompt datasets directly.
+- `--trained-policy-summary-path` belongs to the comparison command, not the
+  training command.
+- `trl_sample_formatter` now fails fast if the episode file is missing or empty,
+  instead of silently creating a zero-row dataset.
+
+Current large-run result from `runtime/training_large/`:
+
+- total generated episodes: `1000`
+- repairable count: `800`
+- unrecoverable count: `200`
+- adaptive rules: success `1.0000`, avg reward `1.3000`
+- trained policy: success `1.0000`, avg reward `1.2600`
+
+Interpretation:
+
+- the larger training pipeline is working end to end
+- safe abstention is preserved
+- the current trained policy is close, but it does not beat adaptive rules yet
 
 ## Freeze The Pre-Training Scoreboard
 

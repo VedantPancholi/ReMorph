@@ -14,14 +14,16 @@ Sprint 4 wraps the frozen Sprint 2 repair brain with an end-to-end self-healing 
 9. Reward function scores episode
 10. Episode logger writes JSONL metrics
 11. Policy adapter converts episode traces into RL-facing transitions
-12. Evaluation compares baseline vs adaptive vs trained-policy placeholder
+12. Episode export can branch into either RL transitions or compact TRL prompt rows
+13. Optional training learns a structured repair-decision policy
+14. Evaluation compares baseline vs adaptive vs trained-policy artifacts
 
 ## Modules
 - `sprint4/env/`: backend interface, simulated mutable API env, live FastAPI adapter, OpenEnv adapter, drift modes, live failure parsing
 - `sprint4/proxy/`: execution, trap/repair handoff, retry workflow, episode logging
 - `sprint4/rewards/`: deterministic reward scoring with explicit component breakdown
-- `sprint4/evaluation/`: benchmark, package artifacts, comparison, and reward-curve generation
-- `sprint4/training/`: policy adapter, episode dataset export, and optional TRL scaffold
+- `sprint4/evaluation/`: benchmark, package artifacts, comparison, trained-policy eval, and reward-curve generation
+- `sprint4/training/`: policy adapter, episode dataset export, TRL sample formatting, training reward, and optional structured-policy training
 - `remorph_client/`: product-facing client wrapper around the same safe repair workflow
 
 ## Integration Contract
@@ -116,6 +118,39 @@ The action view intentionally captures the high-level repair decision:
 - auth rewrite flag
 - safe abstain flag
 
+## Large Training Layer
+
+The repo now also supports a larger reward-learning loop over generated Sprint 4
+episodes:
+
+- `scripts/generate_training_episodes.py`
+  generates many adaptive episodes across:
+  - repairable payload drift
+  - repairable route drift
+  - repairable auth drift
+  - unrecoverable auth hard negatives
+- `sprint4/training/trl_sample_formatter.py`
+  converts episode traces into compact prompt and target rows:
+  - `prompt`
+  - `target_json`
+  - `reward`
+  - `scenario_type`
+  - `raw_scenario_type`
+  - `recoverable`
+- `sprint4/training/training_reward.py`
+  scores structured JSON repair decisions against the recorded target behavior
+- `sprint4/training/trl_train_grpo.py`
+  builds a hackathon-friendly HF TRL-compatible training artifact set
+- `sprint4/evaluation/evaluate_trained_policy.py`
+  measures structured decision quality for:
+  - `baseline_static`
+  - `adaptive_rules`
+  - `trained_policy`
+
+The learned target is a structured repair decision, not raw schema memorization.
+OpenAPI evidence, route extraction, and runtime safety behavior remain in the
+loop.
+
 ## Evaluation Outputs
 
 The comparison layer now reports:
@@ -126,6 +161,13 @@ The comparison layer now reports:
 - `repairable_success_rate`
 - `unrecoverable_safety_rate`
 - `safe_abstention_accuracy`
+
+The trained-policy evaluator additionally reports:
+
+- `correct_action_rate`
+- `endpoint_accuracy`
+- `hallucination_on_unrecoverable_rate`
+- `invalid_json_rate`
 
 When a learned policy has not been run yet, the comparison output records a
 clear placeholder status instead of pretending a trained result exists.
@@ -142,6 +184,9 @@ This path is intentionally optional:
 - benchmark and evaluation do not depend on TRL
 - normal tests do not require TRL
 - reward-curve plotting requires `matplotlib` from `requirements/training.txt`
+- when full GRPO execution is unavailable or too heavy, the current trainer
+  falls back to a lightweight structured-policy learner and labels that mode
+  explicitly in the summary
 
 If those extras are not installed, the benchmark, dataset, and comparison flows
 remain fully usable.
@@ -197,3 +242,16 @@ One caveat is documented in the package itself: the unrecoverable-auth slice was
 generated with the simulated backend in this environment because live socket
 binding was blocked. That constraint does not invalidate the reward, abstention,
 dataset, or comparison workflow.
+
+The current larger training evidence lives under:
+
+- `runtime/training_large/`
+
+That run demonstrates:
+
+- `1000` generated episodes
+- explicit repairable and unrecoverable distributions
+- successful reward-curve export
+- trained-policy evaluation artifacts
+- an honest result: trained policy matches adaptive on success and abstention,
+  but slightly underperforms adaptive on average reward
