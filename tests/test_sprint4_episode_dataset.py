@@ -1,6 +1,7 @@
 from sprint4.env.scenario_loader import load_contract_bundle
 from sprint4.evaluation.benchmark_modes import BenchmarkRuntimeMode, run_benchmark_with_mode
 from sprint4.training.episode_dataset import (
+    build_rl_episode_dataset,
     build_supervised_row_from_episode,
     build_transition_row_from_episode,
     generate_training_dataset,
@@ -143,3 +144,40 @@ def test_build_transition_row_skips_missing_outcome_data() -> None:
 
     assert row is None
     assert reason == "missing_final_status_code"
+
+
+def test_build_rl_episode_dataset_writes_train_eval_split(tmp_path) -> None:
+    episodes_path = tmp_path / "episodes.jsonl"
+    episodes_path.write_text(
+        "\n".join(
+            [
+                '{"agent_type":"adaptive","success":true,"reward":1.2,"scenario_type":"payload_drift","raw_scenario_type":"schema_missing_key","original_request":{"method":"POST","url":"http://x","headers":{},"payload":{"amount":100}},"healing_action":"payload_rewrite","healed_method":"POST","healed_url":"http://x","healed_headers":{},"healed_payload":{"amount":100,"currency":"USD"},"local_spec_path":"target_api/specs/openapi.json","recoverable":true,"retries_used":1,"final_status_code":200,"reward_breakdown":{"final_reward":1.2}}',
+                '{"agent_type":"adaptive","success":false,"reward":0.3,"scenario_type":"auth_drift","raw_scenario_type":"auth_missing_token","original_request":{"method":"GET","url":"http://y","headers":{},"payload":null},"healing_action":"safe_abstain","local_spec_path":"target_api/specs/openapi.json","recoverable":false,"unrecoverable_reason":"missing_or_invalid_credential_material","retries_used":0,"final_status_code":401,"reward_breakdown":{"safe_abstention_bonus":0.3,"final_reward":0.3}}',
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    summary = build_rl_episode_dataset(
+        episodes_path=str(episodes_path),
+        output_dir=str(tmp_path / "rl_dataset"),
+        filter_mode="all",
+        agent_type="adaptive",
+        eval_ratio=0.5,
+        seed=13,
+    )
+
+    assert summary["episode_count"] == 2
+    assert summary["train_count"] + summary["eval_count"] == 2
+    assert summary["repairable_count"] == 1
+    assert summary["unrecoverable_count"] == 1
+
+    train_rows = load_episode_jsonl(summary["train_path"], agent_type=None)
+    eval_rows = load_episode_jsonl(summary["eval_path"], agent_type=None)
+    assert train_rows or eval_rows
+    sample = (train_rows or eval_rows)[0]
+    assert "observation" in sample
+    assert "action" in sample
+    assert "reward" in sample
+    assert "info" in sample

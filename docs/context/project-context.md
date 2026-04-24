@@ -2,103 +2,153 @@
 
 ## Product Direction
 
-ReMorph is being built as the reasoning layer for a self-healing API agent. The
+ReMorph is the reasoning and recovery layer for a self-healing API agent. The
 core product claim is that API failures should become discovery events instead
-of terminal crashes.
+of terminal crashes, and that recovery should remain safe when repair is not
+possible from available evidence.
 
 ## Source Context
 
-The current direction is distilled from `from_gpt_context.txt`, which describes:
+The working direction is distilled from `from_gpt_context.txt` and the current
+Sprint 4 benchmark artifacts. The system is designed around three failure
+families:
 
-- payload drift, where request structures change
-- route drift, where old endpoints move or disappear
+- payload drift, where request structure changes
+- route drift, where endpoints or methods move
 - auth drift, where security requirements change
 
 ## Team Ownership
 
 - `Jenish`: pipe layer and proxy integration
 - `Vedant`: Sprint 2 reasoning engine and Sprint 4 integration
-- `Sachin`: supporting sprint delivery across environment and training work
+- `Sachin`: support across environment, evaluation, and training-facing work
 
 ## Sprint Connection
 
-- Sprint 2 is the repair brain
-- Sprint 4 is the end-to-end system that plugs this repair brain into the proxy,
-  OpenEnv, retry loop, reward logic, and training evaluation
+- Sprint 2 is the repair brain.
+- Sprint 4 is the end-to-end system that wraps Sprint 2 with environment
+  adapters, retry execution, reward logic, dataset export, and evaluation.
 
 ## Sprint 2 Scope
 
-Sprint 2 is the reasoning engine, not the proxy or transport layer. This repo
-should focus on:
+Sprint 2 remains the reasoning engine, not the transport layer. Its stable job
+is to:
 
-- validating trapped error input
-- locating the most relevant OpenAPI contract
-- extracting a compact route schema
-- building a safe repair prompt
-- returning a structured healed request
+- validate trapped error input
+- locate the most relevant OpenAPI contract
+- extract a compact route schema
+- build a safe repair prompt or deterministic repair path
+- return a structured healed request
 
 ## Frozen Contract
 
-Sprint 2 should now be treated as a stable repair module with:
+Sprint 2 should be treated as a stable repair module with:
 
 - input contract: `TrappedError`
 - output contract: `HealedRequest`
 - primary callable: `process_trapped_error()`
 
-The rest of the system should integrate around this boundary instead of
-changing it casually.
+Sprint 4 is built around this boundary rather than rewriting it.
 
-## What Makes Sprint 2 Believable
+## What Makes The System Believable
 
-The repair engine is strongest when it is transparent about why a repair was
-chosen. The frozen baseline now includes:
+The recovery path is strongest when it is transparent about why a repair was
+chosen or why recovery was refused. The current baseline includes:
 
-- docs/spec metadata
-- docs confidence and completeness signals
-- route match confidence
-- ranked candidate endpoints
-- route match reasons
-- explicit ambiguous and low-confidence handling
+- docs and spec metadata
+- confidence and completeness signals
+- route match confidence and ranked endpoint candidates
+- explicit repair diagnostics
+- explicit unrepairable and safe-abstain outcomes when credentials are missing
+  or invalid
 
-That makes the repair path explainable enough for both judges and teammates.
+That makes the workflow explainable to judges, teammates, and future training
+pipelines.
 
 ## Current Implementation Status
 
-The repository already contains a working baseline for Sprint 2:
+The repository now contains an end-to-end Sprint 2 plus Sprint 4 baseline:
 
-- request, response, and schema models are implemented
-- schema extraction works against the local sample spec
-- docs metadata now includes source, version, hash, and completeness signals
-- route drift and auth metadata extraction are covered in tests
-- the full healing orchestration path is wired end to end
-- deterministic repair strategies now cover the core three demo scenarios without requiring a live model key
-- healing responses now include diagnostics needed by proxy integration and Sprint 4 metrics
-- proxy-facing adapters now exist for Jenish's integration boundary
-- persistent telemetry and repair cache are now implemented for repeated drifts and later reward analysis
-- proxy adapters now return explicit unrepairable failure reasons when repair cannot proceed safely
-- route matching now exposes confidence, ranked candidate endpoints, and match reasons for judge explainability
+- Sprint 2 request, response, and schema models are implemented
+- schema extraction works against local sample specs
+- docs metadata includes source, version, hash, and completeness signals
+- deterministic repair strategies cover payload, route, and repairable auth
+  drift without requiring a live model key
+- healing responses include diagnostics needed by proxy integration and Sprint 4
+  evaluation
+- proxy-facing adapters exist for the Sprint 2 integration boundary
+- persistent telemetry and repair cache support repeated drifts and later reward
+  analysis
+- route matching exposes confidence, ranked candidate endpoints, and match
+  reasons
+- Sprint 4 benchmark runner compares baseline and adaptive behavior
+- environment backends support simulated, live, and OpenEnv-compatible flows
+- reward scoring now logs detailed components, not just one scalar
+- unrecoverable auth cases trigger explicit `safe_abstain` outcomes rather than
+  fake credential synthesis
+- RL-facing policy adaptation and episode dataset export are implemented
+- trained-vs-untrained comparison reporting is implemented
+- a clean final evidence package exists under `runtime/sprint4_final_clean/`
+- a larger-scale episode generation, TRL sample formatting, training, and
+  evaluation pipeline now exists under `runtime/training_large/`
+- the training path now exports reward curves, trained policy summaries, and
+  trained policy evaluation artifacts
 
-The remaining gap is not the architecture. The remaining gap is product
-hardening: stronger heuristics at production scale, real provider validation,
-and full Sprint 4 environment/training integration.
+## What Has Been Validated
 
-## What Is Intentionally Deferred
+The current repo state has already validated the following at test or artifact
+level:
 
-The following work should happen after Sprint 2 freeze, not before it:
+- repairable drift: adaptive repair succeeds where baseline fails
+- unrecoverable auth: adaptive safely abstains instead of hallucinating tokens
+- reward breakdown fields are written to episodes
+- training-facing dataset generation works from benchmark episodes
+- comparison reports are generated for baseline, adaptive, and trained-policy
+  placeholders
+- clean package artifacts exist for both repairable and unrecoverable slices
+- large simulated training runs can now generate 1000+ episodes across
+  repairable and unrecoverable slices
+- the larger training pipeline has already been run end to end on:
+  - `1000` generated episodes
+  - `800` repairable cases
+  - `200` unrecoverable auth cases
+- the current trained policy is valid and safe, but still slightly below the
+  deterministic adaptive policy on average reward for the large eval slice
 
-- full OpenEnv environment implementation
-- reward function and training loop
-- before/after evaluation harness
-- live proxy deployment or FastAPI exposure if the team wants HTTP transport
-- broader production-scale heuristics for large and messy specs
+## Known Constraints
+
+- Live localhost benchmarking depends on socket binding being available in the
+  environment.
+- Optional TRL/reward-curve generation depends on the training extras from
+  `requirements/training.txt`.
+- In this workspace, `.venv/bin/pytest` may have a stale shebang, so
+  `.venv/bin/python -m pytest` is the reliable test entrypoint.
+- In this workspace, `.venv/bin/pip` may also have a stale shebang, so
+  `.venv/bin/python -m pip` is the reliable installer entrypoint.
+- Large training comparison on TRL prompt datasets is now supported directly,
+  but it should be read honestly: the current trained policy matches adaptive
+  on success and safe abstention while slightly underperforming on reward.
+
+## What Is Still Optional
+
+The main architecture is in place. The remaining work is refinement, not
+missing infrastructure:
+
+- stronger learned-policy training beyond the current scaffold
+- learned-policy improvement beyond the current structured-policy fallback
+- real live-mode artifact generation when local socket binding is available
+- larger-scale benchmark coverage and packaging polish
+- productization around the `ReMorphClient` wrapper and external integrations
 
 ## Architecture Boundary
 
-The intended runtime flow is:
+The intended runtime flow is now:
 
-1. Proxy traps a failure.
-2. ReMorph receives the failure payload.
-3. ReMorph fetches or loads the latest docs.
-4. ReMorph extracts the endpoint contract.
-5. ReMorph asks the model for a strict repair.
-6. Proxy retries with the healed request.
+1. Proxy or benchmark runner traps a failure.
+2. ReMorph packages the failure as a `TrappedError`.
+3. Sprint 2 produces a deterministic or model-assisted repair candidate.
+4. Sprint 4 retries the healed request or safely abstains if recovery is unsafe.
+5. Reward logic records detailed success, retry, abstention, and penalty
+   components.
+6. Episode logs are exported into RL-facing transitions, TRL prompt rows,
+   training metrics, and comparison reports.

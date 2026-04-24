@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
+import argparse
 import json
 import random
 from collections import Counter
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from app.services.doc_fetcher import load_local_spec
 from sprint4.training.benchmark_contract import (
@@ -24,6 +25,7 @@ from sprint4.training.dataset_schema import (
 )
 from sprint4.training.policy_adapter import (
     build_policy_example,
+    episode_to_rl_transition,
     episode_to_policy_action,
     episode_to_policy_state,
 )
@@ -34,6 +36,8 @@ from sprint4.training.reward_model import (
     is_route_repair_action,
     score_transition,
 )
+
+RLDatasetFilter = Literal["repairable_only", "unrecoverable_only", "all", "repairable", "unrecoverable"]
 
 
 def load_episode_jsonl(
@@ -372,6 +376,58 @@ def generate_training_dataset(
     return manifest
 
 
+def build_rl_episode_dataset(
+    *,
+    episodes_path: str,
+    output_dir: str,
+    filter_mode: RLDatasetFilter = "all",
+    agent_type: str | None = None,
+    eval_ratio: float = 0.2,
+    seed: int = 42,
+) -> dict[str, Any]:
+    """Export RL-facing train/eval JSONL files from runtime episodes."""
+
+    episodes = load_episode_jsonl(episodes_path, agent_type=agent_type)
+    filtered_episodes = _filter_episodes_for_rl_dataset(episodes, filter_mode=filter_mode)
+    rows = [episode_to_rl_transition(episode) for episode in filtered_episodes]
+    train_rows, eval_rows = split_samples(rows, eval_ratio=eval_ratio, seed=seed)
+
+    output = Path(output_dir)
+    output.mkdir(parents=True, exist_ok=True)
+    train_path = write_jsonl_rows(str(output / "train.jsonl"), train_rows)
+    eval_path = write_jsonl_rows(str(output / "eval.jsonl"), eval_rows)
+    summary = {
+        "episodes_path": episodes_path,
+        "agent_type": agent_type,
+        "filter_mode": _normalize_filter_mode(filter_mode),
+        "generation_timestamp": datetime.now(UTC).isoformat(),
+        "eval_ratio": eval_ratio,
+        "seed": seed,
+        "episode_count": len(filtered_episodes),
+        "train_count": len(train_rows),
+        "eval_count": len(eval_rows),
+        "repairable_count": sum(
+            1 for episode in filtered_episodes if bool(episode.get("recoverable", False))
+        ),
+        "unrecoverable_count": sum(
+            1 for episode in filtered_episodes if episode.get("recoverable") is False
+        ),
+        "train_path": train_path,
+        "eval_path": eval_path,
+        "scenario_distribution": dict(
+            Counter(str(episode.get("scenario_type") or "unknown") for episode in filtered_episodes)
+        ),
+        "raw_scenario_distribution": dict(
+            Counter(str(episode.get("raw_scenario_type") or "unknown") for episode in filtered_episodes)
+        ),
+    }
+    (output / "dataset_summary.json").write_text(
+        json.dumps(summary, indent=2, sort_keys=True),
+        encoding="utf-8",
+    )
+    return summary
+
+
 def summarize_samples(samples: list[dict[str, Any]]) -> dict[str, Any]:
     """Compute lightweight summary statistics for exported rows."""
 
@@ -537,6 +593,59 @@ def _filter_episodes_by_partition(
         for episode in episodes
         if str(episode.get("raw_scenario_type") or "unknown") in allowed
     ]
+
+
+def _filter_episodes_for_rl_dataset(
+    episodes: list[dict[str, Any]],
+    *,
+    filter_mode: RLDatasetFilter,
+) -> list[dict[str, Any]]:
+    normalized = _normalize_filter_mode(filter_mode)
+    if normalized == "all":
+        return list(episodes)
+    if normalized == "repairable":
+        return [episode for episode in episodes if episode.get("recoverable") is not False]
+    return [episode for episode in episodes if episode.get("recoverable") is False]
+
+
+def _normalize_filter_mode(filter_mode: RLDatasetFilter) -> str:
+    if filter_mode in {"repairable_only", "repairable"}:
+        return "repairable"
+    if filter_mode in {"unrecoverable_only", "unrecoverable"}:
+        return "unrecoverable"
+    return "all"
+
+
+def main() -> None:
+    """CLI entry point for RL-facing dataset generation."""
+
+    parser = argparse.ArgumentParser(description="Generate RL-facing Sprint 4 datasets.")
+    parser.add_argument("--episodes-path", required=True)
+    parser.add_argument("--output-dir", required=True)
+    parser.add_argument(
+        "--split",
+        choices=["repairable_only", "unrecoverable_only", "all"],
+        default="all",
+        help="Which episode slice to export.",
+    )
+    parser.add_argument("--agent-type", default="")
+    parser.add_argument("--eval-ratio", type=float, default=0.2)
+    parser.add_argument("--seed", type=int, default=42)
+    args = parser.parse_args()
+
+    summary = build_rl_episode_dataset(
+        episodes_path=args.episodes_path,
+        output_dir=args.output_dir,
+        filter_mode=args.split,
+        agent_type=args.agent_type or None,
+        eval_ratio=args.eval_ratio,
+        seed=args.seed,
+    )
+    print(json.dumps(summary, indent=2, sort_keys=True))
+
+
+if __name__ == "__main__":
+    main()
 
 
 def _extract_contract_slice(

@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import Any
 from urllib.parse import parse_qsl, urlsplit
 
+from app.services.doc_fetcher import load_local_spec
 from sprint4.training.benchmark_contract import (
     BENCHMARK_CONTRACT_VERSION,
     classify_raw_scenario,
@@ -92,8 +93,16 @@ def episode_to_policy_action(episode: dict[str, Any]) -> PolicyAction:
     healed_headers = episode.get("healed_headers")
     healed_payload = episode.get("healed_payload")
     selected_endpoint = episode.get("selected_endpoint_path")
-    reasoning = episode.get("reasoning")
+    reasoning = episode.get("reasoning") or episode.get("unrecoverable_reason")
     healing_action = str(episode.get("healing_action") or "no_change")
+
+    if healing_action == "safe_abstain":
+        return PolicyAction(
+            action_type="abstain",
+            reason=str(
+                reasoning or "Unsafe to fabricate missing or invalid credential material."
+            ),
+        )
 
     if is_unrecoverable(raw_scenario_type):
         return PolicyAction(
@@ -157,6 +166,88 @@ def build_policy_example(episode: dict[str, Any]) -> tuple[PolicyState, PolicyAc
     return episode_to_policy_state(episode), episode_to_policy_action(episode)
 
 
+def episode_to_rl_transition(episode: dict[str, Any]) -> dict[str, Any]:
+    """Convert one episode record into an RL-style transition."""
+
+    state = episode_to_policy_state(episode)
+    action = episode_to_policy_action(episode)
+    observation = {
+        "failed_request": dict(episode.get("original_request") or {}),
+        "error_code": state.failure_code,
+        "error_message": state.failure_message,
+        "contract_schema_summary": _contract_schema_summary_from_episode(episode),
+        "candidate_routes": [
+            candidate.model_dump(mode="json")
+            for candidate in state.candidate_routes
+        ],
+        "scenario_type": state.scenario_type,
+        "retry_count": state.retry_count,
+    }
+    transition_action = {
+        "repair_type": str(episode.get("healing_action") or action.action_type),
+        "selected_endpoint": episode.get("selected_endpoint_path"),
+        "method_rewrite": bool(
+            episode.get("healed_method")
+            and str(episode.get("healed_method")).upper() != state.request_method
+        ),
+        "payload_rewrite": bool(episode.get("healed_payload")),
+        "auth_rewrite": bool(episode.get("healed_headers")),
+        "safe_abstain": bool(episode.get("healing_action") == "safe_abstain"),
+    }
+    reward_breakdown = dict(episode.get("reward_breakdown") or {})
+    reward = float(
+        reward_breakdown.get("final_reward", episode.get("reward", 0.0)) or 0.0
+    )
+    info = {
+        "success": bool(episode.get("success", False)),
+        "final_status_code": episode.get("final_status_code"),
+        "retries_used": int(episode.get("retries_used", 0) or 0),
+        "reward_breakdown": reward_breakdown,
+        "recoverable": episode.get("recoverable"),
+        "unrecoverable_reason": episode.get("unrecoverable_reason"),
+        "raw_scenario_type": episode.get("raw_scenario_type"),
+        "agent_type": episode.get("agent_type"),
+    }
+    return {
+        "observation": observation,
+        "action": transition_action,
+        "reward": reward,
+        "done": True,
+        "info": info,
+    }
+
+
+def openenv_step_to_rl_transition(
+    step_result: dict[str, Any],
+    *,
+    observation: dict[str, Any] | None = None,
+    action: dict[str, Any] | None = None,
+    done: bool = False,
+) -> dict[str, Any]:
+    """Convert an OpenEnv-like step result into the RL-facing format."""
+
+    reward_breakdown = dict(step_result.get("reward_breakdown") or {})
+    reward = float(
+        step_result.get(
+            "reward",
+            reward_breakdown.get("final_reward", reward_breakdown.get("reward_total", 0.0)),
+        )
+        or 0.0
+    )
+    return {
+        "observation": observation or dict(step_result.get("observation") or {}),
+        "action": action or dict(step_result.get("action") or {}),
+        "reward": reward,
+        "done": bool(step_result.get("done", done)),
+        "info": {
+            "success": bool(step_result.get("success", False)),
+            "status_code": step_result.get("status_code"),
+            "reward_breakdown": reward_breakdown,
+            "raw_step_result": step_result,
+        },
+    }
+
+
 def _query_from_episode(query_string: str, trapped_error: dict[str, Any]) -> dict[str, Any]:
     params = dict(parse_qsl(query_string, keep_blank_values=True))
     params.update(
@@ -204,7 +295,47 @@ def _contract_hints_from_episode(episode: dict[str, Any]) -> dict[str, Any]:
         "route_match_confidence": episode.get("route_match_confidence"),
         "repair_strategy": episode.get("repair_strategy"),
         "healing_action": episode.get("healing_action"),
+        "recoverable": episode.get("recoverable"),
+        "unrecoverable_reason": episode.get("unrecoverable_reason"),
         "reward_breakdown": dict(episode.get("reward_breakdown") or {}),
+    }
+
+
+def _contract_schema_summary_from_episode(episode: dict[str, Any]) -> dict[str, Any] | None:
+    local_spec_path = episode.get("local_spec_path")
+    endpoint_path = episode.get("selected_endpoint_path") or _path_from_url(episode.get("healed_url"))
+    method = (
+        episode.get("healed_method")
+        or (episode.get("original_request") or {}).get("method")
+        or (episode.get("trapped_error") or {}).get("method")
+    )
+    if not local_spec_path or not endpoint_path or not method:
+        return None
+    try:
+        spec = load_local_spec(str(local_spec_path))
+    except Exception:
+        return None
+
+    operation = (
+        spec.get("paths", {})
+        .get(str(endpoint_path), {})
+        .get(str(method).lower())
+    )
+    if not isinstance(operation, dict):
+        return None
+    request_body = operation.get("requestBody", {})
+    content = request_body.get("content", {})
+    schema = None
+    if isinstance(content, dict):
+        json_body = content.get("application/json")
+        if isinstance(json_body, dict):
+            schema = json_body.get("schema")
+    return {
+        "path": str(endpoint_path),
+        "method": str(method).upper(),
+        "summary": operation.get("summary"),
+        "required_headers": _required_headers_from_operation(spec, operation),
+        "request_schema": schema if isinstance(schema, dict) else None,
     }
 
 
@@ -245,3 +376,30 @@ def _episode_id_from_request(
     method = str(original_request.get("method") or trapped_error.get("method") or "GET").upper()
     url = str(original_request.get("url") or trapped_error.get("target_url") or "unknown")
     return f"{method}:{url}"
+
+
+def _required_headers_from_operation(
+    spec: dict[str, Any],
+    operation: dict[str, Any],
+) -> list[str]:
+    headers: list[str] = []
+    for parameter in operation.get("parameters", []):
+        if not isinstance(parameter, dict):
+            continue
+        if parameter.get("in") == "header" and parameter.get("required") and parameter.get("name"):
+            headers.append(str(parameter["name"]))
+
+    security = operation.get("security", spec.get("security", []))
+    schemes = spec.get("components", {}).get("securitySchemes", {})
+    for requirement in security:
+        if not isinstance(requirement, dict):
+            continue
+        for scheme_name in requirement:
+            scheme = schemes.get(scheme_name)
+            if not isinstance(scheme, dict):
+                continue
+            if scheme.get("type") == "apiKey" and scheme.get("in") == "header" and scheme.get("name"):
+                headers.append(str(scheme["name"]))
+            if scheme.get("type") == "http" and scheme.get("scheme") == "bearer":
+                headers.append("Authorization")
+    return sorted(set(headers))

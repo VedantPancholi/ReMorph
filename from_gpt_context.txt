@@ -1,0 +1,1562 @@
+This is exactly what you need to clarify before you write a single line of code. If you can’t explain the problem and the scenarios in under 60 seconds, you lose the judges.
+
+Here is the exact breakdown of the problem, the specific scenarios our hackathon build covers, and the massive industry use cases you will use in your pitch.
+
+1. The Exact Problem We Are Solving
+The Problem: The Fragility of Deterministic Tool Use.
+
+Right now, if you build an AI agent using LangChain, OpenAI functions, or standard tool-calling, you have to hardcode an API specification (like an OpenAPI .yaml file) into its prompt.
+
+The internet is not static; it is constantly mutating. If an enterprise developer at a partner company changes a database field name from customer_id to account_uid, or moves an endpoint from /v1/pay to /v2/checkout, the AI agent experiences total system failure. It will get a 400 Bad Request, hallucinate, enter an infinite loop of retrying the same broken payload, and eventually crash.
+
+The Solution: Epistemic Humility.
+Instead of hardcoding APIs, we use Reinforcement Learning (GRPO) to teach the agent that failure is a cue for discovery. When the agent hits a 400 Error, it is trained to stop, query the environment (e.g., GET /docs), read the new schema, rewrite its own code/payload, and succeed.
+
+2. The Hackathon Demo: What exactly are we building?
+For the hackathon, we are building a mock B2B API inside OpenEnv. During your demo, you will show the agent handling Three Specific Chaos Scenarios:
+
+Scenario A: The Key Mutation (Data Structure Drift)
+The Goal: Create a new user account.
+
+The Chaos: The mock API secretly changes the required JSON payload from {"first_name": "John", "last_name": "Doe"} to a nested structure: {"user": {"f_name": "John", "l_name": "Doe"}}.
+
+The Lumen Agent Response:
+
+POST /users (Uses old schema) -> Result: 400 Bad Request.
+
+Agent <think>: "Schema rejected. Requesting current OpenAPI spec."
+
+GET /docs -> Result: 200 OK (Reads new nested schema).
+
+Agent rewrites payload to {"user": {"f_name": "John"...}}
+
+POST /users -> Result: 201 Created. Success.
+
+Scenario B: The Route Shift (URL Drift)
+The Goal: Fetch a list of active transactions.
+
+The Chaos: The API deprecates the old endpoint. /api/v1/transactions is deleted and moved to /api/v2/finance/ledger.
+
+The Lumen Agent Response: 1. Agent hits /v1/transactions -> Result: 404 Not Found.
+2. Agent <think>: "Endpoint deprecated. Searching for ledger routes."
+3. Agent calls an OPTIONS /api/v2 or reads the root /docs to find the new path.
+4. Agent successfully routes to /api/v2/finance/ledger.
+
+Scenario C: The Auth Drop (Security Drift)
+The Chaos: The API stops accepting Bearer <Token> in the headers and suddenly requires a custom header: x-api-key: <Token>.
+
+The Lumen Agent Response: The agent catches the 401 Unauthorized, checks the security scheme in the docs, and rewrites its HTTP headers.
+
+3. Industry-Level Use Cases (The "Series A" Pitch)
+Why is this a billion-dollar company? Because Fortune 500 companies are currently terrified to give AI agents "Write Access" (the ability to actually execute actions, move money, or alter databases) because agents are too brittle.
+
+If you solve this, you automate the integration layer of the internet.
+
+Use Case 1: Automated Fintech Operations (e.g., Stripe/Plaid Integrations)
+
+Current State: A bank builds an agent to process loan approvals using a credit-check API. If the API adds a new required compliance_region field, the agent breaks, loans stop processing, and a Senior Dev gets paged at 3 AM to fix the code.
+
+Lumen State: The agent gets the error, reads the new compliance requirement, fills in the region automatically, and the loans keep flowing. Zero downtime.
+
+Use Case 2: Healthcare EMR (Electronic Medical Records)
+
+Current State: Hospitals use massive, messy databases (Epic, Cerner). Every hospital customizes their database fields. Standard agents break because "Patient ID" is called something different in every hospital.
+
+Lumen State: You deploy one general medical agent. It uses its "probe and adapt" training to dynamically map out the specific hospital's database structure on the fly, saving millions in custom integration engineering.
+
+Use Case 3: The "Zapier Killer" (Autonomous Workflows)
+
+Current State: Companies use Zapier to connect Salesforce to Slack to Jira. If Salesforce updates their API, the Zap breaks, and a human has to go fix the mapping.
+
+Lumen State: The agent acts as a self-healing Zap. If Jira changes a ticket status from "To Do" to "Backlog", the agent figures out the mapping change in milliseconds and keeps the data syncing without human intervention.
+
+Your closing line for the pitch: "Right now, companies hire thousands of Integration Engineers just to maintain API connectors when software updates. We aren't just building a smarter agent; we are completely automating software maintenance."
+
+
+
+
+
+
+Understand this First and than tell me what you understand it 
+
+Perfect — now I clearly see what your Sprint 2 is. This is very well designed, and honestly, this is the core brain of your entire system.
+
+I’ll break this into clear understanding + what you should actually build + how Sprint 4 will connect, so you don’t get lost.
+🧠 What I Understand From Your Sprint Plan
+
+You are building Lumen’s Reasoning Engine (Operator Layer).
+Your role:
+
+    You are NOT handling requests directly
+
+    You are NOT calling APIs initially
+
+👉 You are the “self-healing brain” that:
+
+    Receives a failed request (from Jenish’s proxy)
+
+    Understands why it failed
+
+    Reads updated API schema
+
+    Fixes the request
+
+    Sends it back
+
+🔥 Key Insight (Very Important)
+
+This line defines your entire architecture:
+
+    “Jenish builds the pipes, you build the brain”
+
+So your system is:
+
+User → Proxy (Jenish) → API → ❌ Failure
+                      ↓
+                Lumen Brain (You)
+                      ↓
+                Fixed Request
+                      ↓
+              Proxy retries → ✅ Success
+
+⚙️ Sprint 2 — What You MUST Build
+
+Let me simplify your sprint into 3 core modules (production-ready mindset):
+🧩 1. Schema Intelligence Layer (Scraper)
+Goal:
+
+Only fetch relevant schema for failed endpoint
+What you build:
+
+def get_schema(target_url: str) -> dict:
+
+Internal logic:
+
+    Extract base URL
+
+    Append /openapi.json
+
+    Fetch spec
+
+    Find matching path
+
+    Extract:
+
+        request body
+
+        required fields
+
+        parameters
+
+🚨 Important Improvement (Do THIS)
+
+Don’t just return raw schema.
+
+Return something like:
+
+{
+  "endpoint": "/v1/users",
+  "method": "POST",
+  "required_fields": ["account_uid", "name"],
+  "structure": {
+    "account_uid": "string",
+    "name": "string"
+  }
+}
+
+👉 This reduces hallucination massively.
+🧠 2. Reasoning Engine (LLM Layer)
+
+You already have structure — but I’ll upgrade it to hackathon-winning level.
+Your current model:
+
+    Uses LiteLLM + Groq
+
+    Uses Pydantic for structured output
+
+👍 Perfect choice
+🔥 Upgrade the Prompt (Critical)
+
+Instead of simple instruction, use this:
+
+You are an autonomous API repair agent.
+
+A request has failed. Your job is to FIX it using the latest API schema.
+
+Rules:
+1. DO NOT hallucinate fields
+2. ONLY use fields present in schema
+3. If structure changed → rewrite payload
+4. If endpoint changed → update URL
+5. If auth issue → update headers
+
+Return STRICT JSON only.
+
+🧩 3. Orchestrator (Core Engine)
+
+This is your main function:
+
+def heal_request(trapped_error: dict) -> dict:
+
+Flow inside:
+
+1. Receive error JSON
+2. Call schema scraper
+3. Build prompt
+4. Call LLM
+5. Parse structured output
+6. Return fixed request
+
+🔥 Add This (Important for judges)
+
+Add logs like:
+
+print("[Lumen] Error detected → initiating recovery")
+print("[Lumen] Schema fetched")
+print("[Lumen] Reasoning →", reasoning)
+
+👉 Makes demo 🔥
+🧪 Task 2.4 (Standalone Testing)
+
+This is VERY IMPORTANT.
+
+Before integration:
+
+✔ Create local openapi.json
+✔ Simulate broken payload
+✔ Run:
+
+heal_request(trapped_error)
+
+👉 If it fixes payload → Sprint 2 DONE
+🚀 Now Let’s Talk About Sprint 4 (What You Likely Mean)
+
+Based on your architecture, Sprint 4 is almost certainly:
+🧩 Sprint 4 = Full Integration + Real Chaos Simulation
+🎯 Goal:
+
+Make everything work end-to-end
+⚙️ What Sprint 4 Should Include
+1. Connect with Proxy (Jenish)
+
+    Receive real error JSON
+
+    Return fixed payload
+
+2. Add Retry Mechanism
+
+Try → Fail → Heal → Retry → Success
+
+3. Multi-Scenario Handling
+
+Handle:
+Scenario	Detection
+400	Schema change
+404	Route change
+401	Auth change
+4. Add Memory (Optional but powerful)
+
+Store:
+
+{
+  "/v1/users": "new_schema"
+}
+
+👉 So next time → no LLM call needed
+5. Demo Flow (CRITICAL)
+
+For hackathon:
+
+    Show working API
+
+    Break API (change schema)
+
+    Show failure
+
+    Show Lumen fixing it LIVE
+
+🧠 Final Understanding of Your Role
+
+You are building:
+
+    A runtime adaptive system that converts API failures into learning events
+
+🔥 What You Should Do RIGHT NOW
+Step-by-step:
+
+    Setup:
+
+pip install litellm pydantic requests
+
+    Build:
+
+    scraper.py
+
+    reasoner.py
+
+    orchestrator.py
+
+    Create:
+
+    local openapi.json
+
+    Run:
+
+heal_request(mock_error)
+
+💡 If You Want Next Level
+
+I can now help you with:
+
+    ✅ Full folder structure (industry-grade)
+
+    ✅ Exact scraper code (OpenAPI parsing)
+
+    ✅ Final production-ready heal_request() code
+
+    ✅ Mock API chaos generator (for demo)
+
+    ✅ Sprint 4 integration plan with proxy
+
+Just say:
+
+👉 “Give me full code for Sprint 2”
+or
+👉 “Help me implement scraper + orchestrator”
+
+and I’ll take you to implementation level 🚀
+
+Now i am Going to Implement this Sprint - 2 
+Now Give me detailed in depth things which i have implement with the Folder Structure 
+
+Yes — for Sprint 2, you should build it like a small, clean, production-style service, not as one big Python file.
+
+Your Sprint 2 goal is:
+
+    Take a trapped API failure, inspect the latest schema/docs for that failed route, ask the reasoning model to repair the request, and return a machine-safe healed response to the proxy.
+
+Below is the detailed implementation plan, folder structure, and what each file should do.
+Sprint 2 Objective
+
+You are implementing the Reasoning Engine.
+
+It must do these things in order:
+
+    Accept trapped error input from proxy
+
+    Parse the failed request details
+
+    Locate and fetch API documentation / OpenAPI spec
+
+    Extract only the schema relevant to the failed endpoint
+
+    Build a strict reasoning prompt
+
+    Call the LLM with structured output
+
+    Validate the response
+
+    Return repaired request info in a consistent JSON format
+
+    Support local standalone testing before proxy integration
+
+Recommended Folder Structure
+
+Use this:
+
+lumen_sprint2/
+│
+├── app/
+│   ├── __init__.py
+│   │
+│   ├── main.py
+│   ├── config.py
+│   ├── constants.py
+│   │
+│   ├── models/
+│   │   ├── __init__.py
+│   │   ├── request_models.py
+│   │   ├── response_models.py
+│   │   └── schema_models.py
+│   │
+│   ├── services/
+│   │   ├── __init__.py
+│   │   ├── doc_fetcher.py
+│   │   ├── schema_extractor.py
+│   │   ├── prompt_builder.py
+│   │   ├── llm_client.py
+│   │   ├── healer.py
+│   │   └── url_utils.py
+│   │
+│   ├── utils/
+│   │   ├── __init__.py
+│   │   ├── logger.py
+│   │   ├── json_utils.py
+│   │   └── error_utils.py
+│   │
+│   └── testsupport/
+│       ├── __init__.py
+│       ├── sample_errors.py
+│       └── sample_openapi.json
+│
+├── tests/
+│   ├── __init__.py
+│   ├── test_doc_fetcher.py
+│   ├── test_schema_extractor.py
+│   ├── test_prompt_builder.py
+│   ├── test_llm_client.py
+│   └── test_healer.py
+│
+├── .env
+├── .gitignore
+├── requirements.txt
+├── README.md
+└── run_local_test.py
+
+This structure keeps your logic separated and makes Sprint 4 integration much easier.
+What Each Folder Means
+app/
+
+Main application code.
+models/
+
+All Pydantic models for input/output/schema normalization.
+services/
+
+Actual business logic:
+
+    fetch docs
+
+    extract schema
+
+    build prompts
+
+    call LLM
+
+    orchestrate healing
+
+utils/
+
+Reusable helper functions.
+testsupport/
+
+Local mock data for standalone testing.
+tests/
+
+Unit tests.
+Detailed Breakdown of What You Need to Implement
+1. config.py
+
+This file should hold:
+
+    API keys
+
+    model name
+
+    timeout values
+
+    docs path candidates
+
+    retry count
+
+    debug flag
+
+Example responsibilities:
+
+GROQ_API_KEY
+LLM_MODEL
+REQUEST_TIMEOUT
+DOC_PATH_CANDIDATES = ["/openapi.json", "/docs", "/swagger.json"]
+DEBUG
+
+Why this matters:
+You do not want hardcoded keys or model names scattered in the code.
+2. constants.py
+
+Keep shared constants here.
+
+Example:
+
+    supported error codes: 400, 401, 404
+
+    common log labels
+
+    default fallback messages
+
+    allowed HTTP methods
+
+This avoids magic strings all over the code.
+3. models/request_models.py
+
+This is for the trapped error input coming from Jenish’s proxy.
+
+You should define a Pydantic model like:
+
+class TrappedError(BaseModel):
+    target_url: str
+    method: str
+    failed_payload: dict | None = None
+    failed_headers: dict | None = None
+    error_code: int
+    error_message: str
+
+Add optional fields too, because Sprint 4 will likely need them:
+
+    query_params
+
+    path_params
+
+    auth_context
+
+Why:
+You need strict input validation before healing starts.
+4. models/response_models.py
+
+This is one of the most important files.
+
+Define the exact healed response structure.
+
+At minimum:
+
+class HealedRequest(BaseModel):
+    reasoning: str
+    fixed_url: str
+    fixed_payload: dict | None = None
+    fixed_headers: dict | None = None
+    confidence: float | None = None
+
+Better version:
+
+class HealedRequest(BaseModel):
+    reasoning: str
+    fixed_url: str
+    fixed_method: str
+    fixed_payload: dict | None = None
+    fixed_headers: dict | None = None
+    schema_summary: dict | None = None
+    healing_action: str
+    confidence: float | None = None
+
+healing_action can be:
+
+    payload_rewrite
+
+    route_rewrite
+
+    auth_rewrite
+
+    combined_rewrite
+
+This is very useful in demo and logs.
+5. models/schema_models.py
+
+This is for normalized schema output after extracting relevant docs.
+
+You do not want to send raw OpenAPI directly to the LLM.
+
+Create a clean normalized structure like:
+
+class EndpointSchema(BaseModel):
+    path: str
+    method: str
+    summary: str | None = None
+    description: str | None = None
+    required_fields: list[str] = []
+    properties: dict = {}
+    request_structure: dict = {}
+    security_requirements: list[dict] = []
+
+Why:
+Your extractor should convert messy OpenAPI into a simpler internal representation.
+6. services/url_utils.py
+
+This file should handle:
+
+    extracting base URL
+
+    extracting path from full URL
+
+    trying docs endpoints
+
+    normalizing route comparison
+
+Functions you should build:
+
+extract_base_url(url: str) -> str
+extract_path(url: str) -> str
+build_doc_candidates(base_url: str) -> list[str]
+normalize_path(path: str) -> str
+
+This is important because route matching is often the hardest part.
+
+Example:
+From
+https://api.mockcompany.com/v1/users
+you should get:
+
+    base URL: https://api.mockcompany.com
+
+    path: /v1/users
+
+7. services/doc_fetcher.py
+
+This file fetches documentation or spec from candidate URLs.
+
+Responsibilities:
+
+    try /openapi.json
+
+    try /swagger.json
+
+    possibly try docs root if needed
+
+    return parsed JSON
+
+    fail gracefully if docs are unavailable
+
+Functions:
+
+fetch_openapi_spec(target_url: str) -> dict
+fetch_from_candidate(candidate_url: str) -> dict
+
+Important behavior:
+
+    timeout handling
+
+    invalid JSON handling
+
+    clear exceptions
+
+    debug logs
+
+For Sprint 2, prioritize:
+
+    /openapi.json
+
+    /swagger.json
+
+Because parsing HTML docs is harder and unnecessary for first version.
+8. services/schema_extractor.py
+
+This is the heart of your non-LLM logic.
+
+It should:
+
+    read OpenAPI JSON
+
+    locate correct path + method
+
+    extract request body schema
+
+    extract required fields
+
+    extract security scheme if relevant
+
+    return normalized EndpointSchema
+
+Functions:
+
+extract_schema_for_route(spec: dict, target_path: str, method: str) -> EndpointSchema
+resolve_schema_ref(spec: dict, ref: str) -> dict
+flatten_request_schema(schema: dict) -> dict
+
+What this file must support
+A. Direct schema
+
+Example:
+
+"requestBody": {
+  "content": {
+    "application/json": {
+      "schema": {
+        "type": "object",
+        "properties": ...
+      }
+    }
+  }
+}
+
+B. $ref schema
+
+Example:
+
+"$ref": "#/components/schemas/UserCreateRequest"
+
+You must resolve $ref properly.
+C. Nested object schema
+
+Example:
+
+{
+  "type": "object",
+  "properties": {
+    "user": {
+      "type": "object",
+      "properties": {
+        "f_name": {"type": "string"},
+        "l_name": {"type": "string"}
+      }
+    }
+  }
+}
+
+This is needed for Scenario A.
+D. Security schemes
+
+For Scenario C, extract:
+
+    bearer auth
+
+    api key auth
+
+    header name
+
+You should read:
+
+    components.securitySchemes
+
+    route-level security
+
+    global security
+
+9. services/prompt_builder.py
+
+This should generate the prompt for the LLM.
+
+Do not build prompt inline in main.py.
+
+Functions:
+
+build_healing_prompt(trapped_error: TrappedError, schema: EndpointSchema) -> str
+build_system_prompt() -> str
+
+Your prompt should include:
+
+    failed URL
+
+    method
+
+    failed payload
+
+    failed headers if available
+
+    error code
+
+    error message
+
+    normalized schema
+
+    strict output instruction
+
+Prompt design rule
+
+The model must be told:
+
+    do not invent missing fields
+
+    only use schema
+
+    return strict JSON
+
+    repair route, payload, or auth only as needed
+
+10. services/llm_client.py
+
+This file wraps LiteLLM / Groq.
+
+Responsibilities:
+
+    model invocation
+
+    structured output
+
+    exception handling
+
+    response parsing
+
+    optionally fallback model later
+
+Functions:
+
+call_healing_model(system_prompt: str, user_prompt: str) -> HealedRequest
+
+Important
+
+Your application should not directly depend on LiteLLM everywhere.
+Only this file should know how the LLM call works.
+
+That way, in Sprint 4 or later, if you switch from Groq to OpenAI or another provider, you only update one file.
+11. services/healer.py
+
+This is your orchestrator service.
+
+This file should implement the end-to-end healing flow.
+
+Main function:
+
+def heal_request(trapped_error: TrappedError) -> HealedRequest:
+
+Flow inside heal_request
+
+    validate input
+
+    fetch spec
+
+    extract failed route schema
+
+    build prompt
+
+    call LLM
+
+    validate healed output
+
+    return result
+
+Add structured logging at each step
+
+Example:
+
+    trapped error received
+
+    docs fetched
+
+    route schema extracted
+
+    LLM returned response
+
+    healed output validated
+
+This is the file Jenish’s proxy will eventually call.
+12. utils/logger.py
+
+Make a simple logger wrapper.
+
+Even a basic Python logging setup is enough.
+
+You should support:
+
+    INFO
+
+    WARNING
+
+    ERROR
+
+    DEBUG
+
+This makes demo output clean and professional.
+13. utils/json_utils.py
+
+Use this for safe JSON formatting.
+
+Useful functions:
+
+    pretty_print_json
+
+    safe_load_json
+
+    safe_dump_json
+
+This avoids repeated try-except JSON code.
+14. utils/error_utils.py
+
+Centralize exceptions.
+
+You can create custom exceptions like:
+
+    DocumentationFetchError
+
+    SchemaExtractionError
+
+    LLMHealingError
+
+    InvalidHealedResponseError
+
+This makes failures clean and easier to debug.
+15. main.py
+
+This is the application entry point.
+
+Keep it minimal.
+
+It should expose something like:
+
+def process_trapped_error(trapped_error_data: dict) -> dict:
+
+This function:
+
+    converts dict to Pydantic input model
+
+    calls heal_request
+
+    returns JSON-safe dict response
+
+Later, Sprint 4 can plug this into:
+
+    FastAPI endpoint
+
+    CLI
+
+    direct proxy callback
+
+16. testsupport/sample_errors.py
+
+Store local mocked trapped errors for all chaos scenarios.
+
+Create at least these:
+Scenario A: Key mutation
+
+Old payload, new nested payload required
+Scenario B: Route drift
+
+Old URL broken, new path in spec
+Scenario C: Auth drift
+
+Old bearer token, new x-api-key required
+
+This helps you test your engine without waiting for proxy integration.
+17. testsupport/sample_openapi.json
+
+Create a local OpenAPI spec representing the changed API.
+
+This is for standalone testing.
+
+Make sure it includes:
+
+    /users with nested payload schema
+
+    /api/v2/finance/ledger for moved route
+
+    x-api-key security scheme
+
+This file is crucial because the sprint specifically expects standalone local validation before Jenish finishes the proxy.
+18. run_local_test.py
+
+This script should let you test the whole pipeline immediately.
+
+Example behavior:
+
+    load sample trapped error
+
+    call main processor
+
+    print healed response
+
+This is your fastest demo harness.
+What You Should Implement First
+
+Do it in this exact order.
+Phase 1: Base setup
+
+    folder structure
+
+    requirements
+
+    config
+
+    constants
+
+    Pydantic request/response models
+
+Phase 2: Documentation layer
+
+    url utilities
+
+    doc fetcher
+
+    local JSON loading support
+
+Phase 3: Schema intelligence
+
+    route matching
+
+    request schema extraction
+
+    $ref resolution
+
+    security extraction
+
+Phase 4: Reasoning layer
+
+    prompt builder
+
+    llm client
+
+    structured output validation
+
+Phase 5: Orchestration
+
+    healer service
+
+    main entry point
+
+Phase 6: Local testing
+
+    sample errors
+
+    sample spec
+
+    run_local_test
+
+Phase 7: Unit tests
+
+    schema extraction tests
+
+    route matching tests
+
+    prompt tests
+
+    healer tests
+
+Minimum Features Sprint 2 Must Support
+
+To call Sprint 2 complete, your implementation should support these:
+Required
+
+    receive trapped error JSON
+
+    fetch OpenAPI spec from predictable docs path
+
+    extract schema only for failed route
+
+    parse nested schema
+
+    build strict repair prompt
+
+    get structured healed response
+
+    validate output
+
+    run locally against sample spec
+
+Good to have
+
+    auth scheme extraction
+
+    route drift matching support
+
+    confidence score
+
+    healing action type
+
+    logging
+
+Suggested requirements.txt
+
+Start with:
+
+pydantic>=2.0.0
+requests>=2.31.0
+litellm>=1.0.0
+python-dotenv>=1.0.0
+pytest>=8.0.0
+
+If using typed settings:
+
+pydantic-settings>=2.0.0
+
+Recommended Internal Flow
+
+Your runtime flow should look like this:
+
+Proxy sends trapped error
+        ↓
+Validate trapped error model
+        ↓
+Extract base URL + path
+        ↓
+Fetch openapi spec
+        ↓
+Extract target route schema
+        ↓
+Normalize schema for LLM
+        ↓
+Build strict healing prompt
+        ↓
+Call Groq via LiteLLM
+        ↓
+Validate healed response
+        ↓
+Return fixed URL / payload / headers
+
+What To Keep Out of Sprint 2
+
+Do not overbuild these yet:
+
+    caching layer
+
+    database
+
+    UI dashboard
+
+    multi-agent planning
+
+    HTML docs scraping
+
+    complex memory system
+
+    background workers
+
+Sprint 2 should stay focused on:
+heal one failed request correctly and reliably
+Best Practical Advice
+
+Your biggest engineering risk is not the LLM call.
+
+Your biggest risk is:
+
+    bad route extraction
+
+    poor schema normalization
+
+    sending too much raw OpenAPI to the model
+
+    not validating model output strictly
+
+So focus most on:
+
+    schema_extractor.py
+
+    response_models.py
+
+    prompt_builder.py
+
+Those three files decide whether the system feels solid.
+Final Recommended Build Order by File
+
+Create files in this order:
+
+1. config.py
+2. request_models.py
+3. response_models.py
+4. url_utils.py
+5. doc_fetcher.py
+6. schema_extractor.py
+7. prompt_builder.py
+8. llm_client.py
+9. healer.py
+10. main.py
+11. sample_openapi.json
+12. sample_errors.py
+13. run_local_test.py
+14. tests/
+
+What I can do next
+
+I can now give you either:
+
+    the exact code skeleton for every file, or
+
+    the full implementation of Sprint 2 step by step.
+
+Reply with:
+
+“Give me the code skeleton for the full folder structure”
+
+or
+
+“Start implementing file by file from config.py”
+
+Yes Start Implementing from config.py 
+
+and before that give me command that make necessory Folder structure and how we manage our github 
+i have made 1 repocalled reMorph 
+
+Great. Since your repo is already reMorph, first set up the project structure cleanly inside that repo, then we’ll start from config.py.
+1. Commands to Create the Folder Structure
+
+Go inside your repo:
+
+cd reMorph
+
+Then run these commands.
+If you are using Git Bash / WSL / Linux / Mac
+
+mkdir -p app/models app/services app/utils app/testsupport tests
+touch app/__init__.py
+touch app/main.py app/config.py app/constants.py
+touch app/models/__init__.py app/models/request_models.py app/models/response_models.py app/models/schema_models.py
+touch app/services/__init__.py app/services/doc_fetcher.py app/services/schema_extractor.py app/services/prompt_builder.py app/services/llm_client.py app/services/healer.py app/services/url_utils.py
+touch app/utils/__init__.py app/utils/logger.py app/utils/json_utils.py app/utils/error_utils.py
+touch app/testsupport/__init__.py app/testsupport/sample_errors.py app/testsupport/sample_openapi.json
+touch tests/__init__.py tests/test_doc_fetcher.py tests/test_schema_extractor.py tests/test_prompt_builder.py tests/test_llm_client.py tests/test_healer.py
+touch .env .gitignore requirements.txt README.md run_local_test.py
+
+If you are using Windows PowerShell
+
+Run this from inside reMorph:
+
+New-Item -ItemType Directory -Force app, app\models, app\services, app\utils, app\testsupport, tests
+
+New-Item -ItemType File -Force `
+app\__init__.py, `
+app\main.py, `
+app\config.py, `
+app\constants.py, `
+app\models\__init__.py, `
+app\models\request_models.py, `
+app\models\response_models.py, `
+app\models\schema_models.py, `
+app\services\__init__.py, `
+app\services\doc_fetcher.py, `
+app\services\schema_extractor.py, `
+app\services\prompt_builder.py, `
+app\services\llm_client.py, `
+app\services\healer.py, `
+app\services\url_utils.py, `
+app\utils\__init__.py, `
+app\utils\logger.py, `
+app\utils\json_utils.py, `
+app\utils\error_utils.py, `
+app\testsupport\__init__.py, `
+app\testsupport\sample_errors.py, `
+app\testsupport\sample_openapi.json, `
+tests\__init__.py, `
+tests\test_doc_fetcher.py, `
+tests\test_schema_extractor.py, `
+tests\test_prompt_builder.py, `
+tests\test_llm_client.py, `
+tests\test_healer.py, `
+.env, `
+.gitignore, `
+requirements.txt, `
+README.md, `
+run_local_test.py
+
+2. Recommended GitHub Management for reMorph
+
+Since this is a hackathon project, keep Git simple and disciplined.
+Best branch strategy
+
+Use:
+
+    main → stable/demo-ready code
+
+    develop → integration branch
+
+    feature branches for each sprint/task
+
+Example:
+
+git checkout -b develop
+git checkout -b feature/sprint2-config
+
+Then later:
+
+    feature/sprint2-schema-extractor
+
+    feature/sprint2-llm-client
+
+    feature/sprint2-healer
+
+For hackathons, this is enough. Do not overcomplicate.
+Suggested workflow
+First time setup
+
+git init
+git remote add origin <your-github-repo-url>
+git checkout -b develop
+
+If repo already exists and remote already added:
+
+git branch
+git checkout -b develop
+
+After creating folder structure
+
+git add .
+git commit -m "Initialize Sprint 2 folder structure"
+git push -u origin develop
+
+For each module
+
+Example for config work:
+
+git checkout -b feature/sprint2-config
+
+After coding:
+
+git add .
+git commit -m "Add Sprint 2 configuration setup"
+git push -u origin feature/sprint2-config
+
+Then merge into develop.
+
+If you are working alone, you can merge locally:
+
+git checkout develop
+git merge feature/sprint2-config
+git push origin develop
+
+When develop becomes stable:
+
+git checkout main
+git merge develop
+git push origin main
+
+3. What to Put in .gitignore
+
+Add this first:
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+.pytest_cache/
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# Environment files
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Coverage / reports
+.coverage
+htmlcov/
+
+# Local logs
+*.log
+
+4. Create and Activate Virtual Environment
+
+Inside reMorph:
+Windows
+
+python -m venv venv
+venv\Scripts\activate
+
+Git Bash on Windows
+
+python -m venv venv
+source venv/Scripts/activate
+
+Mac / Linux
+
+python3 -m venv venv
+source venv/bin/activate
+
+5. Install Initial Dependencies
+
+pip install pydantic pydantic-settings python-dotenv requests litellm pytest
+
+Then save them:
+
+pip freeze > requirements.txt
+
+6. Now Start with config.py
+
+We’ll make this clean and scalable.
+
+Your app/config.py should:
+
+    load env variables
+
+    store model name
+
+    store timeout/retry settings
+
+    store docs path candidates
+
+    centralize all runtime config
+
+Use this code:
+
+from functools import lru_cache
+from typing import List
+
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class Settings(BaseSettings):
+    """
+    Central application settings for the Sprint 2 healing engine.
+
+    Values are loaded from environment variables and `.env`.
+    """
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
+
+    # App metadata
+    APP_NAME: str = "reMorph"
+    APP_ENV: str = "development"
+    DEBUG: bool = True
+
+    # LLM provider settings
+    GROQ_API_KEY: str = ""
+    LLM_MODEL: str = "groq/llama3-8b-8192"
+
+    # Network / request behavior
+    REQUEST_TIMEOUT_SECONDS: int = 10
+    MAX_FETCH_RETRIES: int = 2
+
+    # Candidate documentation paths to probe
+    DOC_PATH_CANDIDATES: List[str] = Field(
+        default_factory=lambda: [
+            "/openapi.json",
+            "/swagger.json",
+            "/v3/api-docs",
+        ]
+    )
+
+    # Healing behavior
+    ENABLE_AUTH_HEALING: bool = True
+    ENABLE_ROUTE_HEALING: bool = True
+    ENABLE_PAYLOAD_HEALING: bool = True
+
+    # Logging
+    LOG_LEVEL: str = "INFO"
+
+
+@lru_cache
+def get_settings() -> Settings:
+    """
+    Cached settings accessor so config is loaded once per process.
+    """
+    return Settings()
+
+7. What to Put in .env
+
+Create reMorph/.env like this:
+
+APP_NAME=reMorph
+APP_ENV=development
+DEBUG=true
+
+GROQ_API_KEY=your_groq_api_key_here
+LLM_MODEL=groq/llama3-8b-8192
+
+REQUEST_TIMEOUT_SECONDS=10
+MAX_FETCH_RETRIES=2
+
+ENABLE_AUTH_HEALING=true
+ENABLE_ROUTE_HEALING=true
+ENABLE_PAYLOAD_HEALING=true
+
+LOG_LEVEL=INFO
+
+Do not commit .env.
+8. How to Test config.py
+
+Create a temporary test in run_local_test.py:
+
+from app.config import get_settings
+
+
+def main() -> None:
+    settings = get_settings()
+
+    print("APP_NAME:", settings.APP_NAME)
+    print("APP_ENV:", settings.APP_ENV)
+    print("DEBUG:", settings.DEBUG)
+    print("LLM_MODEL:", settings.LLM_MODEL)
+    print("DOC_PATH_CANDIDATES:", settings.DOC_PATH_CANDIDATES)
+    print("LOG_LEVEL:", settings.LOG_LEVEL)
+
+
+if __name__ == "__main__":
+    main()
+
+Run:
+
+python run_local_test.py
+
+If this prints your values correctly, config.py is done.
+9. Commit This Step
+
+git checkout -b feature/sprint2-config
+git add .
+git commit -m "Add Sprint 2 config and project scaffolding"
+git push -u origin feature/sprint2-config
+
+10. What Comes Right After config.py
+
+Next file should be:
+
+    app/constants.py
+
+    app/models/request_models.py
+
+    app/models/response_models.py
+
+That sequence is best, because constants and models are the base for everything else.
+
+Reply with:
+
+Start constants.py
+
+and I’ll give you the exact code for it.
+
+
+
+
+
+
+
+
+
+
+If we are building the **Enterprise MVP of LumenInfra**, we do not start with the AI. We start with the plumbing. If the proxy doesn't work, the AI is useless.
+
+Here is your **4-Sprint Engineering Workflow** to build the production-ready MVP. Treat this as your Jira board.
+
+---
+
+### Sprint 1: The Dumb Gateway (The Plumbing)
+
+**Goal:** Build a reverse proxy that sits between a client and a target API, passes traffic seamlessly, and successfully "traps" error codes.
+
+**Tech Stack:** Python + FastAPI + HTTPX.
+
+- **Task 1.1: Setup the Target Sandbox.** Create a dead-simple, separate mock API (e.g., a dummy Stripe API) that you can intentionally break.
+- **Task 1.2: Build the Forwarding Proxy.** Write a FastAPI server that takes an incoming request, forwards it to the mock API, and returns the response to the user.
+- **Task 1.3: Implement the Interceptor.** Add middleware to your proxy. If the target API returns `200 OK`, pass it back. If it returns `400` or `404`, *do not send the error to the user yet*. Trap it, print "Drift Detected!" to your console, and return a temporary `503 Healing in Progress` status.
+- **Definition of Done:** You can send a request through your Gateway to the target API, and your Gateway successfully intercepts errors without crashing.
+
+### Sprint 2: The Reasoning Engine (The Operator)
+
+**Goal:** Connect your trapped errors to an LLM so it can read the docs and generate a fixed payload.
+
+**Tech Stack:** LiteLLM (or LangChain) + Llama-3 (via Groq/OpenAI for rapid MVP testing, or local vLLM).
+
+- **Task 2.1: The Schema Scraper.** Write a function that, upon intercepting an error, automatically fires a `GET` request to the target API's `/openapi.json` or `/docs` endpoint to pull the current schema.
+- **Task 2.2: The Prompt Engineer.** Create the rigid prompt: *"You are the Lumen Operator. The user tried to send [Failed Payload]. The API returned [Error]. The current API schema is [Scraped Schema]. Output ONLY a fixed JSON payload."*
+- **Task 2.3: The Re-execution Loop.** Take the LLM's fixed JSON payload and have the Gateway automatically fire a *second* request to the target API.
+- **Definition of Done:** You send a broken request to your Gateway. It traps it, asks the LLM for a fix, re-sends the fixed payload, gets a `200 OK`, and returns the success to you. *The Self-Healing loop is closed.*
+
+### Sprint 3: The Audit Dashboard (Governance)
+
+**Goal:** Prove to enterprise clients that you aren't secretly breaking their data. Give them visibility.
+
+**Tech Stack:** SQLite/PostgreSQL + React/Next.js (or HTML/Tailwind SPA).
+
+- **Task 3.1: Database Logging.** Every time Sprint 2 happens, log the event to a database: `Original Request`, `Error Caught`, `LLM <think> Trace`, `Fixed Request`, `Final Status`.
+- **Task 3.2: Build the UI.** Create a clean dashboard that pulls from this database.
+- **Task 3.3: Visual Diffs.** Implement a UI component that highlights the exact changes the LLM made (e.g., showing `customer_id` crossed out in red, and `account_uid` highlighted in green).
+- **Definition of Done:** You can open a browser, see a list of "Healed Routes," and click one to read exactly why the AI made the decision it did.
+
+### Sprint 4: The Continuous Flywheel (The Moat)
+
+**Goal:** Move from using a standard API model (like GPT-4) to your own continuously fine-tuned model.
+
+**Tech Stack:** OpenEnv + HuggingFace TRL (GRPO) + Unsloth.
+
+- **Task 4.1: Export Golden Trajectories.** Write a script to export all the successful "Heals" from your Sprint 3 database into a `.jsonl` dataset.
+- **Task 4.2: OpenEnv Chaos Generation.** Use the OpenEnv wrapper we discussed earlier to generate synthetic variations of those real-world breaks.
+- **Task 4.3: The Nightly Build.** Set up the Colab/RunPod script to run GRPO on your synthetic data, updating your base Llama-3 model's weights.
+- **Definition of Done:** You have a script you can run that trains a model to be better at healing based on yesterday's trapped errors.

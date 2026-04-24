@@ -1,0 +1,10 @@
+base_url: http://127.0.0.1:8000
+openapi_spec_path: target_api/specs/openapi.json
+auth:
+  headers:
+    Authorization: Bearer demo-token
+    x-vendor-id: ven-123
+safe_mode: true
+cache_mode: reuse
+max_retries: 2
+timeout_seconds: 10.0

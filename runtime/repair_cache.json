@@ -1,214 +1,18 @@
 {
-  "06811428872b6bda1b39718b2b1c70cd6a2d6df61f2ea7d9fa1cf5729c95ebd7": {
-    "confidence": 0.95,
-    "diagnostics": {
-      "docs_confidence": 1.0,
-      "docs_source": "local:target_api/specs/openapi.json",
-      "failure_reason": "invalid_llm_output",
-      "fallback_used": true,
-      "final_reward": null,
-      "llm_attempted": true,
-      "llm_succeeded": false,
-      "original_error_code": 422,
-      "processing_ms": 12,
-      "repair_strategy": "deterministic",
-      "request_id": null,
-      "retry_count": 0,
-      "retry_succeeded": null,
-      "scenario_type": "payload_drift",
-      "selected_endpoint_path": "/api/v1/clients/onboard",
-      "source_component": null,
-      "spec_hash": "61356a872f830562fefce66f6609082c776b2e956240a7a69937cd5d9db3dc68",
-      "spec_version": "3.1.0",
-      "total_recovery_steps": 1
-    },
-    "failure_reason": null,
-    "fixed_headers": {
-      "Authorization": "Bearer demo-token"
-    },
-    "fixed_method": "POST",
-    "fixed_payload": {
-      "company_name": "Acme Corp",
-      "contact_email": "test@example.com",
-      "registration_code": "ABCD12345XYZ"
-    },
-    "fixed_url": "http://127.0.0.1:8000/api/v1/clients/onboard",
-    "healing_action": "payload_rewrite",
-    "reasoning": "Deterministic repair applied: payload rebuilt from the normalized request schema.",
-    "schema_summary": {
-      "applied_changes": [
-        "payload"
-      ],
-      "method": "POST",
-      "path": "/api/v1/clients/onboard",
-      "required_fields": [
-        "contact_email",
-        "company_name",
-        "registration_code"
-      ],
-      "required_header_parameters": [],
-      "required_path_parameters": [],
-      "required_query_parameters": [],
-      "security_requirements": [
-        {
-          "header_name": null,
-          "location": null,
-          "name": "HTTPBearer",
-          "scheme": "bearer",
-          "type": "http"
-        }
-      ]
-    },
-    "status": "healed"
-  },
-  "10cc7ec5dd706d8870bcb489e8b83836bfedbe782f497efed08b50baf79caa1e": {
-    "confidence": 0.95,
-    "diagnostics": {
-      "docs_confidence": 1.0,
-      "docs_source": "local:target_api/specs/openapi.json",
-      "failure_reason": "invalid_llm_output",
-      "fallback_used": true,
-      "final_reward": null,
-      "llm_attempted": true,
-      "llm_succeeded": false,
-      "original_error_code": 422,
-      "processing_ms": 3,
-      "repair_strategy": "deterministic",
-      "request_id": null,
-      "retry_count": 0,
-      "retry_succeeded": null,
-      "scenario_type": "payload_drift",
-      "selected_endpoint_path": "/api/v1/payments/process",
-      "source_component": null,
-      "spec_hash": "61356a872f830562fefce66f6609082c776b2e956240a7a69937cd5d9db3dc68",
-      "spec_version": "3.1.0",
-      "total_recovery_steps": 1
-    },
-    "failure_reason": null,
-    "fixed_headers": {
-      "Authorization": "Bearer demo-token",
-      "x-api-key": "secret",
-      "x-vendor-id": "ven-123"
-    },
-    "fixed_method": "POST",
-    "fixed_payload": {
-      "amount": 100,
-      "billing_address": {
-        "iso_country": "US",
-        "street": "test_string",
-        "zip_code": "12345"
-      },
-      "card_details": {
-        "card_number": "1234567812345678",
-        "cvv": "123",
-        "expiry": "12/26"
-      },
-      "currency": "USD"
-    },
-    "fixed_url": "http://127.0.0.1:8000/api/v1/payments/process",
-    "healing_action": "payload_rewrite",
-    "reasoning": "Deterministic repair applied: payload rebuilt from the normalized request schema.",
-    "schema_summary": {
-      "applied_changes": [
-        "payload"
-      ],
-      "method": "POST",
-      "path": "/api/v1/payments/process",
-      "required_fields": [
-        "amount",
-        "currency",
-        "card_details",
-        "billing_address"
-      ],
-      "required_header_parameters": [
-        "x-api-key",
-        "x-vendor-id"
-      ],
-      "required_path_parameters": [],
-      "required_query_parameters": [],
-      "security_requirements": [
-        {
-          "header_name": null,
-          "location": null,
-          "name": "HTTPBearer",
-          "scheme": "bearer",
-          "type": "http"
-        }
-      ]
-    },
-    "status": "healed"
-  },
-  "416c19bfb3df27be5aeef3b17614b7ee15a04b2882a6ddca52bb653f298dd260": {
-    "confidence": 0.95,
-    "diagnostics": {
-      "docs_confidence": 0.7525000000000001,
-      "docs_source": "local:target_api/specs/openapi.json",
-      "failure_reason": "invalid_llm_output",
-      "fallback_used": true,
-      "final_reward": null,
-      "llm_attempted": true,
-      "llm_succeeded": false,
-      "original_error_code": 422,
-      "processing_ms": 46,
-      "repair_strategy": "deterministic",
-      "request_id": null,
-      "retry_count": 0,
-      "retry_succeeded": null,
-      "scenario_type": "payload_drift",
-      "selected_endpoint_path": "/api/v1/ledger/transactions",
-      "source_component": null,
-      "spec_hash": "61356a872f830562fefce66f6609082c776b2e956240a7a69937cd5d9db3dc68",
-      "spec_version": "3.1.0",
-      "total_recovery_steps": 1
-    },
-    "failure_reason": null,
-    "fixed_headers": {
-      "Authorization": "Bearer demo-token"
-    },
-    "fixed_method": "GET",
-    "fixed_payload": null,
-    "fixed_url": "http://127.0.0.1:8000/api/v1/ledger/transactions?start_date=2024-01-01T00%3A00%3A00Z&end_date=2024-01-02T00%3A00%3A00Z&limit=100",
-    "healing_action": "route_rewrite",
-    "reasoning": "Deterministic repair applied: route updated to GET /api/v1/ledger/transactions.",
-    "schema_summary": {
-      "applied_changes": [
-        "route"
-      ],
-      "method": "GET",
-      "path": "/api/v1/ledger/transactions",
-      "required_fields": [],
-      "required_header_parameters": [],
-      "required_path_parameters": [],
-      "required_query_parameters": [
-        "start_date",
-        "end_date"
-      ],
-      "security_requirements": [
-        {
-          "header_name": null,
-          "location": null,
-          "name": "HTTPBearer",
-          "scheme": "bearer",
-          "type": "http"
-        }
-      ]
-    },
-    "status": "healed"
-  },
   "4baa0b310ddaa6a05abcc72b77959bb229044b6cf1081fb69bf060a735e29f7f": {
-    "confidence": 0.8,
+    "confidence": 0.95,
     "diagnostics": {
       "docs_confidence": 0.6467857142857143,
       "docs_source": "local:sprint4/env/contracts/drift_route.json",
-      "failure_reason": null,
-      "fallback_used": false,
+      "failure_reason": "invalid_llm_output",
+      "fallback_used": true,
       "final_reward": null,
       "llm_attempted": true,
-      "llm_succeeded": true,
+      "llm_succeeded": false,
       "original_error_code": 404,
-      "processing_ms": 1219,
-      "repair_strategy": "merged",
-      "request_id": "sprint4-0dddefd470af",
+      "processing_ms": 17,
+      "repair_strategy": "deterministic",
+      "request_id": "sprint4-bdf91b053656",
       "retry_count": 0,
       "retry_succeeded": null,
       "scenario_type": "route_drift",
@@ -226,7 +30,7 @@
     "fixed_payload": null,
     "fixed_url": "https://mock.example.com/api/v2/finance/ledger",
     "healing_action": "combined_rewrite",
-    "reasoning": "The original request targeted /api/v1/transactions which does not match the available endpoint /api/v2/finance/ledger. The security requirement expects an x-api-key header, but the request used Authorization. The method is already GET, so only the URL and headers need adjustment.",
+    "reasoning": "Deterministic repair applied: route updated to GET /api/v2/finance/ledger; headers aligned with the extracted security scheme.",
     "schema_summary": {
       "applied_changes": [
         "route",
@@ -236,6 +40,8 @@
       "path": "/api/v2/finance/ledger",
       "required_fields": [],
       "required_header_parameters": [],
+      "required_path_parameters": [],
+      "required_query_parameters": [],
       "security_requirements": [
         {
           "header_name": "x-api-key",
@@ -248,136 +54,20 @@
     },
     "status": "healed"
   },
-  "575dbd390ef6d350f1fe171c9297d5737def24f50bdc5c7b00bea6c5eabab8a7": {
-    "confidence": 0.8500000000000001,
-    "diagnostics": {
-      "docs_confidence": 0.9910000000000001,
-      "docs_source": "local:target_api/specs/openapi.json",
-      "failure_reason": "invalid_llm_output",
-      "fallback_used": true,
-      "final_reward": null,
-      "llm_attempted": true,
-      "llm_succeeded": false,
-      "original_error_code": 405,
-      "processing_ms": 113,
-      "repair_strategy": "deterministic",
-      "request_id": null,
-      "retry_count": 0,
-      "retry_succeeded": null,
-      "scenario_type": "unknown",
-      "selected_endpoint_path": "/api/v1/payments/process",
-      "source_component": null,
-      "spec_hash": "61356a872f830562fefce66f6609082c776b2e956240a7a69937cd5d9db3dc68",
-      "spec_version": "3.1.0",
-      "total_recovery_steps": 1
-    },
-    "failure_reason": null,
-    "fixed_headers": {
-      "Authorization": "Bearer demo-token",
-      "x-api-key": "secret",
-      "x-vendor-id": "ven-123"
-    },
-    "fixed_method": "POST",
-    "fixed_payload": null,
-    "fixed_url": "http://127.0.0.1:8000/api/v1/payments/process",
-    "healing_action": "route_rewrite",
-    "reasoning": "Deterministic repair applied: route updated to POST /api/v1/payments/process.",
-    "schema_summary": {
-      "applied_changes": [
-        "route"
-      ],
-      "method": "POST",
-      "path": "/api/v1/payments/process",
-      "required_fields": [
-        "amount",
-        "currency",
-        "card_details",
-        "billing_address"
-      ],
-      "required_header_parameters": [
-        "x-api-key",
-        "x-vendor-id"
-      ],
-      "required_path_parameters": [],
-      "required_query_parameters": [],
-      "security_requirements": [
-        {
-          "header_name": null,
-          "location": null,
-          "name": "HTTPBearer",
-          "scheme": "bearer",
-          "type": "http"
-        }
-      ]
-    },
-    "status": "healed"
-  },
-  "7f03390c5ed53b1dd37f271bcaf926d0237762b6323abf85ce3dc5fc1a3e5567": {
-    "confidence": 0.95,
-    "diagnostics": {
-      "docs_confidence": 0.7525000000000001,
-      "docs_source": "local:target_api/specs/openapi.json",
-      "failure_reason": "invalid_llm_output",
-      "fallback_used": true,
-      "final_reward": null,
-      "llm_attempted": true,
-      "llm_succeeded": false,
-      "original_error_code": 404,
-      "processing_ms": 138,
-      "repair_strategy": "deterministic",
-      "request_id": "sprint4-b389ceaf6588",
-      "retry_count": 0,
-      "retry_succeeded": null,
-      "scenario_type": "route_drift",
-      "selected_endpoint_path": "/api/v1/ledger/transactions",
-      "source_component": "sprint4:route_drift",
-      "spec_hash": "61356a872f830562fefce66f6609082c776b2e956240a7a69937cd5d9db3dc68",
-      "spec_version": "3.1.0",
-      "total_recovery_steps": 1
-    },
-    "failure_reason": null,
-    "fixed_headers": {
-      "Authorization": "Bearer token"
-    },
-    "fixed_method": "GET",
-    "fixed_payload": null,
-    "fixed_url": "http://127.0.0.1:8000/api/v1/ledger/transactions",
-    "healing_action": "route_rewrite",
-    "reasoning": "Deterministic repair applied: route updated to /api/v1/ledger/transactions.",
-    "schema_summary": {
-      "applied_changes": [
-        "route"
-      ],
-      "method": "GET",
-      "path": "/api/v1/ledger/transactions",
-      "required_fields": [],
-      "required_header_parameters": [],
-      "security_requirements": [
-        {
-          "header_name": null,
-          "location": null,
-          "name": "HTTPBearer",
-          "scheme": "bearer",
-          "type": "http"
-        }
-      ]
-    },
-    "status": "healed"
-  },
   "9459c915dbb7200a058765502e5867f8696e1a3a2a05e89771fa30fcd9f55a38": {
-    "confidence": 0.9,
+    "confidence": 0.95,
     "diagnostics": {
       "docs_confidence": 0.7250000000000001,
       "docs_source": "local:sprint4/env/contracts/drift_auth.json",
-      "failure_reason": null,
-      "fallback_used": false,
+      "failure_reason": "invalid_llm_output",
+      "fallback_used": true,
       "final_reward": null,
       "llm_attempted": true,
-      "llm_succeeded": true,
+      "llm_succeeded": false,
       "original_error_code": 401,
-      "processing_ms": 1029,
-      "repair_strategy": "merged",
-      "request_id": "sprint4-ee44623d2495",
+      "processing_ms": 13,
+      "repair_strategy": "deterministic",
+      "request_id": "sprint4-49af930092af",
       "retry_count": 0,
       "retry_succeeded": null,
       "scenario_type": "auth_drift",
@@ -395,13 +85,23 @@
     "fixed_payload": null,
     "fixed_url": "https://mock.example.com/api/v2/finance/ledger",
     "healing_action": "auth_rewrite",
-    "reasoning": "The request failed due to an authentication error. The API specification requires an 'x-api-key' header for authentication, but the original request used a 'Bearer' token in the 'Authorization' header. The healing action rewrites the authentication header to match the spec, removing the unsupported 'Authorization' header and adding the required 'x-api-key' header with the same token value.",
+    "reasoning": "Deterministic repair applied: headers aligned with the extracted security scheme.",
     "schema_summary": {
+      "applied_changes": [
+        "auth"
+      ],
+      "method": "GET",
+      "path": "/api/v2/finance/ledger",
+      "required_fields": [],
+      "required_header_parameters": [],
+      "required_path_parameters": [],
+      "required_query_parameters": [],
       "security_requirements": [
         {
           "header_name": "x-api-key",
           "location": "header",
           "name": "ApiKeyAuth",
+          "scheme": null,
           "type": "apiKey"
         }
       ]
@@ -409,19 +109,19 @@
     "status": "healed"
   },
   "9debe6f67869e6955f3e959873e159833cc45cec5df61b12c86b0a923c1c96bd": {
-    "confidence": 1.0,
+    "confidence": 0.9,
     "diagnostics": {
       "docs_confidence": 1.0,
       "docs_source": "local:sprint4/env/contracts/drift_payload.json",
-      "failure_reason": null,
-      "fallback_used": false,
+      "failure_reason": "invalid_llm_output",
+      "fallback_used": true,
       "final_reward": null,
       "llm_attempted": true,
-      "llm_succeeded": true,
+      "llm_succeeded": false,
       "original_error_code": 400,
-      "processing_ms": 4411,
-      "repair_strategy": "merged",
-      "request_id": "sprint4-17ab41fdf18c",
+      "processing_ms": 2007,
+      "repair_strategy": "deterministic",
+      "request_id": "sprint4-f3dd02a95b66",
       "retry_count": 0,
       "retry_succeeded": null,
       "scenario_type": "payload_drift",
@@ -433,8 +133,7 @@
     },
     "failure_reason": null,
     "fixed_headers": {
-      "Authorization": "Bearer demo-token",
-      "Content-Type": "application/json"
+      "Authorization": "Bearer demo-token"
     },
     "fixed_method": "POST",
     "fixed_payload": {
@@ -445,211 +144,20 @@
     },
     "fixed_url": "https://mock.example.com/users",
     "healing_action": "payload_rewrite",
-    "reasoning": "The original payload omitted the required 'user' wrapper and used incorrect field names. The schema requires a 'user' object with 'f_name' and 'l_name'. The headers lacked 'Content-Type', so added it.",
+    "reasoning": "Deterministic repair applied: payload rebuilt from the normalized request schema.",
     "schema_summary": {
-      "properties": {
-        "user": {
-          "name": "user",
-          "properties": {
-            "f_name": {
-              "name": "f_name",
-              "type": "string"
-            },
-            "l_name": {
-              "name": "l_name",
-              "type": "string"
-            }
-          },
-          "required": [
-            "f_name",
-            "l_name"
-          ],
-          "type": "object"
-        }
-      },
-      "required": [
+      "applied_changes": [
+        "payload"
+      ],
+      "method": "POST",
+      "path": "/users",
+      "required_fields": [
         "user"
       ],
-      "type": "object"
-    },
-    "status": "healed"
-  },
-  "b95c8be73df8ef0a496df369f9f4c5aec6b3801b181eadd3b60140bf3d693960": {
-    "confidence": 0.95,
-    "diagnostics": {
-      "docs_confidence": 0.7250000000000001,
-      "docs_source": "local:target_api/specs/openapi.json",
-      "failure_reason": "invalid_llm_output",
-      "fallback_used": true,
-      "final_reward": null,
-      "llm_attempted": true,
-      "llm_succeeded": false,
-      "original_error_code": 422,
-      "processing_ms": 19,
-      "repair_strategy": "deterministic",
-      "request_id": null,
-      "retry_count": 0,
-      "retry_succeeded": null,
-      "scenario_type": "payload_drift",
-      "selected_endpoint_path": "/api/v1/payments/{trx_id}",
-      "source_component": null,
-      "spec_hash": "61356a872f830562fefce66f6609082c776b2e956240a7a69937cd5d9db3dc68",
-      "spec_version": "3.1.0",
-      "total_recovery_steps": 1
-    },
-    "failure_reason": null,
-    "fixed_headers": {
-      "Authorization": "Bearer demo-token",
-      "x-api-key": "secret",
-      "x-vendor-id": "ven-123"
-    },
-    "fixed_method": "DELETE",
-    "fixed_payload": null,
-    "fixed_url": "http://127.0.0.1:8000/api/v1/payments/123e4567-e89b-12d3-a456-426614174000",
-    "healing_action": "route_rewrite",
-    "reasoning": "Deterministic repair applied: route updated to DELETE /api/v1/payments/{trx_id}.",
-    "schema_summary": {
-      "applied_changes": [
-        "route"
-      ],
-      "method": "DELETE",
-      "path": "/api/v1/payments/{trx_id}",
-      "required_fields": [],
-      "required_header_parameters": [
-        "x-api-key",
-        "x-vendor-id"
-      ],
-      "required_path_parameters": [
-        "trx_id"
-      ],
-      "required_query_parameters": [],
-      "security_requirements": [
-        {
-          "header_name": null,
-          "location": null,
-          "name": "HTTPBearer",
-          "scheme": "bearer",
-          "type": "http"
-        }
-      ]
-    },
-    "status": "healed"
-  },
-  "db5af17e879fb7ad81eb7a0e2275e6664acd7fc860461de1215dd8dccc4ff305": {
-    "confidence": 0.95,
-    "diagnostics": {
-      "docs_confidence": 0.7525000000000001,
-      "docs_source": "local:target_api/specs/openapi.json",
-      "failure_reason": "invalid_llm_output",
-      "fallback_used": true,
-      "final_reward": null,
-      "llm_attempted": true,
-      "llm_succeeded": false,
-      "original_error_code": 422,
-      "processing_ms": 271,
-      "repair_strategy": "deterministic",
-      "request_id": null,
-      "retry_count": 0,
-      "retry_succeeded": null,
-      "scenario_type": "payload_drift",
-      "selected_endpoint_path": "/api/v1/ledger/transactions",
-      "source_component": null,
-      "spec_hash": "61356a872f830562fefce66f6609082c776b2e956240a7a69937cd5d9db3dc68",
-      "spec_version": "3.1.0",
-      "total_recovery_steps": 1
-    },
-    "failure_reason": null,
-    "fixed_headers": {
-      "Authorization": "Bearer demo-token"
-    },
-    "fixed_method": "GET",
-    "fixed_payload": null,
-    "fixed_url": "http://127.0.0.1:8000/api/v1/ledger/transactions?start_date=2024-01-01T00%3A00%3A00Z&end_date=2024-01-01T00%3A00%3A00Z",
-    "healing_action": "route_rewrite",
-    "reasoning": "Deterministic repair applied: route updated to GET /api/v1/ledger/transactions.",
-    "schema_summary": {
-      "applied_changes": [
-        "route"
-      ],
-      "method": "GET",
-      "path": "/api/v1/ledger/transactions",
-      "required_fields": [],
       "required_header_parameters": [],
       "required_path_parameters": [],
-      "required_query_parameters": [
-        "start_date",
-        "end_date"
-      ],
-      "security_requirements": [
-        {
-          "header_name": null,
-          "location": null,
-          "name": "HTTPBearer",
-          "scheme": "bearer",
-          "type": "http"
-        }
-      ]
-    },
-    "status": "healed"
-  },
-  "ff36d95e937637b14fa52bda9f1a1b54295fbc5fa8b4bad6e7ddf3edad9ec1eb": {
-    "confidence": 0.8500000000000001,
-    "diagnostics": {
-      "docs_confidence": 0.7115,
-      "docs_source": "local:target_api/specs/openapi.json",
-      "failure_reason": "invalid_llm_output",
-      "fallback_used": true,
-      "final_reward": null,
-      "llm_attempted": true,
-      "llm_succeeded": false,
-      "original_error_code": 405,
-      "processing_ms": 85,
-      "repair_strategy": "deterministic",
-      "request_id": null,
-      "retry_count": 0,
-      "retry_succeeded": null,
-      "scenario_type": "unknown",
-      "selected_endpoint_path": "/api/v1/payments/{trx_id}",
-      "source_component": null,
-      "spec_hash": "61356a872f830562fefce66f6609082c776b2e956240a7a69937cd5d9db3dc68",
-      "spec_version": "3.1.0",
-      "total_recovery_steps": 1
-    },
-    "failure_reason": null,
-    "fixed_headers": {
-      "Authorization": "Bearer demo-token",
-      "x-api-key": "secret",
-      "x-vendor-id": "ven-123"
-    },
-    "fixed_method": "DELETE",
-    "fixed_payload": null,
-    "fixed_url": "http://127.0.0.1:8000/api/v1/payments/123e4567-e89b-12d3-a456-426614174000",
-    "healing_action": "route_rewrite",
-    "reasoning": "Deterministic repair applied: route updated to DELETE /api/v1/payments/{trx_id}.",
-    "schema_summary": {
-      "applied_changes": [
-        "route"
-      ],
-      "method": "DELETE",
-      "path": "/api/v1/payments/{trx_id}",
-      "required_fields": [],
-      "required_header_parameters": [
-        "x-api-key",
-        "x-vendor-id"
-      ],
-      "required_path_parameters": [
-        "trx_id"
-      ],
       "required_query_parameters": [],
-      "security_requirements": [
-        {
-          "header_name": null,
-          "location": null,
-          "name": "HTTPBearer",
-          "scheme": "bearer",
-          "type": "http"
-        }
-      ]
+      "security_requirements": []
     },
     "status": "healed"
   }

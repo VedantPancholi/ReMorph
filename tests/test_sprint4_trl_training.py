@@ -1,13 +1,56 @@
 import sys
 from types import ModuleType, SimpleNamespace
+import sys
+from types import ModuleType, SimpleNamespace
 
 from sprint4.env.scenario_loader import load_contract_bundle
 from sprint4.evaluation.benchmark_modes import BenchmarkRuntimeMode, run_benchmark_with_mode
+from sprint4.evaluation import reward_curve as reward_curve_module
 from sprint4.training.trl_train_grpo import run_trl_training
 
 
-def test_run_trl_training_writes_dataset_and_eval_summary(tmp_path, monkeypatch) -> None:
-    monkeypatch.setitem(__import__("sys").modules, "trl", SimpleNamespace(__version__="0.test"))
+def _install_fake_matplotlib(monkeypatch) -> None:
+    pyplot = ModuleType("matplotlib.pyplot")
+
+    class _Axis:
+        def plot(self, *args, **kwargs):  # noqa: ANN002, ANN003
+            return None
+
+        def set_title(self, *_args, **_kwargs):
+            return None
+
+        def set_xlabel(self, *_args, **_kwargs):
+            return None
+
+        def set_ylabel(self, *_args, **_kwargs):
+            return None
+
+        def grid(self, *_args, **_kwargs):
+            return None
+
+        def legend(self, *_args, **_kwargs):
+            return None
+
+    class _Figure:
+        def add_subplot(self, *_args, **_kwargs):
+            return _Axis()
+
+        def tight_layout(self):
+            return None
+
+        def savefig(self, path, dpi=150):  # noqa: ARG002
+            with open(path, "wb") as handle:
+                handle.write(b"fake-png")
+
+    pyplot.figure = lambda *args, **kwargs: _Figure()
+    pyplot.close = lambda *_args, **_kwargs: None
+    monkeypatch.setitem(sys.modules, "matplotlib", ModuleType("matplotlib"))
+    monkeypatch.setitem(sys.modules, "matplotlib.pyplot", pyplot)
+
+
+def test_run_trl_training_writes_metrics_curve_and_summary(tmp_path, monkeypatch) -> None:
+    monkeypatch.setitem(sys.modules, "trl", SimpleNamespace(__version__="0.test"))
+    _install_fake_matplotlib(monkeypatch)
 
     benchmark_dir = tmp_path / "benchmark"
     run_benchmark_with_mode(
@@ -29,7 +72,7 @@ def test_run_trl_training_writes_dataset_and_eval_summary(tmp_path, monkeypatch)
         seed=3,
     )
 
-    assert summary["trainer"] == "trl_grpo"
+    assert summary["trainer"] == "hf_trl_structured_policy"
     assert summary["trl_version"] == "0.test"
     assert summary["sample_count"] == 3
     assert summary["train_sample_count"] + summary["eval_sample_count"] == 3

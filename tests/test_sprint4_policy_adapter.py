@@ -3,6 +3,7 @@ from sprint4.training.dataset_schema import PolicyAction, PolicyState
 from sprint4.training.policy_adapter import (
     build_policy_batch,
     build_policy_example,
+    episode_to_rl_transition,
     episode_to_policy_action,
     episode_to_policy_state,
 )
@@ -105,3 +106,37 @@ def test_build_policy_batch_keeps_partition_metadata() -> None:
     assert batch.rewards == [1.2]
     assert batch.metadata[0]["raw_scenario_type"] == "schema_missing_key"
     assert batch.metadata[0]["benchmark_partition"] == "repairable"
+
+
+def test_episode_to_rl_transition_returns_rl_facing_shape() -> None:
+    episode = {
+        "request_id": "ep-safe",
+        "scenario_type": "auth_drift",
+        "raw_scenario_type": "auth_missing_token",
+        "original_request": {
+            "method": "GET",
+            "url": "http://127.0.0.1:8000/api/v1/ledger/transactions",
+            "headers": {},
+            "payload": None,
+        },
+        "error_code": 401,
+        "error_message": "Unauthorized",
+        "healing_action": "safe_abstain",
+        "recoverable": False,
+        "unrecoverable_reason": "missing_or_invalid_credential_material",
+        "reward": 0.3,
+        "reward_breakdown": {"safe_abstention_bonus": 0.3, "final_reward": 0.3},
+        "retries_used": 0,
+        "success": False,
+        "final_status_code": 401,
+    }
+
+    transition = episode_to_rl_transition(episode)
+
+    assert set(transition.keys()) == {"observation", "action", "reward", "done", "info"}
+    assert transition["observation"]["scenario_type"] == "auth_drift"
+    assert transition["action"]["repair_type"] == "safe_abstain"
+    assert transition["action"]["safe_abstain"] is True
+    assert transition["reward"] == 0.3
+    assert transition["done"] is True
+    assert transition["info"]["recoverable"] is False

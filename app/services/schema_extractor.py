@@ -208,6 +208,7 @@ def _match_operation(
             ],
         )
 
+    parameterized_matches: list[tuple[str, str, dict[str, Any]]] = []
     for candidate_path, candidate_operations in paths.items():
         if not isinstance(candidate_operations, dict):
             continue
@@ -217,6 +218,14 @@ def _match_operation(
             candidate_operations,
             payload_expected=method_name in {"post", "put", "patch"},
         )
+        parameterized_matches.append((candidate_path, selected_method, selected_operation))
+
+    if len(parameterized_matches) > 1:
+        raise AmbiguousRouteMatchError(
+            f"Ambiguous route match for {method.upper()} {target_path}"
+        )
+    if len(parameterized_matches) == 1:
+        candidate_path, selected_method, selected_operation = parameterized_matches[0]
         return (
             candidate_path,
             selected_method.upper(),

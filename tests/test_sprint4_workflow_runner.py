@@ -61,3 +61,37 @@ def test_workflow_runner_failure_when_repair_contract_missing(tmp_path) -> None:
     assert result.final_result.success is False
     assert result.record.reward < 0
 
+
+def test_workflow_runner_marks_unrecoverable_auth_as_safe_abstain(tmp_path) -> None:
+    bundle = load_contract_bundle()
+    scenario = next(item for item in default_scenarios() if item.drift_mode == "auth")
+    env = MutableAPIEnvironment(
+        baseline_contract=bundle.baseline_contract,
+        drift_contracts=bundle.drift_contracts,
+    )
+    env.apply_drift(scenario.drift_mode)
+    runner = WorkflowRunner(
+        env=env,
+        episode_log_path=str(tmp_path / "episodes.jsonl"),
+        max_repair_cycles=2,
+    )
+
+    result = runner.run_episode(
+        scenario_type=scenario.scenario_type,
+        request={
+            "method": scenario.method,
+            "url": scenario.url,
+            "headers": {},
+            "payload": scenario.payload,
+            "raw_scenario_type": "auth_missing_token",
+        },
+        local_spec_path=bundle.drift_paths[scenario.drift_mode],
+        adaptive=True,
+    )
+
+    assert result.initial_result.success is False
+    assert result.final_result.success is False
+    assert result.record.healing_action == "safe_abstain"
+    assert result.record.recoverable is False
+    assert result.record.unrecoverable_reason == "missing_or_invalid_credential_material"
+    assert result.reward.breakdown["safe_abstention_bonus"] > 0.0
