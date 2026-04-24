@@ -18,6 +18,14 @@ Training/OpenEnv extras:
 .venv/bin/pip install -r requirements/training.txt
 ```
 
+Important:
+
+- Prefer `.venv/bin/python -m pytest` over `.venv/bin/pytest` in this workspace.
+- Reward-curve export requires `matplotlib`, which is included in
+  `requirements/training.txt`.
+- TRL-style training is optional and is not required for the normal Sprint 4
+  benchmark or dataset flows.
+
 ## Repo Map
 
 - `app/`: Sprint 2 repair brain
@@ -29,7 +37,7 @@ Training/OpenEnv extras:
 ## Fastest Verification
 
 ```bash
-.venv/bin/pytest -q
+.venv/bin/python -m pytest -q
 .venv/bin/python run_local_test.py --mode smoke --scenario a
 .venv/bin/python run_local_test.py --mode heal --scenario a
 ```
@@ -38,6 +46,7 @@ Training/OpenEnv extras:
 
 ```bash
 .venv/bin/python scripts/run_benchmark.py \
+  --backend simulated \
   --env-mode local \
   --episodes-per-scenario 3 \
   --output-dir runtime/sprint4_local \
@@ -45,13 +54,73 @@ Training/OpenEnv extras:
   --disable-telemetry
 ```
 
-Generate a local training dataset:
+Generate the RL-facing dataset from benchmark episodes:
 
 ```bash
-.venv/bin/python scripts/generate_sprint4_dataset.py \
+.venv/bin/python -m sprint4.training.episode_dataset \
   --episodes-path runtime/sprint4_local/episodes.jsonl \
   --output-dir runtime/sprint4_local/dataset \
-  --eval-ratio 0.2
+  --split all
+```
+
+Generate the comparison report for baseline, adaptive rules, and the trained
+policy placeholder:
+
+```bash
+.venv/bin/python -m sprint4.evaluation.compare_trained_vs_untrained \
+  --input-dir runtime/sprint4_local/dataset \
+  --output-dir runtime/sprint4_local/comparison
+```
+
+Current clean final-package equivalents live under:
+
+- `runtime/sprint4_final_clean/local/`
+- `runtime/sprint4_final_clean/training_dataset/`
+- `runtime/sprint4_final_clean/comparison/`
+
+## Clean Final Evidence Run
+
+Repairable slice:
+
+```bash
+.venv/bin/python scripts/run_benchmark.py \
+  --backend simulated \
+  --env-mode local \
+  --output-dir runtime/sprint4_final_clean/local \
+  --cache-mode clear \
+  --disable-telemetry
+```
+
+```bash
+.venv/bin/python -m sprint4.training.episode_dataset \
+  --episodes-path runtime/sprint4_final_clean/local/episodes.jsonl \
+  --output-dir runtime/sprint4_final_clean/training_dataset \
+  --split all
+```
+
+```bash
+.venv/bin/python -m sprint4.evaluation.compare_trained_vs_untrained \
+  --input-dir runtime/sprint4_final_clean/training_dataset \
+  --output-dir runtime/sprint4_final_clean/comparison
+```
+
+Unrecoverable auth slice used by the final package:
+
+```bash
+.venv/bin/python -c "from sprint4.env.scenario_loader import load_contract_bundle, ScenarioRequest; from sprint4.evaluation.benchmark_runner import run_benchmark; bundle=load_contract_bundle(); scenarios=[ScenarioRequest(scenario_type='auth_drift', raw_scenario_type='auth_missing_token', drift_mode='auth', method='GET', url='https://mock.example.com/api/v2/finance/ledger', headers={}, payload=None, local_spec_path=bundle.drift_paths['auth']), ScenarioRequest(scenario_type='auth_drift', raw_scenario_type='auth_malformed_jwt', drift_mode='auth', method='GET', url='https://mock.example.com/api/v2/finance/ledger', headers={'Authorization':'Bearer malformed.jwt.token'}, payload=None, local_spec_path=bundle.drift_paths['auth'])]; run_benchmark(bundle=bundle, scenarios=scenarios, episodes_per_scenario=1, output_dir='runtime/sprint4_final_clean/unrecoverable_auth', backend='simulated')"
+```
+
+```bash
+.venv/bin/python -m sprint4.training.episode_dataset \
+  --episodes-path runtime/sprint4_final_clean/unrecoverable_auth/episodes.jsonl \
+  --output-dir runtime/sprint4_final_clean/unrecoverable_auth_dataset \
+  --split all
+```
+
+```bash
+.venv/bin/python -m sprint4.evaluation.compare_trained_vs_untrained \
+  --input-dir runtime/sprint4_final_clean/unrecoverable_auth_dataset \
+  --output-dir runtime/sprint4_final_clean/unrecoverable_auth_comparison
 ```
 
 ## Live Target API Benchmark
@@ -59,13 +128,14 @@ Generate a local training dataset:
 Start the live server:
 
 ```bash
-.venv/bin/python -m uvicorn target_api.server.main:app --reload
+.venv/bin/python -m uvicorn target_api.server.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
 Run the representative live benchmark:
 
 ```bash
 .venv/bin/python scripts/run_benchmark.py \
+  --backend live \
   --env-mode live \
   --live-base-url http://127.0.0.1:8000 \
   --episodes-per-scenario 1 \
@@ -78,6 +148,7 @@ Run all raw scenarios from `target_api/training_dataset.json`:
 
 ```bash
 .venv/bin/python scripts/run_benchmark.py \
+  --backend live \
   --env-mode live \
   --live-base-url http://127.0.0.1:8000 \
   --live-scenario-selection all \
@@ -90,16 +161,18 @@ Run all raw scenarios from `target_api/training_dataset.json`:
 Freeze the RL-ready repairable dataset slice from benchmark episodes:
 
 ```bash
-.venv/bin/python scripts/generate_sprint4_dataset.py \
+.venv/bin/python -m sprint4.training.episode_dataset \
   --episodes-path runtime/sprint4_live_all/episodes.jsonl \
   --output-dir runtime/sprint4_live_all/dataset_repairable \
-  --benchmark-partition repairable
+  --split all \
+  --filter repairable_only
 ```
 
 Run one exact raw scenario:
 
 ```bash
 .venv/bin/python scripts/run_benchmark.py \
+  --backend live \
   --env-mode live \
   --live-base-url http://127.0.0.1:8000 \
   --live-raw-scenario auth_missing_token \
@@ -143,6 +216,43 @@ Frozen RL-ready benchmark contract:
 Training default should use the repairable slice. Unrecoverable auth cases are
 best kept for abstention/fail-safe evaluation rather than the main repair policy
 objective.
+
+## Optional TRL Training
+
+Run the optional training scaffold on the clean repairable dataset:
+
+```bash
+.venv/bin/python -m sprint4.training.trl_train_grpo \
+  --train-path runtime/sprint4_final_clean/training_dataset/train.jsonl \
+  --eval-path runtime/sprint4_final_clean/training_dataset/eval.jsonl \
+  --output-dir runtime/sprint4_final_clean/trl_training \
+  --model-name sshleifer/tiny-gpt2
+```
+
+This writes:
+
+- `training_metrics.json`
+- `reward_curve.json`
+- `reward_curve.png`
+- `trained_policy_summary.json`
+
+Then generate the trained-vs-untrained comparison:
+
+```bash
+.venv/bin/python -m sprint4.evaluation.compare_trained_vs_untrained \
+  --input-dir runtime/sprint4_final_clean/training_dataset \
+  --output-dir runtime/sprint4_final_clean/comparison \
+  --trained-policy-summary-path runtime/sprint4_final_clean/trl_training/trained_policy_summary.json
+```
+
+If the training command fails with `ModuleNotFoundError: matplotlib`, install:
+
+```bash
+.venv/bin/pip install -r requirements/training.txt
+```
+
+If your environment blocks package downloads, the benchmark, dataset, and
+comparison pipeline still works without the optional reward-curve and TRL step.
 
 ## Freeze The Pre-Training Scoreboard
 

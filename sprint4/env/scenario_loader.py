@@ -59,6 +59,7 @@ def default_scenarios() -> list[ScenarioRequest]:
     return [
         ScenarioRequest(
             scenario_type="payload_drift",
+            raw_scenario_type="schema_missing_key",
             drift_mode="payload",
             method="POST",
             url="https://mock.example.com/users",
@@ -68,6 +69,7 @@ def default_scenarios() -> list[ScenarioRequest]:
         ),
         ScenarioRequest(
             scenario_type="route_drift",
+            raw_scenario_type="route_regression",
             drift_mode="route",
             method="GET",
             url="https://mock.example.com/api/v1/transactions",
@@ -77,6 +79,7 @@ def default_scenarios() -> list[ScenarioRequest]:
         ),
         ScenarioRequest(
             scenario_type="auth_drift",
+            raw_scenario_type="auth_missing_tenant",
             drift_mode="auth",
             method="GET",
             url="https://mock.example.com/api/v2/finance/ledger",

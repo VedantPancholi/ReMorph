@@ -14,6 +14,7 @@ from sprint4.env.interfaces import APIEnvironment
 from sprint4.proxy.request_executor import RequestExecutionResult, execute_against_env
 from sprint4.proxy.trap_and_repair import package_trapped_error, run_repair
 from sprint4.rewards.reward_function import RewardFunction, RewardResult, RewardSignals
+from sprint4.training.benchmark_contract import is_unrecoverable
 
 
 @dataclass(frozen=True)
@@ -47,6 +48,8 @@ class EpisodeRecord:
     reward_breakdown: dict[str, float]
     agent_type: str
     environment_mode: str
+    recoverable: bool | None = None
+    unrecoverable_reason: str | None = None
     raw_scenario_type: str | None = None
 
 
@@ -88,6 +91,7 @@ class WorkflowRunner:
         adaptive: bool,
     ) -> WorkflowResult:
         start = time.perf_counter()
+        raw_scenario_type = request.get("raw_scenario_type")
         initial = execute_against_env(
             self._env,
             method=request["method"],
@@ -104,6 +108,7 @@ class WorkflowRunner:
                     hallucinated_fields=False,
                     wrong_route_candidate=False,
                     final_recovery_failed=not initial.success,
+                    unrecoverable=is_unrecoverable(raw_scenario_type),
                 )
             )
             record = self._record_episode(
@@ -148,6 +153,55 @@ class WorkflowRunner:
                 reward=reward,
                 latency_ms=int((time.perf_counter() - start) * 1000),
                 agent_type="adaptive",
+            )
+            return WorkflowResult(
+                initial_result=initial,
+                final_result=initial,
+                healed_request=None,
+                record=record,
+                reward=reward,
+            )
+
+        if is_unrecoverable(raw_scenario_type):
+            reward = self._reward_function.score(
+                RewardSignals(
+                    repaired_success=False,
+                    fixed_in_one_cycle=False,
+                    extra_retries=0,
+                    hallucinated_fields=False,
+                    wrong_route_candidate=False,
+                    final_recovery_failed=False,
+                    safe_abstained=True,
+                    unrecoverable=True,
+                )
+            )
+            record = self._record_episode(
+                scenario_type=scenario_type,
+                original_request=request,
+                trapped_error=package_trapped_error(
+                    method=request["method"],
+                    url=request["url"],
+                    payload=request.get("payload"),
+                    headers=request.get("headers"),
+                    execution_result=initial,
+                    scenario_type=scenario_type,
+                    raw_scenario_type=raw_scenario_type,
+                    retry_count=0,
+                ),
+                local_spec_path=local_spec_path,
+                healed_request=None,
+                retries_used=0,
+                final_result=initial,
+                reward=reward,
+                latency_ms=int((time.perf_counter() - start) * 1000),
+                agent_type="adaptive",
+                healing_action_override="safe_abstain",
+                reasoning_override=(
+                    "Safe abstention: missing or invalid credential material cannot be synthesized."
+                ),
+                recoverable_override=False,
+                unrecoverable_reason_override="missing_or_invalid_credential_material",
+                repair_strategy_override="safe_abstain",
             )
             return WorkflowResult(
                 initial_result=initial,
@@ -204,6 +258,7 @@ class WorkflowRunner:
                 hallucinated_fields=self._is_hallucinated_payload(healed_request),
                 wrong_route_candidate=self._wrong_route_candidate(healed_request),
                 final_recovery_failed=not current_result.success,
+                unrecoverable=is_unrecoverable(raw_scenario_type),
             )
         )
         record = self._record_episode(
@@ -239,8 +294,16 @@ class WorkflowRunner:
         reward: RewardResult,
         latency_ms: int,
         agent_type: str,
+        healing_action_override: str | None = None,
+        reasoning_override: str | None = None,
+        recoverable_override: bool | None = None,
+        unrecoverable_reason_override: str | None = None,
+        repair_strategy_override: str | None = None,
     ) -> EpisodeRecord:
         diagnostics = healed_request.diagnostics if healed_request else None
+        raw_scenario_type = (trapped_error or {}).get("raw_scenario_type") or original_request.get(
+            "raw_scenario_type"
+        )
         record = EpisodeRecord(
             scenario_type=scenario_type,
             original_request=original_request,
@@ -251,13 +314,13 @@ class WorkflowRunner:
             local_spec_path=local_spec_path,
             selected_endpoint_path=getattr(diagnostics, "selected_endpoint_path", None),
             route_match_confidence=getattr(diagnostics, "docs_confidence", None),
-            repair_strategy=getattr(diagnostics, "repair_strategy", None),
-            healing_action=getattr(healed_request, "healing_action", None),
+            repair_strategy=repair_strategy_override or getattr(diagnostics, "repair_strategy", None),
+            healing_action=healing_action_override or getattr(healed_request, "healing_action", None),
             healed_method=getattr(healed_request, "fixed_method", None),
             healed_url=getattr(healed_request, "fixed_url", None),
             healed_payload=getattr(healed_request, "fixed_payload", None),
             healed_headers=getattr(healed_request, "fixed_headers", None),
-            reasoning=getattr(healed_request, "reasoning", None),
+            reasoning=reasoning_override or getattr(healed_request, "reasoning", None),
             cache_hit=getattr(diagnostics, "repair_strategy", "") == "cache",
             llm_attempted=getattr(diagnostics, "llm_attempted", False),
             llm_succeeded=getattr(diagnostics, "llm_succeeded", False),
@@ -269,8 +332,13 @@ class WorkflowRunner:
             reward_breakdown=reward.breakdown,
             agent_type=agent_type,
             environment_mode=self._environment_mode,
-            raw_scenario_type=(trapped_error or {}).get("raw_scenario_type")
-            or original_request.get("raw_scenario_type"),
+            recoverable=(
+                recoverable_override
+                if recoverable_override is not None
+                else (not is_unrecoverable(raw_scenario_type) if raw_scenario_type else None)
+            ),
+            unrecoverable_reason=unrecoverable_reason_override,
+            raw_scenario_type=raw_scenario_type,
         )
         self._episode_log_path.parent.mkdir(parents=True, exist_ok=True)
         with self._episode_log_path.open("a", encoding="utf-8") as handle:
