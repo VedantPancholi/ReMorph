@@ -16,6 +16,22 @@ from app.services.telemetry import record_workflow_event
 
 RequestExecutor = Callable[[dict[str, Any]], dict[str, Any] | UpstreamExecutionResult]
 
+_REPAIRABLE_RAW_SCENARIOS = {
+    "schema_missing_key",
+    "schema_type_coercion",
+    "schema_extra_key",
+    "schema_null_injection",
+    "route_regression",
+    "route_method_spoof",
+    "route_invalid_path",
+    "auth_missing_tenant",
+}
+
+_UNRECOVERABLE_RAW_SCENARIOS = {
+    "auth_missing_token",
+    "auth_malformed_jwt",
+}
+
 
 def heal_and_retry(
     trapped_error_data: dict[str, Any],
@@ -55,6 +71,9 @@ def heal_and_retry(
                 ),
                 attempts=max(1, attempt),
                 history=history,
+                request_id=current_error.request_id,
+                raw_scenario_type=current_error.raw_scenario_type,
+                benchmark_partition=_classify_benchmark_partition(current_error.raw_scenario_type),
             )
             record_workflow_event(result)
             return result
@@ -97,6 +116,13 @@ def heal_and_retry(
                 ),
                 attempts=attempt,
                 history=history,
+                request_id=current_error.request_id,
+                raw_scenario_type=current_error.raw_scenario_type,
+                benchmark_partition=_classify_benchmark_partition(current_error.raw_scenario_type),
+                policy_name=healed.diagnostics.policy_name if healed.diagnostics else None,
+                policy_version=healed.diagnostics.policy_version if healed.diagnostics else None,
+                policy_source=healed.diagnostics.policy_source if healed.diagnostics else None,
+                policy_run_id=healed.diagnostics.policy_run_id if healed.diagnostics else None,
             )
             record_workflow_event(result)
             return result
@@ -111,6 +137,8 @@ def heal_and_retry(
             request_id=current_error.request_id,
             source_component=current_error.source_component or "proxy",
             retry_count=current_error.retry_count + 1,
+            raw_scenario_type=current_error.raw_scenario_type,
+            failure_signals=current_error.failure_signals,
         )
 
     result = ProxyWorkflowResult(
@@ -130,6 +158,13 @@ def heal_and_retry(
         ),
         attempts=len(history),
         history=history,
+        request_id=current_error.request_id,
+        raw_scenario_type=current_error.raw_scenario_type,
+        benchmark_partition=_classify_benchmark_partition(current_error.raw_scenario_type),
+        policy_name=history[-1].healed_request.diagnostics.policy_name if history[-1].healed_request.diagnostics else None,
+        policy_version=history[-1].healed_request.diagnostics.policy_version if history[-1].healed_request.diagnostics else None,
+        policy_source=history[-1].healed_request.diagnostics.policy_source if history[-1].healed_request.diagnostics else None,
+        policy_run_id=history[-1].healed_request.diagnostics.policy_run_id if history[-1].healed_request.diagnostics else None,
     )
     record_workflow_event(result)
     return result
@@ -173,3 +208,11 @@ def _estimate_reward(*, success: bool, attempts: int, fallback_used: bool) -> fl
     if fallback_used:
         reward -= 0.2
     return round(reward, 2)
+
+
+def _classify_benchmark_partition(raw_scenario_type: str | None) -> str | None:
+    if raw_scenario_type in _REPAIRABLE_RAW_SCENARIOS:
+        return "repairable"
+    if raw_scenario_type in _UNRECOVERABLE_RAW_SCENARIOS:
+        return "unrecoverable"
+    return "other" if raw_scenario_type else None

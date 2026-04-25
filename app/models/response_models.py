@@ -49,6 +49,10 @@ class RepairDiagnostics(BaseModel):
     total_recovery_steps: int | None = Field(default=None, ge=0)
     final_reward: float | None = None
     failure_reason: FailureReason | None = None
+    policy_name: str | None = None
+    policy_version: str | None = None
+    policy_source: str | None = None
+    policy_run_id: str | None = None
 
 
 class HealedRequest(BaseModel):
@@ -108,6 +112,13 @@ class ProxyWorkflowResult(BaseModel):
     final_healed_request: HealedRequest
     attempts: int = Field(ge=1)
     history: list[RetryAttemptRecord] = Field(default_factory=list)
+    request_id: str | None = None
+    raw_scenario_type: str | None = None
+    benchmark_partition: str | None = None
+    policy_name: str | None = None
+    policy_version: str | None = None
+    policy_source: str | None = None
+    policy_run_id: str | None = None
 
 
 class ProxyFailureEnvelope(BaseModel):

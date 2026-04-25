@@ -1,4 +1,5 @@
 import pytest
+import json
 
 from app.config import get_settings
 from app.models.response_models import HealedRequest
@@ -47,6 +48,58 @@ def test_heal_request_uses_pipeline_and_returns_model(monkeypatch) -> None:
     assert result.diagnostics is not None
     assert result.diagnostics.repair_strategy == "merged"
     assert result.diagnostics.docs_source == "local:app/testsupport/sample_openapi.json"
+
+
+def test_healing_telemetry_records_richer_schema(monkeypatch, tmp_path) -> None:
+    monkeypatch.setenv("REMORPH_ENABLE_TELEMETRY", "true")
+    monkeypatch.setenv("REMORPH_TELEMETRY_DIR", str(tmp_path / "telemetry"))
+    get_settings.cache_clear()
+
+    monkeypatch.setattr(
+        healer,
+        "call_healing_model",
+        lambda _system_prompt, _user_prompt: (_ for _ in ()).throw(
+            healer.LLMHealingError("provider unavailable")
+        ),
+    )
+
+    trapped_error = healer.TrappedError.model_validate(
+        {
+            **SCENARIO_B_ROUTE_DRIFT,
+            "raw_scenario_type": "route_regression",
+        }
+    )
+    result = healer.heal_request(
+        trapped_error,
+        local_spec_path="app/testsupport/sample_openapi.json",
+    )
+
+    assert result.healing_action == "combined_rewrite"
+
+    events_path = tmp_path / "telemetry" / "healing_events.jsonl"
+    summary_path = tmp_path / "telemetry" / "healing_summary.json"
+    event = json.loads(events_path.read_text(encoding="utf-8").strip().splitlines()[-1])
+    summary = json.loads(summary_path.read_text(encoding="utf-8"))
+
+    assert event["event_schema_version"] == 2
+    assert event["raw_scenario_type"] == "route_regression"
+    assert event["benchmark_partition"] == "repairable"
+    assert event["policy_name"] == "adaptive_rules"
+    assert event["policy_version"] == "v1"
+    assert event["policy_source"] == "deterministic_fallback"
+    assert event["llm_attempted"] is True
+    assert event["llm_succeeded"] is False
+    assert event["selected_endpoint_path"] == "/api/v2/finance/ledger"
+    assert event["healed_path"] == "/api/v2/finance/ledger"
+    assert event["event_group_id"].startswith("healing:")
+
+    assert summary["raw_scenario_type_counts"]["route_regression"] == 1
+    assert summary["benchmark_partition_counts"]["repairable"] == 1
+    assert summary["llm_attempted_count"] == 1
+    assert summary["llm_success_count"] == 0
+    assert summary["source_component_counts"]["proxy"] == 1
+    assert summary["policy_name_counts"]["adaptive_rules"] == 1
+    assert summary["policy_source_counts"]["deterministic_fallback"] == 1
 
 
 def test_heal_request_falls_back_to_deterministic_payload_repair(monkeypatch) -> None:

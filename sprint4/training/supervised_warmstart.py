@@ -10,6 +10,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from app.services.telemetry import record_training_run_event
 from sprint4.eval.compare_policies import compare_policy_runs, render_comparison_summary
 from sprint4.eval.metrics import summarize_eval_run
 from sprint4.training.benchmark_contract import BENCHMARK_CONTRACT_VERSION
@@ -360,6 +361,21 @@ def run_supervised_warmstart_pipeline(
             render_comparison_summary(comparison),
         ),
     }
+
+    record_training_run_event(
+        {
+            "trainer": "supervised_warmstart",
+            "policy_name": policy_name,
+            "policy_source": "warmstart",
+            "policy_run_id": f"{policy_name}-seed-{seed}",
+            "status": "completed",
+            "model_name": model_name,
+            "train_sample_count": model_artifact.get("training_row_count"),
+            "eval_sample_count": len(eval_run.get("eval_rows", [])),
+            "metrics_path": artifacts["training_summary"],
+            "comparison_path": artifacts["comparison_json"],
+        }
+    )
 
     return {
         "model_artifact": model_artifact,

@@ -2,6 +2,7 @@
 
 from time import perf_counter
 
+from app.config import get_settings
 from app.models.request_models import TrappedError
 from app.models.response_models import HealedRequest, RepairDiagnostics
 from app.services.repair_cache import (
@@ -181,6 +182,7 @@ def _attach_diagnostics(
 ) -> HealedRequest:
     """Attach runtime diagnostics needed by the proxy and training loop."""
 
+    settings = get_settings()
     return healed_request.model_copy(
         update={
             "diagnostics": RepairDiagnostics(
@@ -201,6 +203,10 @@ def _attach_diagnostics(
                 retry_count=trapped_error.retry_count,
                 total_recovery_steps=1,
                 failure_reason=failure_reason,
+                policy_name=settings.HEALING_POLICY_NAME,
+                policy_version=settings.HEALING_POLICY_VERSION,
+                policy_source=_policy_source_from_repair_strategy(repair_strategy),
+                policy_run_id=settings.HEALING_POLICY_RUN_ID or None,
             )
         }
     )
@@ -219,4 +225,18 @@ def _infer_scenario_type(error_code: int) -> str:
         return "auth_drift"
     if error_code == 404:
         return "route_drift"
+    return "unknown"
+
+
+def _policy_source_from_repair_strategy(repair_strategy: str) -> str:
+    if repair_strategy == "cache":
+        return "runtime_cache"
+    if repair_strategy == "deterministic":
+        return "deterministic_fallback"
+    if repair_strategy == "merged":
+        return "llm_merged"
+    if repair_strategy == "llm":
+        return "llm_direct"
+    if repair_strategy == "safe_abstain":
+        return "safe_abstain"
     return "unknown"

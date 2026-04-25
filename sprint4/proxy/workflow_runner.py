@@ -51,6 +51,10 @@ class EpisodeRecord:
     recoverable: bool | None = None
     unrecoverable_reason: str | None = None
     raw_scenario_type: str | None = None
+    policy_name: str | None = None
+    policy_version: str | None = None
+    policy_source: str | None = None
+    policy_run_id: str | None = None
 
 
 @dataclass(frozen=True)
@@ -339,6 +343,10 @@ class WorkflowRunner:
             ),
             unrecoverable_reason=unrecoverable_reason_override,
             raw_scenario_type=raw_scenario_type,
+            policy_name=getattr(diagnostics, "policy_name", None),
+            policy_version=getattr(diagnostics, "policy_version", None),
+            policy_source=getattr(diagnostics, "policy_source", None),
+            policy_run_id=getattr(diagnostics, "policy_run_id", None),
         )
         self._episode_log_path.parent.mkdir(parents=True, exist_ok=True)
         with self._episode_log_path.open("a", encoding="utf-8") as handle:

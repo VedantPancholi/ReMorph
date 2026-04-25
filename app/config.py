@@ -22,6 +22,9 @@ class Settings(BaseSettings):
 
     GROQ_API_KEY: str = ""
     LLM_MODEL: str = "groq/llama-3.1-8b-instant"
+    HEALING_POLICY_NAME: str = "adaptive_rules"
+    HEALING_POLICY_VERSION: str = "v1"
+    HEALING_POLICY_RUN_ID: str = ""
 
     REQUEST_TIMEOUT_SECONDS: int = 10
     MAX_FETCH_RETRIES: int = 2
@@ -42,6 +45,8 @@ class Settings(BaseSettings):
     LOCAL_SPEC_PATH: str = "app/testsupport/sample_openapi.json"
     REPAIR_CACHE_PATH: str = "runtime/repair_cache.json"
     TELEMETRY_DIR: str = "runtime/telemetry"
+    TELEMETRY_MAX_JSONL_BYTES: int = 5_242_880
+    TELEMETRY_MAX_ROTATED_FILES: int = 5
     LOG_LEVEL: str = "INFO"
 
 
