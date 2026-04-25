@@ -9,7 +9,10 @@ python scripts/smoke_test_openenv.py
 python scripts/inference.py
 python scripts/generate_splits.py --seed 42
 python scripts/live_local_demo.py
-python scripts/train_submission.py --output-dir artifacts/submission/training_run
+python scripts/train_submission.py --output-dir artifacts/submission/training_run --train-manifest artifacts/submission/splits/train_manifest.json --eval-manifest artifacts/submission/splits/eval_manifest.json
+python scripts/evaluate_submission.py --policy baseline --split eval --train-manifest artifacts/submission/splits/train_manifest.json --eval-manifest artifacts/submission/splits/eval_manifest.json
+python scripts/evaluate_submission.py --policy supervised --split eval --train-manifest artifacts/submission/splits/train_manifest.json --eval-manifest artifacts/submission/splits/eval_manifest.json
+python scripts/evaluate_submission.py --policy adaptive_reference --split eval --train-manifest artifacts/submission/splits/train_manifest.json --eval-manifest artifacts/submission/splits/eval_manifest.json
 python scripts/generate_submission_plots.py
 openenv validate
 ```
@@ -44,6 +47,11 @@ Next phase target:
 
 - build the Hugging Face Space on top of the now-stable benchmark core
 - expose scenario selection, state view, policy comparison, action JSON, reward breakdown, step playback, simulated vs live-local comparison, and benchmark plots
+
+Prompt-driven notebook flow:
+
+- notebook path: `notebooks/remorph_openenv_colab.ipynb`
+- includes validation, training, baseline/supervised/adaptive evaluation, plot generation, and report inspection
 
 Manual verification flow before starting the Space:
 

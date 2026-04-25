@@ -30,7 +30,10 @@ python scripts/smoke_test_openenv.py
 python scripts/inference.py
 python scripts/generate_splits.py --seed 42
 python scripts/live_local_demo.py
-python scripts/train_submission.py --output-dir artifacts/submission/training_run
+python scripts/train_submission.py --output-dir artifacts/submission/training_run --train-manifest artifacts/submission/splits/train_manifest.json --eval-manifest artifacts/submission/splits/eval_manifest.json
+python scripts/evaluate_submission.py --policy baseline --split eval --train-manifest artifacts/submission/splits/train_manifest.json --eval-manifest artifacts/submission/splits/eval_manifest.json
+python scripts/evaluate_submission.py --policy supervised --split eval --train-manifest artifacts/submission/splits/train_manifest.json --eval-manifest artifacts/submission/splits/eval_manifest.json
+python scripts/evaluate_submission.py --policy adaptive_reference --split eval --train-manifest artifacts/submission/splits/train_manifest.json --eval-manifest artifacts/submission/splits/eval_manifest.json
 python scripts/generate_submission_plots.py
 openenv validate
 ```
@@ -236,6 +239,21 @@ Use this checklist to manually verify the benchmark before the Hugging Face Spac
    Run `openenv validate`
    Expected: `Ready for multi-mode deployment`
 
+## Colab Flow
+
+The notebook for the prompt-driven training flow lives at:
+
+- `notebooks/remorph_openenv_colab.ipynb`
+
+It is designed to show this exact sequence:
+
+1. clone repo and install requirements
+2. validate OpenEnv and run smoke tests
+3. train the supervised structured policy
+4. evaluate `baseline`, `supervised`, and `adaptive_reference` on held-out eval
+5. generate plots
+6. inspect the benchmark report
+
 ## Files
 
 - `remorph_openenv/environment.py`: main OpenEnv-compatible environment
@@ -250,9 +268,11 @@ Use this checklist to manually verify the benchmark before the Hugging Face Spac
 - `scripts/start_live_local_server.py`: optional manual FastAPI gateway runner
 - `scripts/train_submission.py`: Phase 3 supervised learner training entrypoint
 - `scripts/train_submission.py --train-manifest ... --eval-manifest ...`: manifest-driven training entrypoint
+- `scripts/evaluate_submission.py`: policy evaluation entrypoint for baseline, supervised, replay, and adaptive reference
 - `artifacts/submission/telemetry/rollouts.jsonl`: step-level benchmark telemetry
 - `artifacts/submission/benchmark_report.md`: benchmark summary for judges
 - `artifacts/submission/training_run/trl_dataset.jsonl`: TRL-ready serialized dataset export
+- `notebooks/remorph_openenv_colab.ipynb`: Colab-ready training and evaluation flow
 - `scripts/smoke_test_openenv.py`: runnable Phase 1 validation script
 - `tests/test_openenv_smoke.py`: pytest coverage for the minimum pass
 - `tests/test_scenario_registry.py`: scenario count, split integrity, reproducibility, and observation hygiene checks
